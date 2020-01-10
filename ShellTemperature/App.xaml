@@ -1,9 +1,21 @@
 ﻿<Application x:Class="ShellTemperature.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:ShellTemperature"
-             StartupUri="MainWindow.xaml">
+             Startup="OnStartup">
     <Application.Resources>
-         
+
+        <!-- Create merge dictionary for all style sheets -->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="./Styles/String.xaml" />
+                <ResourceDictionary Source="./Styles/Font.xaml" />
+                <ResourceDictionary Source="./Styles/Color.xaml" />
+                <ResourceDictionary Source="./Styles/Image.xaml" />
+                <ResourceDictionary Source="./Styles/Label.xaml" />
+                <ResourceDictionary Source="./Styles/Button.xaml" />
+                <ResourceDictionary Source="./Styles/Window.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+
     </Application.Resources>
 </Application>
