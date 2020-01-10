@@ -40,6 +40,10 @@
     <!-- Navy Blue -->
     <Color x:Key="NavyBlue">#397499</Color>
     <SolidColorBrush x:Key="NavyBlueBrush" Color="{StaticResource NavyBlue}" />
+    
+    <!-- MPI Blue -->
+    <Color x:Key="MPIBlue">#104aa1</Color>
+    <SolidColorBrush x:Key="MPIBlueBrush" Color="{StaticResource MPIBlue}" />
 
     <!-- Blood Red Color -->
     <Color x:Key="BloodRed">#b30000</Color>

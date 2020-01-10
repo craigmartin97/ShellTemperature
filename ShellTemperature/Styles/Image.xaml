@@ -3,15 +3,11 @@
 
 
     <Style x:Key="LogoImageStyle" TargetType="{x:Type Image}">
-        <Setter Property="Width" Value="30" />
         <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="Margin" Value="15,5,0,5" />
-        <Setter Property="Source" Value="../Images/mpiLogo.ico" />
+        <Setter Property="Margin" Value="15,3,0,0" />
+        <Setter Property="Height" Value="50" />
+        <Setter Property="Width" Value="100" />
+        <Setter Property="Source" Value="../Images/mpiLion.png" />
     </Style>
 
-    <!-- Dialog image style, for images on the custom dialog window/usercontrols -->
-    <Style x:Key="DialogImageStyle" TargetType="{x:Type Image}">
-        <Setter Property="Margin" Value="30" />
-    </Style>
-    
 </ResourceDictionary>

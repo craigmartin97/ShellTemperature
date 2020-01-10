@@ -37,11 +37,11 @@
             <!-- Top bar for application description and window btns -->
             <Grid DockPanel.Dock="Top"  Background="{StaticResource OffsetWhiteBrush}">
                 <Button x:Name="MPILogo" Style="{StaticResource SystemIconButton}" window:SystemIconBehaviour.SystemIconProperty="True">
-                    <Image Source="../Images/mpiLion.png" Margin="0,2,0,0" Height="50" Width="100"  />
+                    <Image Style="{StaticResource LogoImageStyle}" />
                 </Button>
 
                 <!-- Title bar -->
-                <Label Content="{StaticResource AppNameString}" Style="{StaticResource WindowTitleStyle}" FontSize="{StaticResource FontSize36}" />
+                <Label Content="{StaticResource AppNameString}" Style="{StaticResource WindowTitleStyle}" />
 
                 <!-- Window operation buttons -->
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
@@ -53,7 +53,7 @@
                     <UniformGrid Columns="3">
                         <Button Content="-" Style="{StaticResource WindowControlButton}" window:MinimizeOnClickBehaviour.MinimizeWindowProperty="True" />
                         <Button Content="[ ]" Style="{StaticResource WindowControlButton}" window:MaximizeOnClickBehaviour.MaximizeWindowProperty="True" />
-                        <Button x:Name="CloseWindow" Content="X" Style="{StaticResource WindowCloseButton}" window:CloseOnClickBehaviour.CloseWindowProperty="True" />
+                        <Button Content="X" Style="{StaticResource WindowCloseButton}" window:CloseOnClickBehaviour.CloseWindowProperty="True" />
                     </UniformGrid>
                 </StackPanel>
             </Grid>
