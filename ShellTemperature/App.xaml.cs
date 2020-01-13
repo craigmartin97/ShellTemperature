@@ -51,6 +51,7 @@ namespace ShellTemperature
         private void ConfigureViewModels(IServiceCollection services)
         {
             services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<LiveShellDataViewModel>();
         }
 
         /// <summary>

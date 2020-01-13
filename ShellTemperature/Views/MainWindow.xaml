@@ -60,14 +60,18 @@
 
             <!-- Navigation Bar -->
             <Border BorderThickness="0,0,1,0" BorderBrush="{StaticResource WhiteColorBrush}" DockPanel.Dock="Left">
-                <Grid Background="{StaticResource NavyBlueBrush}" MinWidth="150" MaxWidth="220">
+                <Grid Background="{StaticResource NavyBlueBrush}" MinWidth="160" MaxWidth="220">
                     <StackPanel VerticalAlignment="Top">
+                        <Button Content="Live Shell Data" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=LiveShellDataViewCommand}" />
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Main Content Area -->
-            <ContentControl Content="{Binding Path=CurrentView}" />
+            <Grid>
+                <ContentControl Content="{Binding Path=CurrentView}" />
+            </Grid>
+            
 
         </DockPanel>
     </Border>

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Moq;
+using NUnit.Framework;
 using ShellTemperature.ViewModels.ViewModels;
 
 namespace ShellTemperature.Tests.ViewModels
@@ -9,7 +10,9 @@ namespace ShellTemperature.Tests.ViewModels
 
         public MainViewModelTests()
         {
-            _mainWindowViewModel = new MainWindowViewModel();
+            var liveShellDataVM = new Mock<LiveShellDataViewModel>();
+
+            _mainWindowViewModel = new MainWindowViewModel(liveShellDataVM.Object);
         }
 
         /// <summary>
