@@ -1,4 +1,11 @@
-﻿using System.Collections.ObjectModel;
+﻿using InTheHand.Net.Sockets;
+using ShellTemperature.ViewModels.BluetoothServices;
+using ShellTemperature.ViewModels.Commands;
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace ShellTemperature.ViewModels.ViewModels
 {
@@ -8,6 +15,10 @@ namespace ShellTemperature.ViewModels.ViewModels
     /// </summary>
     public class LiveShellDataViewModel : ViewModelBase
     {
+        #region Private fields
+        private IReceiverBluetoothService _receiverBluetoothService;
+        #endregion
+
         #region Properties
         private ObservableCollection<string> _bluetoothData;
         /// <summary>
@@ -24,13 +35,26 @@ namespace ShellTemperature.ViewModels.ViewModels
         }
         #endregion
 
-        #region Constructors
-        public LiveShellDataViewModel()
+        #region Commands
+        public RelayCommand StartCommand
         {
+            get => new RelayCommand(param =>
+            {
+                _receiverBluetoothService.Start();
+            });
+        }
+        #endregion
+
+        #region Constructors
+        public LiveShellDataViewModel(IReceiverBluetoothService receiverBluetoothService)
+        {
+            _receiverBluetoothService = receiverBluetoothService;
+            _receiverBluetoothService.Start();
+
+            string t = _receiverBluetoothService.Data;
             BluetoothData = new ObservableCollection<string>
             {
-                "Hello",
-                "World"
+                t
             };
         }
         #endregion

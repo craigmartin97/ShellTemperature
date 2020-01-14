@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ShellTemperature.ViewModels.BluetoothServices;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.Views;
 using System;
@@ -32,7 +33,7 @@ namespace ShellTemperature
         /// <param name="services">Services collection to add to</param>
         private void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddScoped<IReceiverBluetoothService, ReceiverBluetoothService>();
         }
 
         /// <summary>
