@@ -62,7 +62,10 @@
             <Border BorderThickness="0,0,1,0" BorderBrush="{StaticResource WhiteColorBrush}" DockPanel.Dock="Left">
                 <Grid Background="{StaticResource NavyBlueBrush}" MinWidth="160" MaxWidth="220">
                     <StackPanel VerticalAlignment="Top">
+                        <!-- Btn for displaying the live shell data -->
                         <Button Content="Live Shell Data" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=LiveShellDataViewCommand}" />
+                        <!-- Btn for displaying the shell history -->
+                        <Button Content="Shell History" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ShellHistoryViewCommand}" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -71,8 +74,6 @@
             <Grid>
                 <ContentControl Content="{Binding Path=CurrentView}" />
             </Grid>
-            
-
         </DockPanel>
     </Border>
 </Window>

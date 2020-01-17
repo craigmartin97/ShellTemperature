@@ -7,6 +7,7 @@ namespace ShellTemperature.ViewModels.ViewModels
     {
         #region Injected Objects
         private readonly LiveShellDataViewModel _liveShellDataViewModel;
+        private readonly ShellHistoryViewModel _shellHistoryViewModel;
         #endregion
 
         #region Public Properties
@@ -52,12 +53,24 @@ namespace ShellTemperature.ViewModels.ViewModels
                 CurrentView = _liveShellDataViewModel;
             });
         }
+
+        /// <summary>
+        /// Command to show the Shell history view to the user.
+        /// </summary>
+        public RelayCommand ShellHistoryViewCommand
+        {
+            get => new RelayCommand(param =>
+            {
+                CurrentView = _shellHistoryViewModel;
+            });
+        }
         #endregion
 
         #region Constructor
-        public MainWindowViewModel(LiveShellDataViewModel liveShellDataViewModel)
+        public MainWindowViewModel(LiveShellDataViewModel liveShellDataViewModel, ShellHistoryViewModel shellHistoryViewModel)
         {
             _liveShellDataViewModel = liveShellDataViewModel;
+            _shellHistoryViewModel = shellHistoryViewModel;
         }
         #endregion
     }

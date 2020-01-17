@@ -3,6 +3,7 @@ using InTheHand.Net.Bluetooth;
 using InTheHand.Net.Sockets;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -13,10 +14,22 @@ namespace ShellTemperature.ViewModels.BluetoothServices
     {
         private BluetoothListener _listener;
         private CancellationTokenSource _cancelSource;
-        private BluetoothClient client;
 
+        private readonly BluetoothClient client = new BluetoothClient();
+        private readonly BluetoothDeviceInfo device;
+
+        /// <summary>
+        /// Data that has been read from the bluetooth service.
+        /// </summary>
         private string _data;
-        public string Data { get => _data; set => _data = value; }
+
+        public ReceiverBluetoothService()
+        {
+            BluetoothDeviceInfo[] devices = client.DiscoverDevices(1);
+
+            if ((devices != null) && devices.Count() > 0) // has connected device.
+                device = devices[0];
+        }
 
         /// <summary>  
         /// Starts the listening from Senders.  
@@ -24,9 +37,27 @@ namespace ShellTemperature.ViewModels.BluetoothServices
         /// <param name="reportAction">  
         /// The report Action.  
         /// </param>  
-        public void Start()
+        public void ReadData()
         {
-            Listener();
+            if (device != null) // ensure the device is not null to contiune with reading data.
+            {
+                try
+                {
+                    if (client.Connected) Connect();
+                    else client.BeginConnect(device.DeviceAddress, BluetoothService.SerialPort, new AsyncCallback(Connect), device);
+                }
+                catch (SocketException ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("Unexpected exception has occurred whilst reading the bluetooth data");
+                    Debug.Write(ex.Message);
+                    throw;
+                }
+            }
         }
 
         /// <summary>  
@@ -37,22 +68,33 @@ namespace ShellTemperature.ViewModels.BluetoothServices
             _cancelSource.Cancel();
         }
 
-        /// <summary>  
-        /// Listeners the accept bluetooth client.  
-        /// </summary>  
-        /// <param name="token">  
-        /// The token.  
-        /// </param>  
-        private void Listener()
+        private void Connect()
         {
-            BluetoothClient bc = new BluetoothClient();
-            client = bc;
-            BluetoothDeviceInfo[] devices = bc.DiscoverDevices(1);
-            BluetoothDeviceInfo device = devices[0];
 
-            BluetoothEndPoint endPoint = new BluetoothEndPoint(device.DeviceAddress, BluetoothService.BluetoothBase);
+            // client is connected
+            NetworkStream stream = client.GetStream();
 
-            bc.BeginConnect(device.DeviceAddress, BluetoothService.SerialPort, new AsyncCallback(Connect), device);
+            if (stream.CanRead)
+            {
+                byte[] myReadBuffer = new byte[1024];
+                StringBuilder myCompleteMessage = new StringBuilder();
+
+                // Incoming message may be larger than the buffer size. 
+                do
+                {
+                    int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                    myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
+                }
+                while (stream.DataAvailable);
+
+                _data = myCompleteMessage.ToString();
+                // Print out the received message to the console.
+                Debug.WriteLine("You received the following message : " + myCompleteMessage);
+            }
+            else
+            {
+                Debug.WriteLine("Sorry.  You cannot read from this NetworkStream.");
+            }
         }
 
         private void Connect(IAsyncResult result)
@@ -75,13 +117,14 @@ namespace ShellTemperature.ViewModels.BluetoothServices
                     }
                     while (stream.DataAvailable);
 
-                    Data = myCompleteMessage.ToString();
+                    _data = myCompleteMessage.ToString();
+
                     // Print out the received message to the console.
                     Debug.WriteLine("You received the following message : " + myCompleteMessage);
                 }
                 else
                 {
-                    Debug.WriteLine("Sorry.  You cannot read from this NetworkStream.");
+                    Debug.WriteLine("Sorry. You cannot read from this NetworkStream.");
                 }
             }
         }
@@ -113,5 +156,11 @@ namespace ShellTemperature.ViewModels.BluetoothServices
                 }
             }
         }
+
+        /// <summary>
+        /// Return the bluetooth data that has been retrieved.
+        /// </summary>
+        /// <returns>Return string content of bluetooth data that has been retrieved.</returns>
+        public string GetBluetoothData() => _data;
     }
 }

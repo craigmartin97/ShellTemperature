@@ -12,6 +12,10 @@
                 <views:LiveShellDataUserControl DataContext="{Binding}"/>
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vm:ShellHistoryViewModel}" >
+                <views:ShellHistoryUserControl DataContext="{Binding}"/>
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="./Styles/String.xaml" />
                 <ResourceDictionary Source="./Styles/Font.xaml" />
@@ -19,6 +23,7 @@
                 <ResourceDictionary Source="./Styles/Image.xaml" />
                 <ResourceDictionary Source="./Styles/Label.xaml" />
                 <ResourceDictionary Source="./Styles/Button.xaml" />
+                <ResourceDictionary Source="./Styles/DataGrid.xaml" />
                 <ResourceDictionary Source="./Styles/Window.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

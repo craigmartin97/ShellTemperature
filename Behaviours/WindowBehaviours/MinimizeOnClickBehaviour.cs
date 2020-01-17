@@ -45,11 +45,7 @@ namespace Behaviours.WindowBehaviours
             {
                 Window window = Window.GetWindow(btn);
                 if (window != null)
-                {
-                    window.Visibility = Visibility.Hidden;
                     window.WindowState = WindowState.Minimized;
-                }
-
             }
         }
     }

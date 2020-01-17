@@ -53,6 +53,7 @@ namespace ShellTemperature
         {
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LiveShellDataViewModel>();
+            services.AddSingleton<ShellHistoryViewModel>();
         }
 
         /// <summary>

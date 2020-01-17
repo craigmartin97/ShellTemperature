@@ -2,10 +2,10 @@
 {
     public interface IReceiverBluetoothService
     {
-        void Start();
+        void ReadData();
 
         void Stop();
 
-        string Data { get; set; }
+        string GetBluetoothData();
     }
 }
