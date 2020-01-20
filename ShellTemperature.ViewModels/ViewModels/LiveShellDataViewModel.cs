@@ -1,5 +1,7 @@
-﻿using ShellTemperature.ViewModels.BluetoothServices;
+﻿using ShellTemperature.Repository;
+using ShellTemperature.ViewModels.BluetoothServices;
 using ShellTemperature.ViewModels.Commands;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -19,6 +21,8 @@ namespace ShellTemperature.ViewModels.ViewModels
         /// </summary>
         private readonly IReceiverBluetoothService _receiverBluetoothService;
 
+        private readonly IRepository<Models.ShellTemperature> _shellRepo;
+
         /// <summary>
         /// Dispatcher timer to read the incoming bluetooth data from
         /// </summary>
@@ -31,11 +35,11 @@ namespace ShellTemperature.ViewModels.ViewModels
         #endregion
 
         #region Properties
-        private ObservableCollection<string> _bluetoothData;
+        private ObservableCollection<double> _bluetoothData;
         /// <summary>
         /// A list collection of the live data being sent via bluetooth
         /// </summary>
-        public ObservableCollection<string> BluetoothData
+        public ObservableCollection<double> BluetoothData
         {
             get => _bluetoothData;
             set
@@ -60,14 +64,16 @@ namespace ShellTemperature.ViewModels.ViewModels
         #endregion
 
         #region Constructors
-        public LiveShellDataViewModel(IReceiverBluetoothService receiverBluetoothService)
+        public LiveShellDataViewModel(IReceiverBluetoothService receiverBluetoothService, IRepository<Models.ShellTemperature> repository)
         {
             _receiverBluetoothService = receiverBluetoothService;
-            BluetoothData = new ObservableCollection<string>();
+            _shellRepo = repository;
+
+            BluetoothData = new ObservableCollection<double>();
 
             // setup the dispatcher timer
             timer.Tick += Timer_Tick;
-            timer.Interval = new System.TimeSpan(0, 0, 2);
+            timer.Interval = new System.TimeSpan(0, 0, 1);
 
             // setup the background worker
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
@@ -96,9 +102,16 @@ namespace ShellTemperature.ViewModels.ViewModels
             try
             {
                 StartCommand.Execute(null); // execute the bluetooth reading service.
-                BluetoothData.Add(_receiverBluetoothService.GetBluetoothData());
+                double data = _receiverBluetoothService.GetBluetoothData();
+                BluetoothData.Add(data);
+
+                _shellRepo.Create(new Models.ShellTemperature
+                {
+                    Temperature = data,
+                    RecordedDateTime = DateTime.Now
+                });
             }
-            catch
+            catch(Exception ex)
             {
                 Debug.WriteLine("An expcetion occurred");
                 timer.Stop(); // stop trying to read data as an error has occurred.

@@ -6,6 +6,6 @@
 
         void Stop();
 
-        string GetBluetoothData();
+        double GetBluetoothData();
     }
 }

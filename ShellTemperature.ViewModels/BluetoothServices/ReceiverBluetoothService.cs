@@ -2,6 +2,7 @@
 using InTheHand.Net.Bluetooth;
 using InTheHand.Net.Sockets;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
@@ -21,7 +22,7 @@ namespace ShellTemperature.ViewModels.BluetoothServices
         /// <summary>
         /// Data that has been read from the bluetooth service.
         /// </summary>
-        private string _data;
+        private double _data;
 
         public ReceiverBluetoothService()
         {
@@ -80,14 +81,18 @@ namespace ShellTemperature.ViewModels.BluetoothServices
                 StringBuilder myCompleteMessage = new StringBuilder();
 
                 // Incoming message may be larger than the buffer size. 
+                bool parsedLastVal = false;
                 do
                 {
                     int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
                     myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
-                }
-                while (stream.DataAvailable);
 
-                _data = myCompleteMessage.ToString();
+                    parsedLastVal = double.TryParse(myCompleteMessage.ToString().Split(Environment.NewLine.ToCharArray())
+                        .Last(x => !string.IsNullOrWhiteSpace(x)), out _data);
+                }
+                while (stream.DataAvailable && parsedLastVal); // only contiune if there is more to stream and the parse was successful.
+
+
                 // Print out the received message to the console.
                 Debug.WriteLine("You received the following message : " + myCompleteMessage);
             }
@@ -110,21 +115,24 @@ namespace ShellTemperature.ViewModels.BluetoothServices
                     StringBuilder myCompleteMessage = new StringBuilder();
 
                     // Incoming message may be larger than the buffer size. 
+                    bool parsedLastVal = false;
                     do
                     {
                         int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
                         myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
-                    }
-                    while (stream.DataAvailable);
 
-                    _data = myCompleteMessage.ToString();
+                        parsedLastVal = double.TryParse(myCompleteMessage.ToString().Split(Environment.NewLine.ToCharArray())
+                            .Last(x => !string.IsNullOrWhiteSpace(x)), out _data);
+                    }
+                    while (stream.DataAvailable && parsedLastVal); // only contiune if there is more to stream and the parse was successful.
+
 
                     // Print out the received message to the console.
                     Debug.WriteLine("You received the following message : " + myCompleteMessage);
                 }
                 else
                 {
-                    Debug.WriteLine("Sorry. You cannot read from this NetworkStream.");
+                    Debug.WriteLine("Sorry.  You cannot read from this NetworkStream.");
                 }
             }
         }
@@ -161,6 +169,6 @@ namespace ShellTemperature.ViewModels.BluetoothServices
         /// Return the bluetooth data that has been retrieved.
         /// </summary>
         /// <returns>Return string content of bluetooth data that has been retrieved.</returns>
-        public string GetBluetoothData() => _data;
+        public double GetBluetoothData() => _data;
     }
 }
