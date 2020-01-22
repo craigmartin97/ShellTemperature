@@ -1,9 +1,13 @@
-﻿using ShellTemperature.Repository;
+﻿using Microsoft.VisualBasic;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
+using ShellTemperature.Models;
+using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.BluetoothServices;
 using ShellTemperature.ViewModels.Commands;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Threading;
 
@@ -21,31 +25,55 @@ namespace ShellTemperature.ViewModels.ViewModels
         /// </summary>
         private readonly IReceiverBluetoothService _receiverBluetoothService;
 
-        private readonly IRepository<Models.ShellTemperature> _shellRepo;
-
         /// <summary>
-        /// Dispatcher timer to read the incoming bluetooth data from
+        /// Repository implementation of the ShellTemperature that allows to Create, Read, Update and Delete
         /// </summary>
-        private readonly DispatcherTimer timer = new DispatcherTimer();
+        private readonly IRepository<ShellTemp> _shellRepo;
 
-        /// <summary>
-        /// Background worker to run tasks on seperate thread.
-        /// </summary>
-        private readonly BackgroundWorker backgroundWorker = new BackgroundWorker();
+        private readonly DispatcherTimer _timer = new DispatcherTimer();
         #endregion
 
         #region Properties
-        private ObservableCollection<double> _bluetoothData;
+        private ObservableCollection<ShellTemp> _bluetoothData;
         /// <summary>
         /// A list collection of the live data being sent via bluetooth
         /// </summary>
-        public ObservableCollection<double> BluetoothData
+        public ObservableCollection<ShellTemp> BluetoothData
         {
             get => _bluetoothData;
             set
             {
                 _bluetoothData = value;
                 OnPropertyChanged(nameof(BluetoothData));
+            }
+        }
+
+        private ObservableCollection<DataPoint> _dataPoints;
+        /// <summary>
+        /// The data points on the oxyplot graph
+        /// </summary>
+        public ObservableCollection<DataPoint> DataPoints
+        {
+            get => _dataPoints;
+            private set
+            {
+                _dataPoints = value;
+                OnPropertyChanged(nameof(DataPoints));
+            }
+        }
+
+        private bool _isTimerEnabled = false;
+        /// <summary>
+        /// Boolean value expressing if the start button is enabled or disabled.
+        /// Also, this indicates if the timer is runnig or stopped
+        /// </summary>
+        public bool IsTimerEnabled
+        {
+            get => _isTimerEnabled;
+            private set
+            {
+                _isTimerEnabled = value;
+                OnPropertyChanged(nameof(IsTimerEnabled));
             }
         }
         #endregion
@@ -55,66 +83,87 @@ namespace ShellTemperature.ViewModels.ViewModels
         /// Start reading the bluetooth service
         /// </summary>
         public RelayCommand StartCommand
+        => new RelayCommand(param =>
         {
-            get => new RelayCommand(param =>
-            {
-                _receiverBluetoothService.ReadData();
-            });
-        }
+            StartTimer();
+            _receiverBluetoothService.ReadData();
+        });
+
+        /// <summary>
+        /// Stop command stops the timer from running and stops the execution
+        /// of reading data from the bluetooth device.
+        /// </summary>
+        public RelayCommand StopCommand
+        => new RelayCommand(param =>
+        {
+            _timer.Stop();
+            IsTimerEnabled = true; // enable the start button for press
+        });
+
         #endregion
 
         #region Constructors
-        public LiveShellDataViewModel(IReceiverBluetoothService receiverBluetoothService, IRepository<Models.ShellTemperature> repository)
+        public LiveShellDataViewModel(IReceiverBluetoothService receiverBluetoothService, IRepository<ShellTemp> repository)
         {
             _receiverBluetoothService = receiverBluetoothService;
             _shellRepo = repository;
 
-            BluetoothData = new ObservableCollection<double>();
+            // instanziate the bluetoothdata collection
+            BluetoothData = new ObservableCollection<ShellTemp>();
+            DataPoints = new ObservableCollection<DataPoint>();
 
             // setup the dispatcher timer
-            timer.Tick += Timer_Tick;
-            timer.Interval = new System.TimeSpan(0, 0, 1);
-
-            // setup the background worker
-            backgroundWorker.DoWork += BackgroundWorker_DoWork;
-            backgroundWorker.RunWorkerAsync();
+            _timer.Tick += Timer_Tick;
+            _timer.Interval = new TimeSpan(0, 0, 1);
+            StartTimer();
         }
         #endregion
 
-        #region Timer & Background Worker
-        /// <summary>
-        /// Background worker method that runs on seperate thread.
-        /// The background worker do work method starts the timer
-        /// to execute and read the data every X seconds.
-        /// </summary>
-        /// <param name="sender">The caller of this action</param>
-        /// <param name="e">Any arguments passed</param>
-        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-        => timer.Start();
-
+        #region Timer Ticker
         /// <summary>
         /// Timer_tick executes the start command and then retrieves the bluetooth data.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Timer_Tick(object sender, System.EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e)
         {
             try
             {
                 StartCommand.Execute(null); // execute the bluetooth reading service.
-                double data = _receiverBluetoothService.GetBluetoothData();
-                BluetoothData.Add(data);
 
-                _shellRepo.Create(new Models.ShellTemperature
+                double data = _receiverBluetoothService.GetBluetoothData();
+                ShellTemp shellTemp = new ShellTemp
                 {
                     Temperature = data,
                     RecordedDateTime = DateTime.Now
-                });
+                };
+
+                BluetoothData.Add(shellTemp); // add the shell temperature to the data feed
+                DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime), shellTemp.Temperature));
+
+                _shellRepo.Create(shellTemp); // create a new record in the database.
             }
-            catch(Exception ex)
+            catch (Exception)
             {
                 Debug.WriteLine("An expcetion occurred");
-                timer.Stop(); // stop trying to read data as an error has occurred.
+                StopCommand.Execute(null); // stop the timer from running.
+            }
+        }
+        #endregion
+
+        #region Helpers
+        /// <summary>
+        /// Start the timer running.
+        /// If the timer is not enabled, then run the timer
+        /// and set the flag indicating its activity to true
+        /// </summary>
+        private void StartTimer()
+        {
+            if (!_timer.IsEnabled) // the timer is not enabled, it is not running!
+            {
+                _timer.Start();
+                _timer.IsEnabled = true;
+                IsTimerEnabled = false; // the thread is now running, disable the start button
             }
         }
         #endregion

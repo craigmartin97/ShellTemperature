@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Collections.Specialized;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ShellTemperature.Views.DataOutput
 {
@@ -21,6 +12,18 @@ namespace ShellTemperature.Views.DataOutput
         public DataOutputUserControl()
         {
             InitializeComponent();
+            ((INotifyCollectionChanged)dataGrid.Items).CollectionChanged += DataOutputUserControl_CollectionChanged;
+        }
+
+        private void DataOutputUserControl_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (dataGrid.Items.Count > 0)
+            {
+                if (VisualTreeHelper.GetChild(dataGrid, 0) is Decorator border)
+                {
+                    if (border.Child is ScrollViewer scroll) scroll.ScrollToEnd();
+                }
+            }
         }
     }
 }

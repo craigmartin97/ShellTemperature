@@ -83,7 +83,7 @@ namespace ShellTemperature
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IReceiverBluetoothService, ReceiverBluetoothService>();
-            services.AddScoped<IRepository<Models.ShellTemperature>, ShellTemperatureRepository>();
+            services.AddScoped<IRepository<Models.ShellTemp>, ShellTemperatureRepository>();
 
             services.AddDbContext<ShellDb>(options =>
                 options.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True"

@@ -10,4 +10,14 @@
         <Setter Property="FontSize" Value="{StaticResource FontSize28}" />
     </Style>
 
+    <!-- Value editing label styling for conditions -->
+    <Style x:Key="ListViewContentLabelStyle" TargetType="{x:Type Label}">
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize18}" />
+        <Setter Property="Focusable" Value="False" />
+    </Style>
+
 </ResourceDictionary>

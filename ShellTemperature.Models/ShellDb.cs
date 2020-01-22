@@ -30,6 +30,6 @@ namespace ShellTemperature.Models
             optionsBuilder.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True");
         }
 
-        public DbSet<ShellTemperature> ShellTemperatures { get; set; }
+        public DbSet<ShellTemp> ShellTemperatures { get; set; }
     }
 }

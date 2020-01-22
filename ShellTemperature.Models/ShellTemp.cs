@@ -7,7 +7,7 @@ namespace ShellTemperature.Models
     /// <summary>
     /// Ladle shell recordings
     /// </summary>
-    public class ShellTemperature
+    public class ShellTemp
     {
         /// <summary>
         /// The id of the temperature reading

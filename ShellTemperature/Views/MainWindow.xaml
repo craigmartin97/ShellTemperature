@@ -9,7 +9,8 @@
         WindowStartupLocation="CenterScreen"
         Visibility="Visible"
         x:Name="ShellTemperature"
-        Title="Shell Temperature" MinWidth="1220" MinHeight="600" Width="1220">
+        Title="Shell Temperature" MinWidth="1220" MinHeight="600" Width="1220"
+        ResizeMode="CanResize">
 
     <!-- Trigger on startup to fade in. Go from opacity 0 to 1 in 1 second -->
     <Window.Triggers>
@@ -31,7 +32,7 @@
                       GlassFrameThickness="0" />
     </WindowChrome.WindowChrome>
 
-    <Border x:Name="outerBorder">
+        <Border x:Name="outerBorder">
         <DockPanel LastChildFill="True">
 
             <!-- Top bar for application description and window btns -->

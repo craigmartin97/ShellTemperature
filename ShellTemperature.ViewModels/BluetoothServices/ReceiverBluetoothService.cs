@@ -52,6 +52,11 @@ namespace ShellTemperature.ViewModels.BluetoothServices
                     Debug.WriteLine(ex.Message);
                     throw;
                 }
+                catch (ObjectDisposedException ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     Debug.WriteLine("Unexpected exception has occurred whilst reading the bluetooth data");
@@ -66,7 +71,8 @@ namespace ShellTemperature.ViewModels.BluetoothServices
         /// </summary>  
         public void Stop()
         {
-            _cancelSource.Cancel();
+            client.Close();
+            client.Dispose();
         }
 
         private void Connect()

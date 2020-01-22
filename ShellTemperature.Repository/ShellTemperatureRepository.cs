@@ -2,7 +2,7 @@
 
 namespace ShellTemperature.Repository
 {
-    public class ShellTemperatureRepository : IRepository<Models.ShellTemperature>
+    public class ShellTemperatureRepository : IRepository<Models.ShellTemp>
     {
         private readonly ShellDb _context;
 
@@ -11,7 +11,7 @@ namespace ShellTemperature.Repository
             _context = context;
         }
 
-        public bool Create(Models.ShellTemperature model)
+        public bool Create(Models.ShellTemp model)
         {
             if (model != null)
             {
