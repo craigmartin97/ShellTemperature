@@ -1,4 +1,5 @@
 ﻿using ShellTemperature.ViewModels.Commands;
+using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using System.Reflection;
 
 namespace ShellTemperature.ViewModels.ViewModels

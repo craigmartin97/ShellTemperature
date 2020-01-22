@@ -3,16 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="clr-namespace:ShellTemperature.Views"
              xmlns:vm="clr-namespace:ShellTemperature.ViewModels.ViewModels;assembly=ShellTemperature.ViewModels"
+             xmlns:ladleVM="clr-namespace:ShellTemperature.ViewModels.ViewModels.LadleShell;assembly=ShellTemperature.ViewModels"
              Startup="OnStartup">
     <Application.Resources>
         <!-- Create merge dictionary for all style sheets -->
         <ResourceDictionary>
 
-            <DataTemplate DataType="{x:Type vm:LiveShellDataViewModel}" >
+            <DataTemplate DataType="{x:Type ladleVM:LiveShellDataViewModel}" >
                 <views:LiveShellDataUserControl DataContext="{Binding}"/>
             </DataTemplate>
 
-            <DataTemplate DataType="{x:Type vm:ShellHistoryViewModel}" >
+            <DataTemplate DataType="{x:Type ladleVM:ShellHistoryViewModel}" >
                 <views:ShellHistoryUserControl DataContext="{Binding}"/>
             </DataTemplate>
 

@@ -1,7 +1,5 @@
-﻿using Microsoft.VisualBasic;
-using OxyPlot;
+﻿using OxyPlot;
 using OxyPlot.Axes;
-using OxyPlot.Series;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.BluetoothServices;
@@ -11,7 +9,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Threading;
 
-namespace ShellTemperature.ViewModels.ViewModels
+namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
     /// <summary>
     /// Live shell data view model is responsible for retrieving the live

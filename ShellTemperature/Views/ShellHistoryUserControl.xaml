@@ -3,10 +3,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:ShellTemperature.Views"
+             xmlns:DataOutput="clr-namespace:ShellTemperature.Views.DataOutput"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="Orange">
-            
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2.5*"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <!-- Oxy plot graph to show live shell data -->
+        <DataOutput:LadleGraph />
+
+        <!-- Current feed of temperatures -->
+        <Grid Grid.Column="1" Margin="0,0,7,7">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="8*"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <DataOutput:DataOutputUserControl />
+        </Grid>
+
     </Grid>
 </UserControl>

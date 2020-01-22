@@ -1,6 +1,7 @@
 ﻿using Moq;
 using NUnit.Framework;
 using ShellTemperature.ViewModels.ViewModels;
+using ShellTemperature.ViewModels.ViewModels.LadleShell;
 
 namespace ShellTemperature.Tests.ViewModels
 {

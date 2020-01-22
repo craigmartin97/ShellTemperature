@@ -5,6 +5,7 @@ using ShellTemperature.Models;
 using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.BluetoothServices;
 using ShellTemperature.ViewModels.ViewModels;
+using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.Views;
 using System;
 using System.IO;

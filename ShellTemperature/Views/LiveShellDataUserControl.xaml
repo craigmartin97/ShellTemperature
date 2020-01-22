@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:DataOutput="clr-namespace:ShellTemperature.Views.DataOutput"
-             xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -12,13 +11,9 @@
             <ColumnDefinition Width="2.5*"/>
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-
-        <oxy:Plot Title="Ladle Shell Temperature">
-            <oxy:Plot.Series>
-                <oxy:LineSeries ItemsSource="{Binding DataPoints}">
-                </oxy:LineSeries>
-            </oxy:Plot.Series>
-        </oxy:Plot>
+        
+        <!-- Oxy plot graph to show live shell data -->
+        <DataOutput:LadleGraph />
 
         <!-- Current feed of temperatures -->
         <Grid Grid.Column="1" Margin="0,0,7,7">
