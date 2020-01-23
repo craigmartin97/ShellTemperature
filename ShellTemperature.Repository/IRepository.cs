@@ -1,4 +1,6 @@
-﻿namespace ShellTemperature.Repository
+﻿using System.Collections.Generic;
+
+namespace ShellTemperature.Repository
 {
     public interface IRepository<T>
     {
@@ -8,5 +10,7 @@
         /// <param name="model">The model object to create in the repository</param>
         /// <returns></returns>
         bool Create(T model);
+
+        IEnumerable<T> GetAll();
     }
 }

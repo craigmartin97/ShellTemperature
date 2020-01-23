@@ -1,2 +1,9 @@
-1. What if bluetooth device cannot connect?
-2. What if the bluetooth connection drops which reading?
+1. Better DateTime picker needed. I think its important to be able to choose time
+I may need to create on. XCeed's is a pain to use and doest respond well to the up/down arrow being pressed
+
+2. Outiers - Can I use machine learning to detect outliers? i.e. Sudden drop to 2 and then straight back up
+is a clear outlier.
+
+3. Multiple devices - ATM, it is configured for one device can I device a configurable way to add more devices
+
+4. Date time on XAxis - Needs to be a readable datetime i think.

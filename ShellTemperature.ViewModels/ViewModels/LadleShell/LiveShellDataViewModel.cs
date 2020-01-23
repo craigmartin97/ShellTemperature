@@ -5,7 +5,6 @@ using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.BluetoothServices;
 using ShellTemperature.ViewModels.Commands;
 using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Threading;
 
@@ -24,7 +23,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private readonly IReceiverBluetoothService _receiverBluetoothService;
 
         /// <summary>
-        /// Repository implementation of the ShellTemperature that allows to Create, Read, Update and Delete
+        /// Repository implementation of the ShellTemperature that allows to Create, Read, Update and Delete.
         /// </summary>
         private readonly IRepository<ShellTemp> _shellRepo;
 

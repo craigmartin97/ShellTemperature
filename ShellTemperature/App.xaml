@@ -24,6 +24,7 @@
                 <ResourceDictionary Source="./Styles/Image.xaml" />
                 <ResourceDictionary Source="./Styles/Label.xaml" />
                 <ResourceDictionary Source="./Styles/Button.xaml" />
+                <ResourceDictionary Source="./Styles/DateTimerPicker.xaml" />
                 <ResourceDictionary Source="./Styles/DataTemplate.xaml" />
                 <ResourceDictionary Source="./Styles/DataGrid.xaml" />
                 <ResourceDictionary Source="./Styles/Window.xaml" />
