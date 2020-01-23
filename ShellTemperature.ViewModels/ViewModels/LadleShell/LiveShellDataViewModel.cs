@@ -15,7 +15,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
     /// Live shell data view model is responsible for retrieving the live
     /// temperature data and displaying the results to the user
     /// </summary>
-    public class LiveShellDataViewModel : ViewModelBase
+    public class LiveShellDataViewModel : BaseShellViewModel
     {
         #region Private fields
         /// <summary>
@@ -32,34 +32,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #endregion
 
         #region Properties
-        private ObservableCollection<ShellTemp> _bluetoothData;
-        /// <summary>
-        /// A list collection of the live data being sent via bluetooth
-        /// </summary>
-        public ObservableCollection<ShellTemp> BluetoothData
-        {
-            get => _bluetoothData;
-            set
-            {
-                _bluetoothData = value;
-                OnPropertyChanged(nameof(BluetoothData));
-            }
-        }
-
-        private ObservableCollection<DataPoint> _dataPoints;
-        /// <summary>
-        /// The data points on the oxyplot graph
-        /// </summary>
-        public ObservableCollection<DataPoint> DataPoints
-        {
-            get => _dataPoints;
-            private set
-            {
-                _dataPoints = value;
-                OnPropertyChanged(nameof(DataPoints));
-            }
-        }
-
         private bool _isTimerEnabled = false;
         /// <summary>
         /// Boolean value expressing if the start button is enabled or disabled.
@@ -105,10 +77,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             _receiverBluetoothService = receiverBluetoothService;
             _shellRepo = repository;
-
-            // instanziate the bluetoothdata collection
-            BluetoothData = new ObservableCollection<ShellTemp>();
-            DataPoints = new ObservableCollection<DataPoint>();
 
             // setup the dispatcher timer
             _timer.Tick += Timer_Tick;
