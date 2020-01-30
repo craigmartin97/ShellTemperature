@@ -1,6 +1,5 @@
 ﻿using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
-using InTheHand.Net.Sockets;
 using OxyPlot;
 using OxyPlot.Axes;
 using ShellTemperature.Models;
@@ -26,8 +25,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Repository implementation of the ShellTemperature that allows to Create, Read, Update and Delete.
         /// </summary>
         private readonly IRepository<ShellTemp> _shellRepo;
-
-        private readonly DispatcherTimer _timer = new DispatcherTimer();
         #endregion
 
         #region Properties
@@ -54,6 +51,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         public RelayCommand StartCommand
         => new RelayCommand(param =>
         {
+            SelectedDevice.Timer.Start();
             //_receiverBluetoothService.ReadData();
         });
 
@@ -64,20 +62,20 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         public RelayCommand StopCommand
         => new RelayCommand(param =>
         {
-            _timer.Stop();
+            SelectedDevice.Timer.Stop(); // stop the current selected timer.
             IsTimerEnabled = true; // enable the start button for press
         });
 
         #endregion
 
         #region Constructors
-        public LiveShellDataViewModel(IReceiverBluetoothService receiverBluetoothService, IRepository<ShellTemp> repository)
+        public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder, IRepository<ShellTemp> repository)
         {
             _shellRepo = repository;
 
-            List<BluetoothDevice> devices = receiverBluetoothService.GetBluetoothDevices();
+            List<BluetoothDevice> devices = bluetoothFinder.GetBluetoothDevices();
 
-            foreach(BluetoothDevice device in devices)
+            foreach (BluetoothDevice device in devices)
             {
                 Device dev = new Device()
                 {
@@ -113,19 +111,22 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             try
             {
-                device.BluetoothService.ReadData(device.BluetoothDevice);
+                double? recievedData = device.BluetoothService.ReadData(device.BluetoothDevice);
 
-                device.CurrentData = device.BluetoothService.GetBluetoothData();
-                ShellTemp shellTemp = new ShellTemp
+                if (recievedData != null)
                 {
-                    Temperature = device.CurrentData,
-                    RecordedDateTime = DateTime.Now
-                };
+                    device.CurrentData = device.BluetoothService.GetBluetoothData();
+                    ShellTemp shellTemp = new ShellTemp
+                    {
+                        Temperature = device.CurrentData,
+                        RecordedDateTime = DateTime.Now
+                    };
 
-                device.Temp.Add(shellTemp);
-                device.DataPoints.Add((new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime), shellTemp.Temperature)));
+                    device.Temp.Add(shellTemp);
+                    device.DataPoints.Add((new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime), shellTemp.Temperature)));
 
-                _shellRepo.Create(shellTemp); // create a new record in the database.
+                    _shellRepo.Create(shellTemp); // create a new record in the database.
+                }
             }
             catch (Exception)
             {

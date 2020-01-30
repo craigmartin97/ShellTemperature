@@ -18,12 +18,6 @@ namespace BluetoothService.BluetoothServices
         private readonly BluetoothClient client = new BluetoothClient();
 
         private readonly byte[] myReadBuffer = new byte[1024];
-        private List<BluetoothDevice> Devices = new List<BluetoothDevice>();
-
-        private readonly string[] temperatureDevices = new string[]
-        {
-            "DSD TECH HC-05"
-        };
 
         /// <summary>
         /// Data that has been read from the bluetooth service.
@@ -36,63 +30,38 @@ namespace BluetoothService.BluetoothServices
         /// <param name="reportAction">  
         /// The report Action.  
         /// </param>  
-        public void ReadData(BluetoothDevice device)
+        public double? ReadData(BluetoothDevice device)
         {
-            //if ((Devices != null) && Devices.Count > 0) // ensure the device is not null to contiune with reading data.
-            //{
-            //    foreach (BluetoothDevice device in Devices)
-            //    {
-                    try
-                    {
-                        if (device.Client.Connected) Connect(device);
-                        else
-                        {
-                            device.Client.Connect(device.Device.DeviceAddress, InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
-                            //device.Client.BeginConnect(device.Device.DeviceAddress, InTheHand.Net.Bluetooth.BluetoothService.SerialPort, new AsyncCallback(Connect), device.Device);
-                        }
-                    }
-                    catch (SocketException ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-                        Debug.WriteLine("A reading from the device has tried to be read and failed, remove the device");
-                        Devices.Remove(device);
-                    }
-                    catch (ObjectDisposedException ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine("Unexpected exception has occurred whilst reading the bluetooth data");
-                        Debug.Write(ex.Message);
-                        throw;
-                    }
-            //    }
-            //}
-        }
-
-        public List<BluetoothDevice> GetBluetoothDevices()
-        {
-            BluetoothDeviceInfo[] foundDevices = client.DiscoverDevices(1000, true, true, false, true);
-
-            foreach (string s in temperatureDevices)
+            try
             {
-                List<BluetoothDeviceInfo> matches = foundDevices.Where(x => x.DeviceName.ToLower().Equals(s.ToLower())).ToList();
-
-                foreach (BluetoothDeviceInfo bluetoothDevice in matches)
+                if (device.Client.Connected)
                 {
-                    Devices.Add(new BluetoothDevice
-                    {
-                        Device = bluetoothDevice,
-                        Client = new BluetoothClient()
-                    });
+                    return Connect(device);
+                } 
+                else
+                {
+                    device.Client.Connect(device.Device.DeviceAddress, InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
+                    return null;
                 }
             }
-
-            return Devices;
+            catch (SocketException ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("A reading from the device has tried to be read and failed, remove the device");
+                throw;
+            }
+            catch (ObjectDisposedException ex)
+            {
+                Debug.WriteLine(ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Unexpected exception has occurred whilst reading the bluetooth data");
+                Debug.Write(ex.Message);
+                throw;
+            }
         }
-
 
         /// <summary>  
         /// Stops the listening from Senders.  
@@ -103,7 +72,7 @@ namespace BluetoothService.BluetoothServices
             client.Dispose();
         }
 
-        private void Connect(BluetoothDevice device)
+        private double? Connect(BluetoothDevice device)
         {
             // client is connected
             NetworkStream stream = device.Client.GetStream();
@@ -117,21 +86,22 @@ namespace BluetoothService.BluetoothServices
                     if (numberOfBytesRead <= 1)
                         continue;
 
-                    var s = Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead);
-                    bool succ = double.TryParse(s, out double d);
-                    if (!succ)
+                    string sensorTempValue = Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead);
+                    bool isDouble = double.TryParse(sensorTempValue, out double d);
+                    if (!isDouble)
                         continue;
 
                     _data = d;
+                    return d;
                 }
                 while (stream.DataAvailable); // only contiune if there is more to stream and the parse was successful.
 
-                // Print out the received message to the console.
-                //Debug.WriteLine("You received the following message : " + myCompleteMessage);
+                return null;
             }
             else
             {
                 Debug.WriteLine("Sorry.  You cannot read from this NetworkStream.");
+                return null;
             }
         }
 
@@ -168,10 +138,5 @@ namespace BluetoothService.BluetoothServices
         /// </summary>
         /// <returns>Return string content of bluetooth data that has been retrieved.</returns>
         public double GetBluetoothData() => _data;
-
-        public void ReadData()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

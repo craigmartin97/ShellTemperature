@@ -84,6 +84,13 @@ namespace ShellTemperature
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IReceiverBluetoothService, ReceiverBluetoothService>();
+            services.AddSingleton<IBluetoothFinder, BluetoothFinder>(x=>
+            {
+                return new BluetoothFinder(new string[]
+                {
+                    "DSD TECH HC-05" // this needs to come from config in futre!!
+                });
+            }); 
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
 
