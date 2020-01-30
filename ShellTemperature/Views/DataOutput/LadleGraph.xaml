@@ -9,7 +9,7 @@
     
     <oxy:Plot Title="Ladle Shell Temperature">
         <oxy:Plot.Series>
-            <oxy:LineSeries ItemsSource="{Binding DataPoints}">
+            <oxy:LineSeries ItemsSource="{Binding SelectedDevice.DataPoints}">
             </oxy:LineSeries>
         </oxy:Plot.Series>
     </oxy:Plot>

@@ -72,6 +72,8 @@ namespace ShellTemperature.ViewModels.ViewModels
         {
             _liveShellDataViewModel = liveShellDataViewModel;
             _shellHistoryViewModel = shellHistoryViewModel;
+
+            CurrentView = _liveShellDataViewModel;
         }
         #endregion
     }

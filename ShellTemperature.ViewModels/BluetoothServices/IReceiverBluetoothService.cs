@@ -1,11 +1,16 @@
-﻿namespace ShellTemperature.ViewModels.BluetoothServices
-{
-    public interface IReceiverBluetoothService
-    {
-        void ReadData();
+﻿//using InTheHand.Net.Sockets;
+//using System.Collections.Generic;
 
-        void Stop();
+//namespace ShellTemperature.ViewModels.BluetoothServices
+//{
+//    public interface IReceiverBluetoothService
+//    {
+//        void ReadData();
 
-        double GetBluetoothData();
-    }
-}
+//        void Stop();
+
+//        double GetBluetoothData();
+
+//        List<BluetoothDeviceInfo> GetBluetoothDevices();
+//    }
+//}

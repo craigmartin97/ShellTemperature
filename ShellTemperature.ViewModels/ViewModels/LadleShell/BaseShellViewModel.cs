@@ -34,6 +34,31 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 OnPropertyChanged(nameof(DataPoints));
             }
         }
+
+        private ObservableCollection<Device> devices = new ObservableCollection<Device>();
+        /// <summary>
+        /// A collection of devices that bluetooth data can be retrieved from
+        /// </summary>
+        public ObservableCollection<Device> Devices
+        {
+            get => devices;
+            set
+            {
+                devices = value;
+                OnPropertyChanged(nameof(Devices));
+            }
+        }
+
+        private Device _selectedDevice;
+        public Device SelectedDevice
+        {
+            get => _selectedDevice;
+            set
+            {
+                _selectedDevice = value;
+                OnPropertyChanged(nameof(SelectedDevice));
+            }
+        }
         #endregion
     }
 }

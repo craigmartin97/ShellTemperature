@@ -7,7 +7,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <DataGrid x:Name="dataGrid"
-                  ItemsSource="{Binding Path=BluetoothData}" 
+                  ItemsSource="{Binding Path=SelectedDevice.Temp}" 
                   Style="{StaticResource TemperatureDataGridStyle}"
                   CellStyle="{StaticResource BaseDataGridCellStyle}">
             <DataGrid.Columns>

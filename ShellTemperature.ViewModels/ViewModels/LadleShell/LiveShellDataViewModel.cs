@@ -1,10 +1,14 @@
-﻿using OxyPlot;
+﻿using BluetoothService.BluetoothServices;
+using BluetoothService.cs.BluetoothServices;
+using InTheHand.Net.Sockets;
+using OxyPlot;
 using OxyPlot.Axes;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
-using ShellTemperature.ViewModels.BluetoothServices;
 using ShellTemperature.ViewModels.Commands;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Threading;
 
@@ -17,10 +21,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
     public class LiveShellDataViewModel : BaseShellViewModel
     {
         #region Private fields
-        /// <summary>
-        /// The bluetooth service to read incoming data from
-        /// </summary>
-        private readonly IReceiverBluetoothService _receiverBluetoothService;
 
         /// <summary>
         /// Repository implementation of the ShellTemperature that allows to Create, Read, Update and Delete.
@@ -54,8 +54,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         public RelayCommand StartCommand
         => new RelayCommand(param =>
         {
-            StartTimer();
-            _receiverBluetoothService.ReadData();
+            //_receiverBluetoothService.ReadData();
         });
 
         /// <summary>
@@ -74,13 +73,33 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #region Constructors
         public LiveShellDataViewModel(IReceiverBluetoothService receiverBluetoothService, IRepository<ShellTemp> repository)
         {
-            _receiverBluetoothService = receiverBluetoothService;
             _shellRepo = repository;
 
-            // setup the dispatcher timer
-            _timer.Tick += Timer_Tick;
-            _timer.Interval = new TimeSpan(0, 0, 1);
-            StartTimer();
+            List<BluetoothDevice> devices = receiverBluetoothService.GetBluetoothDevices();
+
+            foreach(BluetoothDevice device in devices)
+            {
+                Device dev = new Device()
+                {
+                    Timer = new DispatcherTimer(),
+                    CurrentData = 0,
+                    DataPoints = new ObservableCollection<DataPoint>(),
+                    Temp = new ObservableCollection<ShellTemp>(),
+                    BluetoothService = new ReceiverBluetoothService(),
+                    BluetoothDevice = device,
+                    IsTimerEnabled = false
+                };
+
+                dev.Timer.Tick += (sender, args) => Timer_Tick(sender, args, dev);
+                dev.Timer.Interval = new TimeSpan(0, 0, 1);
+                dev.Timer.Start();
+                dev.Timer.IsEnabled = true;
+                dev.IsTimerEnabled = false; // the thread is now running, disable the start button
+
+                Devices.Add(dev);
+            }
+
+            SelectedDevice = Devices[0];
         }
         #endregion
 
@@ -90,45 +109,27 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e, Device device)
         {
             try
             {
-                StartCommand.Execute(null); // execute the bluetooth reading service.
+                device.BluetoothService.ReadData(device.BluetoothDevice);
 
-                double data = _receiverBluetoothService.GetBluetoothData();
+                device.CurrentData = device.BluetoothService.GetBluetoothData();
                 ShellTemp shellTemp = new ShellTemp
                 {
-                    Temperature = data,
+                    Temperature = device.CurrentData,
                     RecordedDateTime = DateTime.Now
                 };
 
-                BluetoothData.Add(shellTemp); // add the shell temperature to the data feed
-                DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime), shellTemp.Temperature));
+                device.Temp.Add(shellTemp);
+                device.DataPoints.Add((new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime), shellTemp.Temperature)));
 
                 _shellRepo.Create(shellTemp); // create a new record in the database.
             }
             catch (Exception)
             {
                 Debug.WriteLine("An expcetion occurred");
-                StopCommand.Execute(null); // stop the timer from running.
-            }
-        }
-        #endregion
-
-        #region Helpers
-        /// <summary>
-        /// Start the timer running.
-        /// If the timer is not enabled, then run the timer
-        /// and set the flag indicating its activity to true
-        /// </summary>
-        private void StartTimer()
-        {
-            if (!_timer.IsEnabled) // the timer is not enabled, it is not running!
-            {
-                _timer.Start();
-                _timer.IsEnabled = true;
-                IsTimerEnabled = false; // the thread is now running, disable the start button
             }
         }
         #endregion

@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BluetoothService.BluetoothServices;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
-using ShellTemperature.ViewModels.BluetoothServices;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.Views;
