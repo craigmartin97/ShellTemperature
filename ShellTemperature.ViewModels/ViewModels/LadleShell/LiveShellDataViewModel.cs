@@ -85,7 +85,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     Temp = new ObservableCollection<ShellTemp>(),
                     BluetoothService = new ReceiverBluetoothService(),
                     BluetoothDevice = device,
-                    IsTimerEnabled = false
+                    IsTimerEnabled = false,
+                    DeviceName = device.Device.DeviceAddress.Sap.ToString()
                 };
 
                 dev.Timer.Tick += (sender, args) => Timer_Tick(sender, args, dev);
@@ -131,6 +132,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             catch (Exception)
             {
                 Debug.WriteLine("An expcetion occurred");
+                if (device != null)
+                {
+                    device.Timer.Stop();
+                    Devices.Remove(device);
+                }
             }
         }
         #endregion

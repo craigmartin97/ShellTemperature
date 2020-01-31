@@ -22,5 +22,7 @@ namespace ShellTemperature.Models
         public IReceiverBluetoothService BluetoothService { get; set; }
 
         public BluetoothDevice BluetoothDevice { get; set; }
+
+        public string DeviceName { get; set; }
     }
 }

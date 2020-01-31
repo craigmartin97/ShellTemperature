@@ -11,7 +11,7 @@
             <ColumnDefinition Width="2.8*"/>
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        
+
         <!-- Oxy plot graph to show live shell data -->
         <DataOutput:LadleGraph />
 
@@ -23,7 +23,8 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <ComboBox ItemsSource="{Binding Path=Devices}" SelectedItem="{Binding Path=SelectedDevice}" />
+            <ComboBox ItemsSource="{Binding Path=Devices}" SelectedItem="{Binding Path=SelectedDevice}"
+                      DisplayMemberPath="DeviceName" />
 
             <DataOutput:DataOutputUserControl Grid.Row="1" />
 

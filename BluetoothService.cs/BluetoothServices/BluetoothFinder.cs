@@ -1,15 +1,13 @@
 ﻿using BluetoothService.cs.BluetoothServices;
 using InTheHand.Net.Sockets;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace BluetoothService.BluetoothServices
 {
     public class BluetoothFinder : IBluetoothFinder
     {
-        private readonly string[] temperatureDevices;
+        private readonly string[] _temperatureDevices;
 
         /// <summary>
         /// 
@@ -17,7 +15,7 @@ namespace BluetoothService.BluetoothServices
         /// <param name="temperatureDevices"></param>
         public BluetoothFinder(string[] temperatureDevices)
         {
-            this.temperatureDevices = temperatureDevices;
+            _temperatureDevices = temperatureDevices;
         }
 
         /// <summary>
@@ -30,7 +28,7 @@ namespace BluetoothService.BluetoothServices
             BluetoothDeviceInfo[] foundDevices = new BluetoothClient().DiscoverDevices(1000, true, true, false, true);
             List<BluetoothDevice> devices = new List<BluetoothDevice>();
 
-            foreach (string s in temperatureDevices)
+            foreach (string s in _temperatureDevices)
             {
                 List<BluetoothDeviceInfo> matches = foundDevices.Where(x => x.DeviceName.ToLower().Equals(s.ToLower())).ToList();
 

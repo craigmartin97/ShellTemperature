@@ -37,12 +37,10 @@ namespace BluetoothService.BluetoothServices
                 if (device.Client.Connected)
                 {
                     return Connect(device);
-                } 
-                else
-                {
-                    device.Client.Connect(device.Device.DeviceAddress, InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
-                    return null;
                 }
+
+                device.Client.Connect(device.Device.DeviceAddress, InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
+                return null;
             }
             catch (SocketException ex)
             {
