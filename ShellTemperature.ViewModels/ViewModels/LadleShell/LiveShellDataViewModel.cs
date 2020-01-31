@@ -1,5 +1,6 @@
 ﻿using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
+using Microsoft.Extensions.Configuration;
 using OxyPlot;
 using OxyPlot.Axes;
 using ShellTemperature.Models;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Threading;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
@@ -25,6 +27,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Repository implementation of the ShellTemperature that allows to Create, Read, Update and Delete.
         /// </summary>
         private readonly IRepository<ShellTemp> _shellRepo;
+
+        /// <summary>
+        /// Configuration file
+        /// </summary>
+        private Dictionary<string, string> _deviceDictionary;
         #endregion
 
         #region Properties
@@ -52,7 +59,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         => new RelayCommand(param =>
         {
             SelectedDevice.Timer.Start();
-            //_receiverBluetoothService.ReadData();
+            SelectedDevice.IsTimerEnabled = false; // disable the device start button as already running.
         });
 
         /// <summary>
@@ -63,20 +70,34 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         => new RelayCommand(param =>
         {
             SelectedDevice.Timer.Stop(); // stop the current selected timer.
-            IsTimerEnabled = true; // enable the start button for press
+            SelectedDevice.IsTimerEnabled = true; // enable the start button for the timer
         });
 
         #endregion
 
         #region Constructors
-        public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder, IRepository<ShellTemp> repository)
+        public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder, IRepository<ShellTemp> repository,
+            IConfiguration configuration)
         {
             _shellRepo = repository;
+
+            //get the devices section from the cofig settings
+            IEnumerable<IConfigurationSection> configDevices = configuration.GetSection("Devices").GetChildren();
+            // covert the devices to a dictionary
+            _deviceDictionary = configDevices.ToDictionary(
+                dev => dev.Key, dev => dev.Value);
 
             List<BluetoothDevice> devices = bluetoothFinder.GetBluetoothDevices();
 
             foreach (BluetoothDevice device in devices)
             {
+
+                bool gotDeviceName = _deviceDictionary.TryGetValue(
+                    device.Device.DeviceAddress.ToString(), out string deviceName);
+
+                // if got device name, use that else use the address of device.
+                deviceName = gotDeviceName ? deviceName : device.Device.DeviceAddress.ToString();
+
                 Device dev = new Device()
                 {
                     Timer = new DispatcherTimer(),
@@ -86,14 +107,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     BluetoothService = new ReceiverBluetoothService(),
                     BluetoothDevice = device,
                     IsTimerEnabled = false,
-                    DeviceName = device.Device.DeviceAddress.Sap.ToString()
+                    DeviceName = deviceName
                 };
 
                 dev.Timer.Tick += (sender, args) => Timer_Tick(sender, args, dev);
                 dev.Timer.Interval = new TimeSpan(0, 0, 1);
                 dev.Timer.Start();
-                dev.Timer.IsEnabled = true;
-                dev.IsTimerEnabled = false; // the thread is now running, disable the start button
 
                 Devices.Add(dev);
             }

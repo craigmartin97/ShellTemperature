@@ -36,14 +36,14 @@
 
                 <Button Content="Start" MinWidth="100" Margin="8,8,8,12"
                         Command="{Binding Path=StartCommand}"
-                        IsEnabled="{Binding Path=IsTimerEnabled}">
+                        IsEnabled="{Binding Path=SelectedDevice.IsTimerEnabled}">
                     <Button.Style>
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=IsTimerEnabled}" Value="False">
+                                <DataTrigger Binding="{Binding Path=SelectedDevice.IsTimerEnabled}" Value="False">
                                     <Setter Property="Opacity" Value="0.5" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding Path=IsTimerEnabled}" Value="True">
+                                <DataTrigger Binding="{Binding Path=SelectedDevice.IsTimerEnabled}" Value="True">
                                     <Setter Property="Opacity" Value="1" />
                                 </DataTrigger>
                             </Style.Triggers>

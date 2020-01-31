@@ -22,7 +22,7 @@ namespace ShellTemperature
 
         public ServiceCollection Services { get; set; }
 
-        private IConfiguration Configuration { get; set; }
+        private IConfiguration _configuration;
 
         public App()
         {
@@ -50,7 +50,7 @@ namespace ShellTemperature
                 .SetBasePath(envDirectory)
                 .AddJsonFile(env, optional: false, reloadOnChange: false);
 
-            Configuration = builder.Build();
+            _configuration = builder.Build();
 
             ServiceCollection serviceCollection = new ServiceCollection();
 
@@ -84,13 +84,13 @@ namespace ShellTemperature
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IReceiverBluetoothService, ReceiverBluetoothService>();
-            services.AddSingleton<IBluetoothFinder, BluetoothFinder>(x=>
+            services.AddSingleton<IBluetoothFinder, BluetoothFinder>(x =>
             {
                 return new BluetoothFinder(new string[]
                 {
                     "DSD TECH HC-05" // this needs to come from config in futre!!
                 });
-            }); 
+            });
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
 
@@ -118,6 +118,8 @@ namespace ShellTemperature
         /// <param name="services">Services collection to add to</param>
         private void ConfigureViewModels(IServiceCollection services)
         {
+            services.AddSingleton<IConfiguration>(_configuration); // add in config
+
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LiveShellDataViewModel>();
             services.AddSingleton<ShellHistoryViewModel>();
