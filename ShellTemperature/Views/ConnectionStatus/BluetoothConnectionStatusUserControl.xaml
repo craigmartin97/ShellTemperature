@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="ShellTemperature.Views.ConnectionStatus.BluetoothConnectionStatusUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ShellTemperature.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Label>
+            <Label.Style>
+                <Style TargetType="{x:Type Label}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=Device.IsRunning}" Value="True">
+                            <Setter Property="Background" Value="ForestGreen" />
+                            <Setter Property="Content" Value="{Binding Path=Device.DeviceName}" />
+                            <Setter Property="ContentStringFormat" Value="Connected - {0}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=Device.IsRunning}" Value="False">
+                            <Setter Property="Background" Value="Red" />
+                            <Setter Property="Content" Value="{Binding Path=Device.DeviceName}" />
+                            <Setter Property="ContentStringFormat" Value="Failed To Connect - {0}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+    </Grid>
+</UserControl>
