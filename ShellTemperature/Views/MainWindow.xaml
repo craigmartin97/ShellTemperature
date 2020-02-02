@@ -4,12 +4,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:window="clr-namespace:Behaviours.WindowBehaviours;assembly=Behaviours"
+        xmlns:connectionns="clr-namespace:ShellTemperature.Views.ConnectionStatus"
         mc:Ignorable="d"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Visibility="Visible"
-        x:Name="ShellTemperature"
-        Title="Shell Temperature" MinWidth="1220" MinHeight="600" Width="1220"
+        Title="Shell Temperature" MinWidth="1220" MinHeight="720" Width="1250"
         ResizeMode="CanResize">
 
     <!-- Trigger on startup to fade in. Go from opacity 0 to 1 in 1 second -->
@@ -23,6 +23,57 @@
         </EventTrigger>
     </Window.Triggers>
 
+    <Window.Resources>
+        <!-- Hamburger menu animation. -->
+        <Storyboard x:Key="OpenMenu">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="rectangle">
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="43.5"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="rectangle1">
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="-43.5"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="rectangle2">
+                <EasingDoubleKeyFrame KeyTime="0" Value="1"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Width)" Storyboard.TargetName="GridMenu">
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="200"/>
+            </DoubleAnimationUsingKeyFrames>
+
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Opacity)" Storyboard.TargetName="NavigationSelectionArea">
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1"/>
+            </DoubleAnimationUsingKeyFrames>
+
+        </Storyboard>
+        <Storyboard x:Key="CloseMenu">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="rectangle">
+                <EasingDoubleKeyFrame KeyTime="0" Value="43.5"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="rectangle1">
+                <EasingDoubleKeyFrame KeyTime="0" Value="-43.5"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="rectangle2">
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="1"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Width)" Storyboard.TargetName="GridMenu">
+                <EasingDoubleKeyFrame KeyTime="0" Value="200"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="00"/>
+            </DoubleAnimationUsingKeyFrames>
+
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Opacity)" Storyboard.TargetName="NavigationSelectionArea">
+                <EasingDoubleKeyFrame KeyTime="0" Value="1"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+    </Window.Resources>
+
     <!-- Override the window style with custom window implementation -->
     <WindowChrome.WindowChrome>
         <WindowChrome x:Name="chrome"
@@ -32,7 +83,7 @@
                       GlassFrameThickness="0" />
     </WindowChrome.WindowChrome>
 
-        <Border x:Name="outerBorder">
+    <Border>
         <DockPanel LastChildFill="True">
 
             <!-- Top bar for application description and window btns -->
@@ -59,21 +110,56 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Navigation Bar -->
-            <Border BorderThickness="0,0,1,0" BorderBrush="{StaticResource WhiteColorBrush}" DockPanel.Dock="Left">
-                <Grid Background="{StaticResource NavyBlueBrush}" MinWidth="160" MaxWidth="220">
-                    <StackPanel VerticalAlignment="Top">
-                        <!-- Btn for displaying the live shell data -->
-                        <Button Content="Live Shell Data" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=LiveShellDataViewCommand}" />
-                        <!-- Btn for displaying the shell history -->
-                        <Button Content="Shell History" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ShellHistoryViewCommand}" />
-                    </StackPanel>
-                </Grid>
-            </Border>
+            <!-- Navigation Area MinWidth="160" MaxWidth="220" -->
+            <Grid x:Name="GridMenu" Background="{StaticResource NavyBlueBrush}" DockPanel.Dock="Left">
+                <Grid x:Name="NavigationSelectionArea" VerticalAlignment="Top">
+                        <StackPanel>
+                            <!-- Btn for displaying the live shell data -->
+                            <Button Content="Live Shell Data" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=LiveShellDataViewCommand}" />
+                            <!-- Btn for displaying the shell history -->
+                            <Button Content="Shell History" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ShellHistoryViewCommand}" />
+                        </StackPanel>
+                    </Grid>
+            </Grid>
 
             <!-- Main Content Area -->
             <Grid>
-                <ContentControl Content="{Binding Path=CurrentView}" />
+                <DockPanel LastChildFill="True">
+                    <DockPanel DockPanel.Dock="Top" VerticalAlignment="Top">
+
+                        <Button x:Name="ButtonMenu" Background="{StaticResource NavyBlueBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0.2,0,0" Width="75" Height="45" Click="ButtonMenu_OnClick">
+                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <Rectangle x:Name="rectangle" Width="40" Height="9" Margin="0 0 0 0" Fill="{StaticResource WhiteColorBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" RenderTransformOrigin="-0,0.5">
+                                    <Rectangle.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform/>
+                                            <SkewTransform/>
+                                            <RotateTransform/>
+                                            <TranslateTransform/>
+                                        </TransformGroup>
+                                    </Rectangle.RenderTransform>
+                                </Rectangle>
+                                <Rectangle x:Name="rectangle1" Fill="{StaticResource WhiteColorBrush}" Width="40" Height="9" Margin="0 25 0 0 " HorizontalAlignment="Center" VerticalAlignment="Top" RenderTransformOrigin="-0,0.5">
+                                    <Rectangle.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform/>
+                                            <SkewTransform/>
+                                            <RotateTransform/>
+                                            <TranslateTransform/>
+                                        </TransformGroup>
+                                    </Rectangle.RenderTransform>
+                                </Rectangle>
+                                <Rectangle x:Name="rectangle2" Width="40" Height="9" Margin="0 12.2 0 0" Fill="{StaticResource WhiteColorBrush}" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                            </Grid>
+                        </Button>
+
+                        <ContentPresenter Content="{Binding Path=ConnectionStatusViewModel}"/>
+                    </DockPanel>
+                    
+
+                    <ContentControl  Content="{Binding Path=CurrentView}" />
+                </DockPanel>
+
             </Grid>
         </DockPanel>
     </Border>

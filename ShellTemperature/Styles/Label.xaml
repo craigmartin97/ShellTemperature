@@ -20,4 +20,12 @@
         <Setter Property="Focusable" Value="False" />
     </Style>
 
+    <!-- Label style for descriptors -->
+    <Style x:Key="DefaultDescriptorLabelStyle" TargetType="{x:Type Label}">
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="{StaticResource FontSize20}" />
+        <Setter Property="FontFamily" Value="{StaticResource LatoRegular}" />
+    </Style>
+
 </ResourceDictionary>

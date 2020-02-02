@@ -6,7 +6,7 @@ namespace ShellTemperature.ViewModels.ViewModels
     /// Parent ViewModel that all ViewModel implementations can inherit from.
     /// Incoporates all logic and properties that all ViewModels may need to use.
     /// </summary>
-    public class ViewModelBase : INotifyPropertyChanged
+    public abstract class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

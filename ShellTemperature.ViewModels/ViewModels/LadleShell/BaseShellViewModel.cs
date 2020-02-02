@@ -49,16 +49,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
-        private Device _selectedDevice;
-        public Device SelectedDevice
-        {
-            get => _selectedDevice;
-            set
-            {
-                _selectedDevice = value;
-                OnPropertyChanged(nameof(SelectedDevice));
-            }
-        }
+        public abstract Device SelectedDevice { get; set; }
         #endregion
     }
 }

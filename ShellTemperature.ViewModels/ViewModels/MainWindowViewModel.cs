@@ -1,4 +1,5 @@
 ﻿using ShellTemperature.ViewModels.Commands;
+using ShellTemperature.ViewModels.ViewModels.ConnectionStatus;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using System.Reflection;
 
@@ -9,10 +10,11 @@ namespace ShellTemperature.ViewModels.ViewModels
         #region Injected Objects
         private readonly LiveShellDataViewModel _liveShellDataViewModel;
         private readonly ShellHistoryViewModel _shellHistoryViewModel;
+        private readonly TopBarViewModel _topBarViewModel;
         #endregion
 
         #region Public Properties
-        private string _applicationVersion = "V" + Assembly.GetEntryAssembly().GetName().Version.ToString();
+        private string _applicationVersion = "V" + Assembly.GetEntryAssembly()?.GetName().Version;
         /// <summary>
         /// The version the application is currently running at.
         /// This value comes from the Properties/Package of the ShellTemperature.ViewModels
@@ -39,6 +41,18 @@ namespace ShellTemperature.ViewModels.ViewModels
             {
                 _currentView = value;
                 OnPropertyChanged(nameof(CurrentView));
+            }
+        }
+
+        private BluetoothConnectionObserverViewModel _connectioStatusViewModel;
+
+        public BluetoothConnectionObserverViewModel ConnectionStatusViewModel
+        {
+            get => _connectioStatusViewModel;
+            set
+            {
+                _connectioStatusViewModel = value;
+                OnPropertyChanged(nameof(ConnectionStatusViewModel));
             }
         }
         #endregion
@@ -68,12 +82,15 @@ namespace ShellTemperature.ViewModels.ViewModels
         #endregion
 
         #region Constructor
-        public MainWindowViewModel(LiveShellDataViewModel liveShellDataViewModel, ShellHistoryViewModel shellHistoryViewModel)
+        // NOTE: DO NOT SWAP ORDER OF PARAMS ON CONSTRUCTOR HERE!!!! VERY IMPORTANT
+        public MainWindowViewModel(TopBarViewModel topBarViewModel, LiveShellDataViewModel liveShellDataViewModel, ShellHistoryViewModel shellHistoryViewModel)
         {
+            _topBarViewModel = topBarViewModel;
             _liveShellDataViewModel = liveShellDataViewModel;
             _shellHistoryViewModel = shellHistoryViewModel;
-
+            
             CurrentView = _liveShellDataViewModel;
+            ConnectionStatusViewModel = _topBarViewModel;
         }
         #endregion
     }

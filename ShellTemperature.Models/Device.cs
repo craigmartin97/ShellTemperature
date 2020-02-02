@@ -29,6 +29,11 @@ namespace ShellTemperature.Models
             }
         }
 
+        /// <summary>
+        /// Is the device reading data
+        /// </summary>
+        public bool IsRunning { get; set; }
+
         public IReceiverBluetoothService BluetoothService { get; set; }
 
         public BluetoothDevice BluetoothDevice { get; set; }

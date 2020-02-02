@@ -15,9 +15,9 @@ namespace BluetoothService.BluetoothServices
         private BluetoothListener _listener;
         private CancellationTokenSource _cancelSource;
 
-        private readonly BluetoothClient client = new BluetoothClient();
+        private readonly BluetoothClient _client = new BluetoothClient();
 
-        private readonly byte[] myReadBuffer = new byte[1024];
+        private readonly byte[] _myReadBuffer = new byte[1024];
 
         /// <summary>
         /// Data that has been read from the bluetooth service.
@@ -34,13 +34,13 @@ namespace BluetoothService.BluetoothServices
         {
             try
             {
+                
                 if (device.Client.Connected)
                 {
                     return Connect(device);
                 }
 
-                device.Client.Connect(device.Device.DeviceAddress, InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
-                return null;
+                return ConnectToDevice(device);
             }
             catch (SocketException ex)
             {
@@ -61,13 +61,21 @@ namespace BluetoothService.BluetoothServices
             }
         }
 
+        public double? ConnectToDevice(BluetoothDevice device)
+        {
+            device.Client.Connect(device.Device.DeviceAddress,
+                InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
+
+            return Connect(device);
+        }
+
         /// <summary>  
         /// Stops the listening from Senders.  
         /// </summary>  
         public void Stop()
         {
-            client.Close();
-            client.Dispose();
+            _client.Close();
+            _client.Dispose();
         }
 
         private double? Connect(BluetoothDevice device)
@@ -79,13 +87,15 @@ namespace BluetoothService.BluetoothServices
             {
                 do
                 {
-                    int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                    int numberOfBytesRead = stream.Read(_myReadBuffer, 0, _myReadBuffer.Length);
 
                     if (numberOfBytesRead <= 1)
                         continue;
 
-                    string sensorTempValue = Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead);
-                    bool isDouble = double.TryParse(sensorTempValue, out double d);
+                    string sensorTempValue = Encoding.ASCII.GetString(_myReadBuffer, 0, numberOfBytesRead);
+                    string[] arr = sensorTempValue.Split(Environment.NewLine).ToArray();
+                    bool isDouble = double.TryParse(arr.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)), 
+                        out double d);
                     if (!isDouble)
                         continue;
 

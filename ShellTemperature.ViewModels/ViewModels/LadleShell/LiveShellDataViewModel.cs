@@ -6,12 +6,14 @@ using OxyPlot.Axes;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.Commands;
+using ShellTemperature.ViewModels.ConnectionObserver;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Threading;
+using InTheHand.Net.Sockets;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -31,22 +33,26 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// <summary>
         /// Configuration file
         /// </summary>
-        private Dictionary<string, string> _deviceDictionary;
+        private readonly Dictionary<string, string> _deviceDictionary;
+
+        private readonly BluetoothConnectionSubject _subject;
         #endregion
 
         #region Properties
-        private bool _isTimerEnabled = false;
+        private Device _selectedDevice;
         /// <summary>
-        /// Boolean value expressing if the start button is enabled or disabled.
-        /// Also, this indicates if the timer is runnig or stopped
+        /// The selected device from the list.
         /// </summary>
-        public bool IsTimerEnabled
+        public sealed override Device SelectedDevice
         {
-            get => _isTimerEnabled;
-            private set
+            get => _selectedDevice;
+            set
             {
-                _isTimerEnabled = value;
-                OnPropertyChanged(nameof(IsTimerEnabled));
+                if (value == null) return;
+
+                _selectedDevice = value;
+                _subject.SetState(value);
+                OnPropertyChanged(nameof(SelectedDevice));
             }
         }
         #endregion
@@ -77,9 +83,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
         #region Constructors
         public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder, IRepository<ShellTemp> repository,
-            IConfiguration configuration)
+            IConfiguration configuration, BluetoothConnectionSubject subject)
         {
             _shellRepo = repository;
+            _subject = subject;
 
             //get the devices section from the cofig settings
             IEnumerable<IConfigurationSection> configDevices = configuration.GetSection("Devices").GetChildren();
@@ -117,7 +124,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 Devices.Add(dev);
             }
 
+            if (Devices.Count == 0) return;
+
+            Devices.OrderBy(x => x.DeviceName);
             SelectedDevice = Devices[0];
+
         }
         #endregion
 
@@ -131,31 +142,48 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             try
             {
-                double? recievedData = device.BluetoothService.ReadData(device.BluetoothDevice);
+                double? receivedData = device.BluetoothService.ReadData(device.BluetoothDevice);
+                    //device.IsRunning 
+                    //? device.BluetoothService.ReadData(device.BluetoothDevice) 
+                    //: device.BluetoothService.ConnectToDevice(device.BluetoothDevice);
 
-                if (recievedData != null)
+                if (receivedData == null)
+                    throw new NullReferenceException("The sensor returned a null response");
+
+                device.CurrentData = device.BluetoothService.GetBluetoothData();
+                ShellTemp shellTemp = new ShellTemp
                 {
-                    device.CurrentData = device.BluetoothService.GetBluetoothData();
-                    ShellTemp shellTemp = new ShellTemp
-                    {
-                        Temperature = device.CurrentData,
-                        RecordedDateTime = DateTime.Now
-                    };
+                    Temperature = device.CurrentData,
+                    RecordedDateTime = DateTime.Now
+                };
 
-                    device.Temp.Add(shellTemp);
-                    device.DataPoints.Add((new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime), shellTemp.Temperature)));
+                device.Temp.Add(shellTemp);
+                device.DataPoints.Add((new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime),
+                    shellTemp.Temperature)));
 
-                    _shellRepo.Create(shellTemp); // create a new record in the database.
+                _shellRepo.Create(shellTemp); // create a new record in the database.
+
+                if (!device.IsRunning && SelectedDevice == device) // the device is not running and the selected device is the current device
+                {
+                    device.IsRunning = true;
+                    _subject.SetState(device); // update the device
                 }
             }
-            catch (Exception)
+            catch (NullReferenceException ex)
             {
-                Debug.WriteLine("An expcetion occurred");
+                Debug.WriteLine(ex.Message);
                 if (device != null)
                 {
-                    device.Timer.Stop();
-                    Devices.Remove(device);
+                    if (SelectedDevice == device)
+                    {
+                        device.IsRunning = false;
+                        _subject.SetState(device);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("An expcetion occurred");
             }
         }
         #endregion

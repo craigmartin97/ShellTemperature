@@ -16,15 +16,34 @@
         <DataOutput:LadleGraph />
 
         <!-- Current feed of temperatures -->
-        <Grid Grid.Column="1" Margin="0,0,7,7">
+        <Grid Grid.Column="1" Margin="0,7,7,7">
             <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="8*"/>
-                <RowDefinition />
+                <RowDefinition Height="1.2*" />
+                <RowDefinition Height="7.2*"/>
+                <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
 
-            <ComboBox ItemsSource="{Binding Path=Devices}" SelectedItem="{Binding Path=SelectedDevice}"
-                      DisplayMemberPath="DeviceName" />
+            <Grid Margin="0,7,0,0" VerticalAlignment="Bottom">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.4*"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Devices:" Style="{StaticResource DefaultDescriptorLabelStyle}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center" />
+
+                <ComboBox Grid.Column="1"
+                          Style="{StaticResource ComboBoxStyle}" 
+                          ItemsSource="{Binding Path=Devices}" 
+                          SelectedItem="{Binding Path=SelectedDevice, FallbackValue=Error}"
+                          DisplayMemberPath="DeviceName" 
+                          MaxWidth="300"
+                          MinHeight="45"
+                          MaxHeight="45"
+                          VerticalAlignment="Center"
+                          Margin="4,15,10,15" />
+            </Grid>
 
             <DataOutput:DataOutputUserControl Grid.Row="1" />
 

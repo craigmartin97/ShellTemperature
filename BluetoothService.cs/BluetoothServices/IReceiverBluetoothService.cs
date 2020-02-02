@@ -9,5 +9,7 @@ namespace BluetoothService.BluetoothServices
         void Stop();
 
         double GetBluetoothData();
+
+        double? ConnectToDevice(BluetoothDevice device);
     }
 }

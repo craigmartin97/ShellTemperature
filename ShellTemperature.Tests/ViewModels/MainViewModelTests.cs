@@ -13,8 +13,9 @@ namespace ShellTemperature.Tests.ViewModels
         {
             Mock<LiveShellDataViewModel> liveShellDataVM = new Mock<LiveShellDataViewModel>();
             Mock<ShellHistoryViewModel> shellHistoryVM = new Mock<ShellHistoryViewModel>();
+            Mock<TopBarViewModel> topVM = new Mock<TopBarViewModel>();
 
-            _mainWindowViewModel = new MainWindowViewModel(liveShellDataVM.Object, shellHistoryVM.Object);
+            _mainWindowViewModel = new MainWindowViewModel(topVM.Object, liveShellDataVM.Object, shellHistoryVM.Object);
         }
 
         /// <summary>

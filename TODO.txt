@@ -4,6 +4,10 @@ I may need to create on. XCeed's is a pain to use and doest respond well to the 
 2. Outiers - Can I use machine learning to detect outliers? i.e. Sudden drop to 2 and then straight back up
 is a clear outlier.
 
-3. Multiple devices - ATM, it is configured for one device can I device a configurable way to add more devices
+3. Date time on XAxis - Needs to be a readable datetime i think.
 
-4. Date time on XAxis - Needs to be a readable datetime i think.
+4. Styling on combobox.
+
+5. What if config file does not contain the name, i.e. what is the device address is not in there
+and it outputs blank. Can I prompt the user / display message to say, "The device at address XXXXX needs 
+to be added to config for specific device name"???

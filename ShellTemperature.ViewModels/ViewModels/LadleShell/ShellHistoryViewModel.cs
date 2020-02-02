@@ -64,6 +64,18 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 SetDataPoints();
             }
         }
+
+        private Device _selectedDevice;
+
+        public sealed override Device SelectedDevice
+        {
+            get => _selectedDevice;
+            set
+            {
+                _selectedDevice = value;
+                OnPropertyChanged(nameof(SelectedDevice));
+            }
+        }
         #endregion
 
         #region Commands
@@ -81,7 +93,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         }
         #endregion
 
-        #region
+        #region Set Data
         /// <summary>
         /// Sets the bluetooth data collection.
         /// Retrieves the shell temperatures between the start date and end date.

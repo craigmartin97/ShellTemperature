@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
+using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.Views;
@@ -22,7 +23,7 @@ namespace ShellTemperature
 
         public ServiceCollection Services { get; set; }
 
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
         public App()
         {
@@ -83,6 +84,8 @@ namespace ShellTemperature
         /// <param name="services">Services collection to add to</param>
         private void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<BluetoothConnectionSubject>();
+
             services.AddSingleton<IReceiverBluetoothService, ReceiverBluetoothService>();
             services.AddSingleton<IBluetoothFinder, BluetoothFinder>(x =>
             {
@@ -93,6 +96,7 @@ namespace ShellTemperature
             });
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
+            
 
             services.AddDbContext<ShellDb>(options =>
                 options.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True"
@@ -118,11 +122,13 @@ namespace ShellTemperature
         /// <param name="services">Services collection to add to</param>
         private void ConfigureViewModels(IServiceCollection services)
         {
-            services.AddSingleton<IConfiguration>(_configuration); // add in config
+            services.AddSingleton(_configuration); // add in config
 
+            services.AddSingleton<TopBarViewModel>(); // BluetoothConnectionSubject gets injected.!!!
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LiveShellDataViewModel>();
             services.AddSingleton<ShellHistoryViewModel>();
+            
         }
         #endregion
     }
