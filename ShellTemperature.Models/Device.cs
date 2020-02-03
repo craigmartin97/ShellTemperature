@@ -4,6 +4,7 @@ using OxyPlot;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Threading;
+using BluetoothService.Enums;
 
 namespace ShellTemperature.Models
 {
@@ -29,16 +30,38 @@ namespace ShellTemperature.Models
             }
         }
 
+        private DeviceConnectionStatus _isConnected;
         /// <summary>
-        /// Is the device reading data
+        /// Represents the status of the device connection status
         /// </summary>
-        public bool IsRunning { get; set; }
+        public DeviceConnectionStatus IsConnected
+        {
+            get => _isConnected;
+            set
+            {
+                _isConnected = value;
+                OnPropertyChanged(nameof(IsConnected));
+            }
+        }
 
         public IReceiverBluetoothService BluetoothService { get; set; }
 
         public BluetoothDevice BluetoothDevice { get; set; }
 
-        public string DeviceName { get; set; }
+        private string _deviceName;
+
+        public string DeviceName
+        {
+            get => _deviceName;
+            set
+            {
+                _deviceName = value;
+                OnPropertyChanged(nameof(DeviceName));
+            }
+        }
+
+
+        public int ReadingsCounter { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

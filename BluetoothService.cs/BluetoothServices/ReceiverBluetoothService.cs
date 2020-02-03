@@ -19,28 +19,19 @@ namespace BluetoothService.BluetoothServices
 
         private readonly byte[] _myReadBuffer = new byte[1024];
 
-        /// <summary>
-        /// Data that has been read from the bluetooth service.
-        /// </summary>
-        private double _data;
 
         /// <summary>  
         /// Starts the listening from Senders.  
         /// </summary>  
         /// <param name="reportAction">  
         /// The report Action.  
-        /// </param>  
+        /// </param>
+        /// <param name="device"></param>  
         public double? ReadData(BluetoothDevice device)
         {
             try
             {
-                
-                if (device.Client.Connected)
-                {
-                    return Connect(device);
-                }
-
-                return ConnectToDevice(device);
+                return device.Client.Connected ? Connect(device) : ConnectToDevice(device);
             }
             catch (SocketException ex)
             {
@@ -59,14 +50,6 @@ namespace BluetoothService.BluetoothServices
                 Debug.Write(ex.Message);
                 throw;
             }
-        }
-
-        public double? ConnectToDevice(BluetoothDevice device)
-        {
-            device.Client.Connect(device.Device.DeviceAddress,
-                InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
-
-            return Connect(device);
         }
 
         /// <summary>  
@@ -94,15 +77,15 @@ namespace BluetoothService.BluetoothServices
 
                     string sensorTempValue = Encoding.ASCII.GetString(_myReadBuffer, 0, numberOfBytesRead);
                     string[] arr = sensorTempValue.Split(Environment.NewLine).ToArray();
-                    bool isDouble = double.TryParse(arr.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)), 
+                    bool isDouble = double.TryParse(arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x)), 
                         out double d);
+
                     if (!isDouble)
                         continue;
 
-                    _data = d;
                     return d;
                 }
-                while (stream.DataAvailable); // only contiune if there is more to stream and the parse was successful.
+                while (stream.DataAvailable); // only continue if there is more to stream and the parse was successful.
 
                 return null;
             }
@@ -111,6 +94,15 @@ namespace BluetoothService.BluetoothServices
                 Debug.WriteLine("Sorry.  You cannot read from this NetworkStream.");
                 return null;
             }
+        }
+
+        public double? ConnectToDevice(BluetoothDevice device)
+        {
+            device.Client.Connect(device.Device.DeviceAddress,
+                InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
+
+            //return null;
+            return Connect(device);
         }
 
         /// <summary>  
@@ -140,11 +132,5 @@ namespace BluetoothService.BluetoothServices
                 }
             }
         }
-
-        /// <summary>
-        /// Return the bluetooth data that has been retrieved.
-        /// </summary>
-        /// <returns>Return string content of bluetooth data that has been retrieved.</returns>
-        public double GetBluetoothData() => _data;
     }
 }

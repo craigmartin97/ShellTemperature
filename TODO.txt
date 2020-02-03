@@ -6,8 +6,21 @@ is a clear outlier.
 
 3. Date time on XAxis - Needs to be a readable datetime i think.
 
-4. Styling on combobox.
-
 5. What if config file does not contain the name, i.e. what is the device address is not in there
 and it outputs blank. Can I prompt the user / display message to say, "The device at address XXXXX needs 
 to be added to config for specific device name"???
+
+6. Can I make the system be able to find new sensors on a btn pressed
+
+7. Should I have a seperate thread that checks if the device is connected and 
+another reading the data in?
+
+8. Add Btn to clear graph and temperature data
+
+9. Allow user to remove single temperature value
+
+10. Display DateTime next to temperature on Live Shell Data View
+
+11. Documentation
+
+12. 

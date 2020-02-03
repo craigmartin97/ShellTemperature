@@ -1,5 +1,6 @@
 ﻿using ShellTemperature.ViewModels.ConnectionObserver;
 using System.Diagnostics;
+using BluetoothService.Enums;
 using ShellTemperature.Models;
 using ShellTemperature.ViewModels.ViewModels.ConnectionStatus;
 
@@ -23,6 +24,18 @@ namespace ShellTemperature.ViewModels.ViewModels
                 OnPropertyChanged(nameof(Device));
             }
         }
+
+        private string _connectionMessage;
+
+        public string ConnectionMessage
+        {
+            get => _connectionMessage;
+            set
+            {
+                _connectionMessage = value;
+                OnPropertyChanged(nameof(ConnectionMessage));
+            }
+        }
         #endregion
 
         #region Constructors
@@ -34,9 +47,24 @@ namespace ShellTemperature.ViewModels.ViewModels
         #endregion
 
         #region Updator
+
         public override void Update()
-            => Device = _subject?.GetState();
+        {
+            Device = _subject?.GetState();
+            ConnectionMessage = GetConnectionStatus();
+        }
 
         #endregion
+
+        private string GetConnectionStatus()
+        {
+            return Device.IsConnected switch
+            {
+                BluetoothService.Enums.DeviceConnectionStatus.CONNECTED => ("Connected - " + Device.DeviceName),
+                BluetoothService.Enums.DeviceConnectionStatus.CONNECTING => ("Connecting to Device - " + Device.DeviceName),
+                BluetoothService.Enums.DeviceConnectionStatus.FAILED => ("Failed to Connect - " + Device.DeviceName),
+                _ => "Error"
+            };
+        }
     }
 }

@@ -5,21 +5,23 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ShellTemperature.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="100" d:DesignWidth="800">
     <Grid>
-        <Label>
+        <Label Foreground="{StaticResource WhiteColorBrush}" FontSize="{StaticResource FontSize18}"
+               FontFamily="{StaticResource LatoBold}" HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               Content="{Binding Path=ConnectionMessage}">
             <Label.Style>
                 <Style TargetType="{x:Type Label}">
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=Device.IsRunning}" Value="True">
+                        <DataTrigger Binding="{Binding Path=Device.IsConnected}" Value="CONNECTED">
                             <Setter Property="Background" Value="ForestGreen" />
-                            <Setter Property="Content" Value="{Binding Path=Device.DeviceName}" />
-                            <Setter Property="ContentStringFormat" Value="Connected - {0}"/>
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding Path=Device.IsRunning}" Value="False">
+                        <DataTrigger Binding="{Binding Path=Device.IsConnected}" Value="FAILED">
                             <Setter Property="Background" Value="Red" />
-                            <Setter Property="Content" Value="{Binding Path=Device.DeviceName}" />
-                            <Setter Property="ContentStringFormat" Value="Failed To Connect - {0}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=Device.IsConnected}" Value="CONNECTING">
+                            <Setter Property="Background" Value="DarkOrange" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>

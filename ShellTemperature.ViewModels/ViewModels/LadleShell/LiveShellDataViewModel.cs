@@ -1,5 +1,6 @@
 ﻿using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
+using InTheHand.Net.Sockets;
 using Microsoft.Extensions.Configuration;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -10,10 +11,13 @@ using ShellTemperature.ViewModels.ConnectionObserver;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using System.Windows.Threading;
-using InTheHand.Net.Sockets;
+using BluetoothService.Enums;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -29,11 +33,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Repository implementation of the ShellTemperature that allows to Create, Read, Update and Delete.
         /// </summary>
         private readonly IRepository<ShellTemp> _shellRepo;
-
-        /// <summary>
-        /// Configuration file
-        /// </summary>
-        private readonly Dictionary<string, string> _deviceDictionary;
 
         private readonly BluetoothConnectionSubject _subject;
         #endregion
@@ -91,7 +90,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             //get the devices section from the cofig settings
             IEnumerable<IConfigurationSection> configDevices = configuration.GetSection("Devices").GetChildren();
             // covert the devices to a dictionary
-            _deviceDictionary = configDevices.ToDictionary(
+            Dictionary<string, string> deviceDictionary = configDevices.ToDictionary(
                 dev => dev.Key, dev => dev.Value);
 
             List<BluetoothDevice> devices = bluetoothFinder.GetBluetoothDevices();
@@ -99,7 +98,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             foreach (BluetoothDevice device in devices)
             {
 
-                bool gotDeviceName = _deviceDictionary.TryGetValue(
+                bool gotDeviceName = deviceDictionary.TryGetValue(
                     device.Device.DeviceAddress.ToString(), out string deviceName);
 
                 // if got device name, use that else use the address of device.
@@ -117,7 +116,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     DeviceName = deviceName
                 };
 
-                dev.Timer.Tick += (sender, args) => Timer_Tick(sender, args, dev);
+                dev.Timer.Tick += (sender, args) => Timer_Tick(dev);
                 dev.Timer.Interval = new TimeSpan(0, 0, 1);
                 dev.Timer.Start();
 
@@ -128,29 +127,35 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
             Devices.OrderBy(x => x.DeviceName);
             SelectedDevice = Devices[0];
-
         }
         #endregion
 
         #region Timer Ticker
+
         /// <summary>
         /// Timer_tick executes the start command and then retrieves the bluetooth data.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Timer_Tick(object sender, EventArgs e, Device device)
+        private void Timer_Tick(Device device)
         {
             try
             {
                 double? receivedData = device.BluetoothService.ReadData(device.BluetoothDevice);
-                    //device.IsRunning 
-                    //? device.BluetoothService.ReadData(device.BluetoothDevice) 
-                    //: device.BluetoothService.ConnectToDevice(device.BluetoothDevice);
 
                 if (receivedData == null)
                     throw new NullReferenceException("The sensor returned a null response");
 
-                device.CurrentData = device.BluetoothService.GetBluetoothData();
+                // first three readings ignore as they could be bad, often they are
+                if (device.ReadingsCounter <= 3 && SelectedDevice == device)
+                {
+                    Debug.WriteLine("Connecting Device - " + device.DeviceName);
+                    device.ReadingsCounter++;
+
+                    SetConnectionStatus(device, DeviceConnectionStatus.CONNECTING);
+                    return;
+                }
+
+                device.CurrentData = (double)receivedData;
+
                 ShellTemp shellTemp = new ShellTemp
                 {
                     Temperature = device.CurrentData,
@@ -162,30 +167,84 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     shellTemp.Temperature)));
 
                 _shellRepo.Create(shellTemp); // create a new record in the database.
-
-                if (!device.IsRunning && SelectedDevice == device) // the device is not running and the selected device is the current device
-                {
-                    device.IsRunning = true;
-                    _subject.SetState(device); // update the device
-                }
+                SetConnectionStatus(device, DeviceConnectionStatus.CONNECTED);
             }
             catch (NullReferenceException ex)
             {
                 Debug.WriteLine(ex.Message);
-                if (device != null)
+
+                if (device != null && SelectedDevice == device)
                 {
-                    if (SelectedDevice == device)
-                    {
-                        device.IsRunning = false;
-                        _subject.SetState(device);
-                    }
+                    SetConnectionStatus(device, DeviceConnectionStatus.FAILED);
+                    ResetDeviceCounter(device); // maybe this needs to be outside this if???
+                    ResetBluetoothClient(device);
+                }
+            }
+            catch (SocketException ex)
+            {
+                Debug.WriteLine(ex.Message);
+
+                if (device != null && SelectedDevice == device)
+                {
+                    StopCommand.Execute(null);
+                    SetConnectionStatus(device, DeviceConnectionStatus.FAILED);
+                    ResetDeviceCounter(device);
+                    ResetBluetoothClient(device);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("An expcetion occurred");
+                Debug.WriteLine("An exception occurred");
+                Debug.WriteLine(ex.Message);
             }
         }
+        #endregion
+
+        #region Helpers
+        /// <summary>
+        /// Close the bluetooth connection.
+        /// Reset the connection object to be able to reconnect later.
+        /// </summary>
+        /// <param name="device">The devices connection to reset</param>
+        private void ResetBluetoothClient(Device device)
+        {
+            // reset device
+            device.BluetoothDevice.Client.Close();
+            device.BluetoothDevice.Client = new BluetoothClient();
+        }
+
+        /// <summary>
+        /// Reset the device counter
+        /// </summary>
+        /// <param name="device">The devices counter to reset</param>
+        private void ResetDeviceCounter(Device device)
+        {
+            if (device.ReadingsCounter > 3)
+            {
+                device.ReadingsCounter = 0;
+            }
+        }
+
+        /// <summary>
+        /// Change the connection status for the device
+        /// </summary>
+        /// <param name="device">The devices connection status to change</param>
+        /// <param name="status">The status to check and change to</param>
+        private void SetConnectionStatus(Device device, DeviceConnectionStatus status)
+        {
+            if (!device.IsConnected.Equals(status) && SelectedDevice == device)
+            {
+                device.IsConnected = status;
+                SetDeviceState(device);
+            }
+        }
+
+        /// <summary>
+        /// Update the connection status
+        /// </summary>
+        /// <param name="device">The device's connection status to update</param>
+        private void SetDeviceState(Device device) => _subject.SetState(device);
+
         #endregion
     }
 }
