@@ -1,5 +1,6 @@
 ﻿using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
+using BluetoothService.Enums;
 using InTheHand.Net.Sockets;
 using Microsoft.Extensions.Configuration;
 using OxyPlot;
@@ -16,8 +17,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Windows.Threading;
-using BluetoothService.Enums;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -76,6 +75,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             SelectedDevice.Timer.Stop(); // stop the current selected timer.
             SelectedDevice.IsTimerEnabled = true; // enable the start button for the timer
+
+            // can't change connection status if the device has failed to connect.
+            if (SelectedDevice.IsConnected.Equals(DeviceConnectionStatus.FAILED)) return;
+
+            SetConnectionStatus(SelectedDevice, DeviceConnectionStatus.PAUSED);
         });
 
         #endregion
@@ -115,6 +119,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     IsTimerEnabled = false,
                     DeviceName = deviceName
                 };
+                // set to connecting, in the constructor its being setup so its a connecting status
+                SetConnectionStatus(dev, DeviceConnectionStatus.CONNECTING);
 
                 dev.Timer.Tick += (sender, args) => Timer_Tick(dev);
                 dev.Timer.Interval = new TimeSpan(0, 0, 1);
