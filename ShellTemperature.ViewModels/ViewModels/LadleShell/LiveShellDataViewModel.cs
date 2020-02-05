@@ -1,5 +1,6 @@
 ﻿using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
+using BluetoothService.Enums;
 using InTheHand.Net.Sockets;
 using Microsoft.Extensions.Configuration;
 using OxyPlot;
@@ -11,13 +12,14 @@ using ShellTemperature.ViewModels.ConnectionObserver;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
+using System.Threading;
+using System.Windows;
 using System.Windows.Threading;
-using BluetoothService.Enums;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -34,7 +36,17 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         private readonly IRepository<ShellTemp> _shellRepo;
 
+        /// <summary>
+        /// The subject observer pattern updater
+        /// </summary>
         private readonly BluetoothConnectionSubject _subject;
+
+        /// <summary>
+        /// Bluetooth device finder
+        /// </summary>
+        private readonly IBluetoothFinder _bluetoothFinder;
+
+        private readonly Dictionary<string, string> _deviceDictionary;
         #endregion
 
         #region Properties
@@ -78,32 +90,75 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             SelectedDevice.IsTimerEnabled = true; // enable the start button for the timer
         });
 
+        public RelayCommand SearchForDevices
+        => new RelayCommand(param =>
+        {
+            Thread thread = new Thread(() =>
+            {
+                IList<BluetoothDevice> allDevicesFound = _bluetoothFinder.GetBluetoothDevices();
+
+                for (int i = 0; i < allDevicesFound.Count; i++) // each device found
+                {
+                    for (int j = 0; j < Devices.Count; j++) // each device already found
+                    {
+                        if (Devices[j].BluetoothDevice.Device
+                            .Equals(allDevicesFound[i].Device.DeviceAddress)) // the device already exists
+                        {
+                            allDevicesFound.Remove(allDevicesFound[i]);
+                        }
+                    }
+                }
+
+                foreach (BluetoothDevice device in allDevicesFound)
+                {
+                    Device dev = new Device
+                    {
+                        CurrentData = 0,
+                        DataPoints = new ObservableCollection<DataPoint>(),
+                        Temp = new ObservableCollection<ShellTemp>(),
+                        BluetoothService = new ReceiverBluetoothService(),
+                        BluetoothDevice = device,
+                        IsTimerEnabled = false,
+                        DeviceName = GetValueFromDeviceNameDictionary(device)
+                    };
+
+                    // add devices back on main thread
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        dev.Timer = new DispatcherTimer();
+                        dev.Timer.Tick += (sender, args) => Timer_Tick(dev);
+                        dev.Timer.Interval = new TimeSpan(0, 0, 1);
+                        dev.Timer.Start();
+
+                        Devices.Add(dev);
+                    });
+                }
+            });
+
+            thread.Start();
+        });
         #endregion
 
         #region Constructors
         public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder, IRepository<ShellTemp> repository,
             IConfiguration configuration, BluetoothConnectionSubject subject)
         {
+            _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
             _subject = subject;
 
-            //get the devices section from the cofig settings
-            IEnumerable<IConfigurationSection> configDevices = configuration.GetSection("Devices").GetChildren();
+            //get the devices section from the config settings
+            IEnumerable<IConfigurationSection> configDevices = configuration
+                .GetSection("Devices").GetChildren();
+
             // covert the devices to a dictionary
-            Dictionary<string, string> deviceDictionary = configDevices.ToDictionary(
-                dev => dev.Key, dev => dev.Value);
+            _deviceDictionary = configDevices.ToDictionary(
+               dev => dev.Key, dev => dev.Value);
 
             List<BluetoothDevice> devices = bluetoothFinder.GetBluetoothDevices();
 
             foreach (BluetoothDevice device in devices)
             {
-
-                bool gotDeviceName = deviceDictionary.TryGetValue(
-                    device.Device.DeviceAddress.ToString(), out string deviceName);
-
-                // if got device name, use that else use the address of device.
-                deviceName = gotDeviceName ? deviceName : device.Device.DeviceAddress.ToString();
-
                 Device dev = new Device()
                 {
                     Timer = new DispatcherTimer(),
@@ -113,7 +168,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     BluetoothService = new ReceiverBluetoothService(),
                     BluetoothDevice = device,
                     IsTimerEnabled = false,
-                    DeviceName = deviceName
+                    DeviceName = GetValueFromDeviceNameDictionary(device)
                 };
 
                 dev.Timer.Tick += (sender, args) => Timer_Tick(dev);
@@ -245,6 +300,19 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// <param name="device">The device's connection status to update</param>
         private void SetDeviceState(Device device) => _subject.SetState(device);
 
+        /// <summary>
+        /// Get the value from the device name dictionary
+        /// </summary>
+        /// <param name="device">Device to get name from</param>
+        /// <param name="deviceName">The device name to be returned</param>
+        /// <returns></returns>
+        private string GetValueFromDeviceNameDictionary(BluetoothDevice device)
+        {
+            bool isString = _deviceDictionary.TryGetValue(
+                device.Device.DeviceAddress.ToString(), out string tempDeviceName);
+
+            return isString ? tempDeviceName : device.Device.DeviceAddress.ToString();
+        }
         #endregion
     }
 }
