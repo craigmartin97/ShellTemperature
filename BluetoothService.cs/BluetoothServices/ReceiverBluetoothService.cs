@@ -1,7 +1,6 @@
 ﻿using BluetoothService.cs.BluetoothServices;
 using InTheHand.Net.Sockets;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
