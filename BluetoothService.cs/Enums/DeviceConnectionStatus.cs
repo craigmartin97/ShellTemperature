@@ -5,6 +5,6 @@
     /// </summary>
     public enum DeviceConnectionStatus
     {
-        FAILED, CONNECTED, CONNECTING
+        FAILED, CONNECTED, CONNECTING, PAUSED
     }
 }

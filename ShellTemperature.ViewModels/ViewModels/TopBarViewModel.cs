@@ -60,9 +60,10 @@ namespace ShellTemperature.ViewModels.ViewModels
         {
             return Device.IsConnected switch
             {
-                BluetoothService.Enums.DeviceConnectionStatus.CONNECTED => ("Connected - " + Device.DeviceName),
-                BluetoothService.Enums.DeviceConnectionStatus.CONNECTING => ("Connecting to Device - " + Device.DeviceName),
-                BluetoothService.Enums.DeviceConnectionStatus.FAILED => ("Failed to Connect - " + Device.DeviceName),
+                DeviceConnectionStatus.CONNECTED => ("Connected - " + Device.DeviceName),
+                DeviceConnectionStatus.CONNECTING => ("Connecting to Device - " + Device.DeviceName),
+                DeviceConnectionStatus.FAILED => ("Failed to Connect - " + Device.DeviceName),
+                DeviceConnectionStatus.PAUSED => ("Device Paused - " + Device.DeviceName),
                 _ => "Error"
             };
         }
