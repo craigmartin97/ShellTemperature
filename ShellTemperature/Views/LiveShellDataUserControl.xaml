@@ -12,17 +12,33 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <!-- Oxy plot graph to show live shell data -->
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="9*"/>
+                <RowDefinition Height="7.5*"/>
                 <RowDefinition />
             </Grid.RowDefinitions>
+            <!-- Oxy plot graph to show live shell data -->
             <DataOutput:LadleGraph />
 
-            <Button Grid.Row="1" HorizontalAlignment="Left" Content="Search For Devices"
-                    Style="{StaticResource BaseButtonStyle}" Margin="10"
-                    Command="{Binding Path=SearchForDevices}"/>
+            <!-- Bottom bar operation buttons -->
+            <Grid Grid.Row="1" VerticalAlignment="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="0.5*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="Search For Devices"
+                        Style="{StaticResource BaseButtonStyle}"
+                        MinWidth="200" MaxWidth="320" MinHeight="55" MaxHeight="90" Margin="8,8,4,12"
+                        Command="{Binding Path=SearchForDevices}"/>
+
+                <Button Grid.Column="1" Content="Remove Device"
+                        Style="{StaticResource BaseButtonStyle}"
+                        MinWidth="150" MaxWidth="300" MinHeight="55" MaxHeight="90" Margin="8,8,8,12"
+                        Command="{Binding Path=RemoveSelectedDevice}"/>
+            </Grid>
         </Grid>
         
 

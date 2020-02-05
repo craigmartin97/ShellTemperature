@@ -12,8 +12,6 @@ using ShellTemperature.ViewModels.ConnectionObserver;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
@@ -59,8 +57,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             get => _selectedDevice;
             set
             {
-                if (value == null) return;
-
                 _selectedDevice = value;
                 _subject.SetState(value);
                 OnPropertyChanged(nameof(SelectedDevice));
@@ -141,6 +137,18 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             });
 
             thread.Start();
+        });
+
+        public RelayCommand RemoveSelectedDevice =>
+        new RelayCommand(param =>
+        {
+            if (SelectedDevice == null || Devices.Count == 0) return;
+
+            SelectedDevice.Timer.Stop();
+            SelectedDevice.BluetoothDevice.Client.Close();
+            Devices.Remove(SelectedDevice);
+
+            SelectedDevice = Devices.FirstOrDefault(); // reset to the next item
         });
         #endregion
 

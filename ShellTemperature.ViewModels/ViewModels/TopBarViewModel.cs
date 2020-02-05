@@ -51,6 +51,9 @@ namespace ShellTemperature.ViewModels.ViewModels
         public override void Update()
         {
             Device = _subject?.GetState();
+
+            if(Device == null) return;
+
             ConnectionMessage = GetConnectionStatus();
         }
 
