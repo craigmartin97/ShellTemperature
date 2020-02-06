@@ -4,9 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-             xmlns:themes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=Xceed.Wpf.Toolkit"
-             xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit"
              xmlns:DataOutput="clr-namespace:ShellTemperature.Views.DataOutput"
+             xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1200">
     <Grid>
@@ -16,7 +15,12 @@
         </Grid.ColumnDefinitions>
 
         <!-- Oxy plot graph to show live shell data -->
-        <DataOutput:LadleGraph />
+        <oxy:Plot Title="Ladle Shell Temperature">
+            <oxy:Plot.Series>
+                <oxy:LineSeries ItemsSource="{Binding Path=DataPoints}">
+                </oxy:LineSeries>
+            </oxy:Plot.Series>
+        </oxy:Plot>
 
         <!-- Current feed of temperatures -->
         <Grid Grid.Column="1" Margin="0,0,7,7">
@@ -25,7 +29,7 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <DataOutput:DataOutputWithDateTimeUserConntrol />
+            <DataOutput:DateOutputWithDateTimeUserControl />
 
             <Grid Grid.Row="1" Background="{StaticResource WhiteColorBrush}" Margin="8,8,0,0">
                 <Grid.RowDefinitions>

@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading;
+using BluetoothService.Models;
 
 namespace BluetoothService.BluetoothServices
 {
@@ -27,7 +28,7 @@ namespace BluetoothService.BluetoothServices
         /// The report Action.  
         /// </param>
         /// <param name="device"></param>  
-        public double? ReadData(BluetoothDevice device)
+        public DeviceReading ReadData(BluetoothDevice device)
         {
             try
             {
@@ -61,8 +62,9 @@ namespace BluetoothService.BluetoothServices
             _client.Dispose();
         }
 
-        private double? Connect(BluetoothDevice device)
+        private DeviceReading Connect(BluetoothDevice device)
         {
+            Debug.WriteLine("Getting network stream");
             // client is connected
             NetworkStream stream = device.Client.GetStream();
 
@@ -71,34 +73,43 @@ namespace BluetoothService.BluetoothServices
                 do
                 {
                     int numberOfBytesRead = stream.Read(_myReadBuffer, 0, _myReadBuffer.Length);
-
+                    Debug.WriteLine("Got number of bytes: " + numberOfBytesRead);
                     if (numberOfBytesRead <= 1)
                         continue;
 
+                    Debug.WriteLine("Doing sensor temp value");
                     string sensorTempValue = Encoding.ASCII.GetString(_myReadBuffer, 0, numberOfBytesRead);
+                    if (string.IsNullOrWhiteSpace(sensorTempValue))
+                    {
+                        Debug.WriteLine("Sensor temp value was null");
+                        return null;
+                    }
+
+                    Debug.WriteLine("sensor temp value" + sensorTempValue);
                     string[] arr = sensorTempValue.Split(Environment.NewLine).ToArray();
 
-                    /*
-                     * Added datetime module.
-                     * Check and see if has a space.
-                     * If there is a space split at it.
-                     * First section is the temp second is the datetime
-                     * TODO: need to return object
-                     */
+                    Debug.WriteLine(arr);
+                    if (arr.Length == 0)
+                        return null; // nothing to get
 
-                    string lastestReading = arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x));
-                    int indexOfFirstSpace = lastestReading.IndexOf(' ');
+                    DeviceReading deviceReading;
+
+                    string latestReading = arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x));
+                    int indexOfFirstSpace = latestReading.IndexOf(' ');
                     if (indexOfFirstSpace > 0) // got space
                     {
-                        string temp = lastestReading.Substring(0, indexOfFirstSpace);
-                        string dateTime = lastestReading.Substring(indexOfFirstSpace);
+                        string temp = latestReading.Substring(0, indexOfFirstSpace);
+                        string dateTime = latestReading.Substring(indexOfFirstSpace);
 
-                        bool isTempDouble = double.TryParse(temp, out double tempAsDouble);
-                        bool isDateTime = DateTime.TryParse(dateTime, out DateTime dateAsDateTime);
+                        if (!double.TryParse(temp, out double tempAsDouble) ||
+                            !DateTime.TryParse(dateTime, out DateTime dateAsDateTime)) continue;
 
-                        if(!isTempDouble || !isDateTime) continue;
-
-                        return tempAsDouble;
+                        Debug.WriteLine("GOT DOUBLE: " + tempAsDouble);
+                        deviceReading = new DeviceReading
+                        {
+                            Temperature = tempAsDouble,
+                            RecordedDateTime = dateAsDateTime
+                        };
                     }
                     else
                     {
@@ -108,8 +119,14 @@ namespace BluetoothService.BluetoothServices
                         if (!isDouble)
                             continue;
 
-                        return d;
+                        deviceReading = new DeviceReading
+                        {
+                            Temperature = d,
+                            RecordedDateTime = DateTime.Now // no date time read, so just use best next thing :/
+                        };
                     }
+
+                    return deviceReading;
                 }
                 while (stream.DataAvailable); // only continue if there is more to stream and the parse was successful.
 
@@ -122,7 +139,7 @@ namespace BluetoothService.BluetoothServices
             }
         }
 
-        public double? ConnectToDevice(BluetoothDevice device)
+        public DeviceReading ConnectToDevice(BluetoothDevice device)
         {
             device.Client.Connect(device.Device.DeviceAddress,
                 InTheHand.Net.Bluetooth.BluetoothService.SerialPort);

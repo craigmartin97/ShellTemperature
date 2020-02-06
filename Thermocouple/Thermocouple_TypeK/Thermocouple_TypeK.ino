@@ -35,6 +35,12 @@ void setup() {
 
   Serial.begin(9600);
 
+  if (rtc.lostPower()) {
+    Serial.println("RTC lost power, lets set the time!");
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
+
   setupSDCard();
   
   delay(1000);  // Let IC stabilize or first readings will be garbage
@@ -67,7 +73,7 @@ void loop() {
  */
 String getCurrentDateTime() {
   DateTime now = rtc.now();
-  sprintf_P(DateAndTimeString, PSTR("%02d/%02d/%4d %d:%02d:%02d"), now.day(), now.month(), now.year(), now.hour(), now.minute(), now.second());
+  sprintf_P(DateAndTimeString, PSTR("%02d/%02d/%4d %02u:%02u:%02u"), now.day(), now.month(), now.year(), now.hour(), now.minute(), now.second());
   return DateAndTimeString;
 }
 

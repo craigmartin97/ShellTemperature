@@ -3,7 +3,10 @@ using OxyPlot.Axes;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -14,9 +17,47 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
     {
         #region Fields
         private readonly IShellTemperatureRepository<ShellTemp> _shellTempRepo;
+
+        /// <summary>
+        /// Device repository to get information about past used devices
+        /// </summary>
+        private readonly IDeviceRepository<DeviceInfo> _deviceRepository;
+
+        /// <summary>
+        /// Collection of all devices used previously to record data
+        /// </summary>
+        private readonly IEnumerable<DeviceInfo> _devices;
         #endregion
 
         #region Properties
+        private ObservableCollection<ShellTemp> _bluetoothData = new ObservableCollection<ShellTemp>();
+        /// <summary>
+        /// A list collection of the live data being sent via bluetooth
+        /// </summary>
+        public ObservableCollection<ShellTemp> BluetoothData
+        {
+            get => _bluetoothData;
+            set
+            {
+                _bluetoothData = value;
+                OnPropertyChanged(nameof(BluetoothData));
+            }
+        }
+
+        private ObservableCollection<DataPoint> _dataPoints = new ObservableCollection<DataPoint>();
+        /// <summary>
+        /// The data points on the oxyplot graph
+        /// </summary>
+        public ObservableCollection<DataPoint> DataPoints
+        {
+            get => _dataPoints;
+            set
+            {
+                _dataPoints = value;
+                OnPropertyChanged(nameof(DataPoints));
+            }
+        }
+
         /// <summary>
         /// The private start date field. By default, (OnLoad), get the last
         /// seven days of shell temperatures
@@ -65,15 +106,15 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
-        private Device _selectedFoundDevices;
+        private DeviceInfo _currentDeviceInfo;
 
-        public sealed override Device SelectedDevice
+        public DeviceInfo CurrentDeviceInfo
         {
-            get => _selectedFoundDevices;
+            get => _currentDeviceInfo;
             set
             {
-                _selectedFoundDevices = value;
-                OnPropertyChanged(nameof(SelectedDevice));
+                _currentDeviceInfo = value;
+                OnPropertyChanged(nameof(CurrentDeviceInfo));
             }
         }
         #endregion
@@ -83,9 +124,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #endregion
 
         #region Constructors
-        public ShellHistoryViewModel(IShellTemperatureRepository<ShellTemp> shellTemperature)
+        public ShellHistoryViewModel(IShellTemperatureRepository<ShellTemp> shellTemperature,
+            IDeviceRepository<DeviceInfo> deviceRepository)
         {
             _shellTempRepo = shellTemperature;
+            _deviceRepository = deviceRepository;
+
+            _devices = _deviceRepository.GetAll();
+            CurrentDeviceInfo = _devices.FirstOrDefault();
 
             // get the last seven days of temps and display to the user in the list.
             SetBluetoothData();
@@ -100,7 +146,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         private void SetBluetoothData()
         {
-            BluetoothData = new ObservableCollection<ShellTemp>(_shellTempRepo.GetShellTemperatureData(Start, End));
+            if (CurrentDeviceInfo == null) return;
+
+            BluetoothData = new ObservableCollection<ShellTemp>(_shellTempRepo.GetShellTemperatureData(Start, End,
+                CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress));
         }
 
         /// <summary>
@@ -109,7 +158,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private void SetDataPoints()
         {
             // have points to plot?
-            if (BluetoothData.Count <= 0) return;
+            if (BluetoothData.Count == 0) return;
 
             DataPoints = new ObservableCollection<DataPoint>(); // reset collection
             foreach (ShellTemp temp in BluetoothData) // plot points

@@ -18,6 +18,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
+using BluetoothService.Models;
 using Microsoft.EntityFrameworkCore.Internal;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
@@ -56,11 +57,25 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #endregion
 
         #region Properties
+        private ObservableCollection<Device> devices = new ObservableCollection<Device>();
+        /// <summary>
+        /// A collection of devices that bluetooth data can be retrieved from
+        /// </summary>
+        public ObservableCollection<Device> Devices
+        {
+            get => devices;
+            set
+            {
+                devices = value;
+                OnPropertyChanged(nameof(Devices));
+            }
+        }
+
         private Device _selectedFoundDevices;
         /// <summary>
         /// The selected foundDevices from the list.
         /// </summary>
-        public sealed override Device SelectedDevice
+        public Device SelectedDevice
         {
             get => _selectedFoundDevices;
             set
@@ -229,7 +244,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             try
             {
-                double? receivedData = foundDevices.BluetoothService.ReadData(foundDevices.BluetoothDevice);
+                DeviceReading receivedData = foundDevices.BluetoothService.ReadData(foundDevices.BluetoothDevice);
 
                 if (receivedData == null)
                     throw new NullReferenceException("The sensor returned a null response");
@@ -244,7 +259,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     return;
                 }
 
-                foundDevices.CurrentData = (double)receivedData;
+                foundDevices.CurrentData = receivedData.Temperature;
 
                 // get the device from the datastore collection
                 DeviceInfo device = _datastoreDevices.FirstOrDefault(x =>
@@ -253,8 +268,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 // create new shell obj for database submission
                 ShellTemp shellTemp = new ShellTemp
                 {
-                    Temperature = foundDevices.CurrentData,
-                    RecordedDateTime = DateTime.Now,
+                    Temperature = receivedData.Temperature,
+                    RecordedDateTime = receivedData.RecordedDateTime,
                     Device = device
                 };
 

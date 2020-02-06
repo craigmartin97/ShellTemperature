@@ -14,11 +14,11 @@ using System.Windows.Shapes;
 namespace ShellTemperature.Views.DataOutput
 {
     /// <summary>
-    /// Interaction logic for DataOutputWithDateTimeUserConntrol.xaml
+    /// Interaction logic for DateOutputWithDateTimeUserControl.xaml
     /// </summary>
-    public partial class DataOutputWithDateTimeUserConntrol : UserControl
+    public partial class DateOutputWithDateTimeUserControl : UserControl
     {
-        public DataOutputWithDateTimeUserConntrol()
+        public DateOutputWithDateTimeUserControl()
         {
             InitializeComponent();
         }

@@ -25,9 +25,6 @@ namespace ShellTemperature.Repository
             _context.Add(model);
             _context.SaveChanges();
             return true;
-
-
-
         }
 
         /// <summary>
@@ -46,5 +43,13 @@ namespace ShellTemperature.Repository
         public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end)
         => _context.ShellTemperatures.Where(x => x.RecordedDateTime >= start && x.RecordedDateTime <= end);
 
+        public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end, string deviceName = null, string deviceAddress = null)
+        {
+            return _context.ShellTemperatures
+                .Where(device =>
+                    !string.IsNullOrWhiteSpace(deviceName) || device.Device.DeviceName.Equals(deviceName) &&
+                    !string.IsNullOrWhiteSpace(deviceAddress) || device.Device.DeviceAddress.Equals(deviceAddress))
+                .Where(time => time.RecordedDateTime >= start && time.RecordedDateTime <= end);
+        }
     }
 }
