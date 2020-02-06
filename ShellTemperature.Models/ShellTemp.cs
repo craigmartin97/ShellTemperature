@@ -24,5 +24,10 @@ namespace ShellTemperature.Models
         /// The date and time the ladle shell temperature was recorded.
         /// </summary>
         public DateTime RecordedDateTime { get; set; }
+
+        /// <summary>
+        /// The device the temperature was recorded on
+        /// </summary>
+        public DeviceInfo Device { get; set; }
     }
 }

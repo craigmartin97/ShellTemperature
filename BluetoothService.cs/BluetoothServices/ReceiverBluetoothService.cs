@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading;
 
@@ -76,13 +77,39 @@ namespace BluetoothService.BluetoothServices
 
                     string sensorTempValue = Encoding.ASCII.GetString(_myReadBuffer, 0, numberOfBytesRead);
                     string[] arr = sensorTempValue.Split(Environment.NewLine).ToArray();
-                    bool isDouble = double.TryParse(arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x)), 
-                        out double d);
 
-                    if (!isDouble)
-                        continue;
+                    /*
+                     * Added datetime module.
+                     * Check and see if has a space.
+                     * If there is a space split at it.
+                     * First section is the temp second is the datetime
+                     * TODO: need to return object
+                     */
 
-                    return d;
+                    string lastestReading = arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x));
+                    int indexOfFirstSpace = lastestReading.IndexOf(' ');
+                    if (indexOfFirstSpace > 0) // got space
+                    {
+                        string temp = lastestReading.Substring(0, indexOfFirstSpace);
+                        string dateTime = lastestReading.Substring(indexOfFirstSpace);
+
+                        bool isTempDouble = double.TryParse(temp, out double tempAsDouble);
+                        bool isDateTime = DateTime.TryParse(dateTime, out DateTime dateAsDateTime);
+
+                        if(!isTempDouble || !isDateTime) continue;
+
+                        return tempAsDouble;
+                    }
+                    else
+                    {
+                        bool isDouble = double.TryParse(arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x)),
+                            out double d);
+
+                        if (!isDouble)
+                            continue;
+
+                        return d;
+                    }
                 }
                 while (stream.DataAvailable); // only continue if there is more to stream and the parse was successful.
 

@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include "RTClib.h"
+
 #include <SoftwareSerial.h>
 #include <SparkFunMAX31855k.h> // Using the max31855k driver
 #include <SPI.h>  // Included here too due Arduino IDE; Used in above header
@@ -47,28 +48,27 @@ void loop() {
     
   if(digitalRead(BTpin) == 1) // the arduino's bluetooth sensor is connected to another device
   {
-    Serial.println(temperature); 
+    Serial.print(temperature);
+    Serial.print(" ");
+    Serial.print(getCurrentDateTime());
+    Serial.println(); 
   }
   else // the arduino's bluetooth sensor is NOT connected to another device
   {
-    Serial.println("NoBLT: " + String(temperature)); 
+    // config to write to SD card reader here
   }
-
-  getCurrentDateTime();
   
-  // Delay 1 seconnd and get next reading
+  // Delay 1 second and get next reading
   delay(1000);
 }
 
 /**
  * Get the current date and time print in the format
- * 
  */
-void getCurrentDateTime() {
+String getCurrentDateTime() {
   DateTime now = rtc.now();
-
   sprintf_P(DateAndTimeString, PSTR("%02d/%02d/%4d %d:%02d:%02d"), now.day(), now.month(), now.year(), now.hour(), now.minute(), now.second());
-  Serial.println(DateAndTimeString);
+  return DateAndTimeString;
 }
 
 /**

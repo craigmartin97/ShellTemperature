@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShellTemperature.Models;
 
 namespace ShellTemperature.Models.Migrations
 {
     [DbContext(typeof(ShellDb))]
-    partial class ShellDbModelSnapshot : ModelSnapshot
+    [Migration("20200206111944_AddDevicesTable")]
+    partial class AddDevicesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,9 +46,6 @@ namespace ShellTemperature.Models.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("DeviceId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("RecordedDateTime")
                         .HasColumnType("datetime2");
 
@@ -55,16 +54,7 @@ namespace ShellTemperature.Models.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId");
-
                     b.ToTable("ShellTemperatures");
-                });
-
-            modelBuilder.Entity("ShellTemperature.Models.ShellTemp", b =>
-                {
-                    b.HasOne("ShellTemperature.Models.Device", "Device")
-                        .WithMany()
-                        .HasForeignKey("DeviceId");
                 });
 #pragma warning restore 612, 618
         }

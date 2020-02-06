@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace ShellTemperature.Repository
 {
-    public class ShellTemperatureRepository : IShellTemperatureRepository<ShellTemp> //IRepository<Models.ShellTemp>
+    public class ShellTemperatureRepository : IShellTemperatureRepository<ShellTemp>
     {
         private readonly ShellDb _context;
 
@@ -16,14 +16,18 @@ namespace ShellTemperature.Repository
 
         public bool Create(ShellTemp model)
         {
-            if (model != null)
-            {
-                _context.Add(model);
-                _context.SaveChangesAsync();
-                return true;
-            }
+            if (model?.Device == null) return false;
 
-            return false;
+            DeviceInfo dbDevice = _context.Devices.Find(model.Device.Id);
+            DeviceInfo device = dbDevice ?? model.Device;
+            model.Device = device;
+
+            _context.Add(model);
+            _context.SaveChanges();
+            return true;
+
+
+
         }
 
         /// <summary>

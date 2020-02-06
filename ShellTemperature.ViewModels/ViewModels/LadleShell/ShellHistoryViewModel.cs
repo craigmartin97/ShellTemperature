@@ -65,14 +65,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
-        private Device _selectedDevice;
+        private Device _selectedFoundDevices;
 
         public sealed override Device SelectedDevice
         {
-            get => _selectedDevice;
+            get => _selectedFoundDevices;
             set
             {
-                _selectedDevice = value;
+                _selectedFoundDevices = value;
                 OnPropertyChanged(nameof(SelectedDevice));
             }
         }
@@ -109,13 +109,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private void SetDataPoints()
         {
             // have points to plot?
-            if (BluetoothData.Count > 0)
+            if (BluetoothData.Count <= 0) return;
+
+            DataPoints = new ObservableCollection<DataPoint>(); // reset collection
+            foreach (ShellTemp temp in BluetoothData) // plot points
             {
-                DataPoints = new ObservableCollection<DataPoint>(); // reset collection
-                foreach (ShellTemp temp in BluetoothData) // plot points
-                {
-                    DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(temp.RecordedDateTime), temp.Temperature));
-                }
+                DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(temp.RecordedDateTime), temp.Temperature));
             }
         }
         #endregion

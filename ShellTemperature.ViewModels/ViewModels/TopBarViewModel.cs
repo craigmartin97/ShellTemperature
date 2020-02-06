@@ -13,7 +13,7 @@ namespace ShellTemperature.ViewModels.ViewModels
         private Device _device;
 
         /// <summary>
-        /// The current device
+        /// The current foundDevices
         /// </summary>
         public Device Device
         {
@@ -52,7 +52,7 @@ namespace ShellTemperature.ViewModels.ViewModels
         {
             Device = _subject?.GetState();
 
-            if(Device == null) return;
+            if (Device == null) return;
 
             ConnectionMessage = GetConnectionStatus();
         }
@@ -64,9 +64,9 @@ namespace ShellTemperature.ViewModels.ViewModels
             return Device.IsConnected switch
             {
                 DeviceConnectionStatus.CONNECTED => ("Connected - " + Device.DeviceName),
-                DeviceConnectionStatus.CONNECTING => ("Connecting to Device - " + Device.DeviceName),
+                DeviceConnectionStatus.CONNECTING => ("Connecting to - " + Device.DeviceName),
                 DeviceConnectionStatus.FAILED => ("Failed to Connect - " + Device.DeviceName),
-                DeviceConnectionStatus.PAUSED => ("Device Paused - " + Device.DeviceName),
+                DeviceConnectionStatus.PAUSED => ("Paused - " + Device.DeviceName),
                 _ => "Error"
             };
         }

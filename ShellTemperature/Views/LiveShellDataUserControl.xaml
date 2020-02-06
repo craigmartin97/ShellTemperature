@@ -29,18 +29,18 @@
                     <ColumnDefinition Width="0.5*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Content="Search For Devices"
+                <Button Content="{StaticResource SearchForDevice}"
                         Style="{StaticResource BaseButtonStyle}"
                         MinWidth="200" MaxWidth="320" MinHeight="55" MaxHeight="90" Margin="8,8,4,12"
                         Command="{Binding Path=SearchForDevices}"/>
 
-                <Button Grid.Column="1" Content="Remove Device"
+                <Button Grid.Column="1" Content="{StaticResource RemoveDevice}"
                         Style="{StaticResource BaseButtonStyle}"
                         MinWidth="150" MaxWidth="300" MinHeight="55" MaxHeight="90" Margin="8,8,8,12"
                         Command="{Binding Path=RemoveSelectedDevice}"/>
             </Grid>
         </Grid>
-        
+
 
         <!-- Current feed of temperatures -->
         <Grid Grid.Column="1" Margin="0,7,7,7">
@@ -56,7 +56,7 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
 
-                <Label Content="Devices:" Style="{StaticResource DefaultDescriptorLabelStyle}"
+                <Label Content="Device:" Style="{StaticResource DefaultDescriptorLabelStyle}"
                        HorizontalAlignment="Right"
                        VerticalAlignment="Center" />
 

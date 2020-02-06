@@ -60,7 +60,6 @@ namespace ShellTemperature.Models
             }
         }
 
-
         public int ReadingsCounter { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -3,5 +3,7 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
     <system:String x:Key="AppNameString">Shell Temperature</system:String>
+    <system:String x:Key="RemoveDevice">Remove Device</system:String>
+    <system:String x:Key="SearchForDevice">Search For Device</system:String>
     
 </ResourceDictionary>

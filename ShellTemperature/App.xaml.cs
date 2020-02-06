@@ -9,7 +9,7 @@ using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.Views;
 using System;
-using System.IO;
+using System.Linq;
 using System.Windows;
 
 namespace ShellTemperature
@@ -27,28 +27,17 @@ namespace ShellTemperature
 
         public App()
         {
-            // get the enviroment directory, for app settings
-            string envDirectory = (Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/ShellTemperature");
-            if (!Directory.Exists(envDirectory)) // app settings directory doesnt exist
+            // get the environment variable, for the release version of the app
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") switch
             {
-                Directory.CreateDirectory(envDirectory); // app settings directory doesnt exist, create it!
-            }
-
-            string env = null;
-            // get the enviroment variable, for the release version of the app
-            switch (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
-            {
-                case "Development":
-                    env = "appsettings.Development.json";
-                    break;
-                case "Release":
-                    env = "appsettings.json";
-                    break;
-            }
+                "Development" => "appsettings.Development.json",
+                "Release" => "appsettings.json",
+                _ => null
+            };
 
             // add in the app settings file
             var builder = new ConfigurationBuilder()
-                .SetBasePath(envDirectory)
+                .SetBasePath(Environment.CurrentDirectory)
                 .AddJsonFile(env, optional: false, reloadOnChange: false);
 
             _configuration = builder.Build();
@@ -89,14 +78,16 @@ namespace ShellTemperature
             services.AddSingleton<IReceiverBluetoothService, ReceiverBluetoothService>();
             services.AddSingleton<IBluetoothFinder, BluetoothFinder>(x =>
             {
-                return new BluetoothFinder(new string[]
-                {
-                    "DSD TECH HC-05" // this needs to come from config in futre!!
-                });
+                // get a string array of the devices to search for
+                var devicesToSearchFor = _configuration.GetSection("DevicesToSearchFor")
+                    .GetChildren().Select(dev=> dev.Value).ToArray();
+                return new BluetoothFinder(devicesToSearchFor);
             });
+
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
-            
+            services.AddScoped<IDeviceRepository<DeviceInfo>, DevicesRepository>();
+
 
             services.AddDbContext<ShellDb>(options =>
                 options.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True"
@@ -128,7 +119,7 @@ namespace ShellTemperature
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LiveShellDataViewModel>();
             services.AddSingleton<ShellHistoryViewModel>();
-            
+
         }
         #endregion
     }

@@ -31,5 +31,7 @@ namespace ShellTemperature.Models
         }
 
         public DbSet<ShellTemp> ShellTemperatures { get; set; }
+
+        public DbSet<DeviceInfo> Devices { get; set; }
     }
 }
