@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Behaviours\Behaviours.csproj" />
+    <ProjectReference Include="..\CustomDialog\CustomDialog.csproj" />
     <ProjectReference Include="..\ShellTemperature.Repository\ShellTemperature.Repository.csproj" />
     <ProjectReference Include="..\ShellTemperature.ViewModels\ShellTemperature.ViewModels.csproj" />
   </ItemGroup>

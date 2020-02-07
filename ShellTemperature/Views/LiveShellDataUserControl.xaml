@@ -41,7 +41,6 @@
             </Grid>
         </Grid>
 
-
         <!-- Current feed of temperatures -->
         <Grid Grid.Column="1" Margin="0,7,7,7">
             <Grid.RowDefinitions>

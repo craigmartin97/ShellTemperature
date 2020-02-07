@@ -20,6 +20,10 @@
     <Color x:Key="OffsetWhite">#e6e6e6</Color>
     <SolidColorBrush x:Key="OffsetWhiteBrush" Color="{StaticResource OffsetWhite}" />
 
+    <!-- Light white brush -->
+    <Color x:Key="LightWhite">#f2f2f2</Color>
+    <SolidColorBrush x:Key="LightWhiteBrush" Color="{StaticResource LightWhite}" />
+
     <!-- Dark Grey -->
     <Color x:Key="DarkGrey">#595959</Color>
     <SolidColorBrush x:Key="DarkGreyBrush" Color="{StaticResource DarkGrey}" />

@@ -2,18 +2,17 @@
 using OxyPlot.Axes;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
+using ShellTemperature.ViewModels.TemperatureObserver;
+using ShellTemperature.ViewModels.ViewModels.TemperatureNotifier;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
     /// <summary>
     /// ViewModel for retrieving and displaying previous shell history data to the users
     /// </summary>
-    public class ShellHistoryViewModel : BaseShellViewModel
+    public class ShellHistoryViewModel : TemperatureNotifierViewModel
     {
         #region Fields
         private readonly IShellTemperatureRepository<ShellTemp> _shellTempRepo;
@@ -24,9 +23,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private readonly IDeviceRepository<DeviceInfo> _deviceRepository;
 
         /// <summary>
-        /// Collection of all devices used previously to record data
+        /// The temperature subject to get and notify of state changes
         /// </summary>
-        private readonly IEnumerable<DeviceInfo> _devices;
+        private readonly TemperatureSubject _temperatureSubject;
         #endregion
 
         #region Properties
@@ -106,8 +105,25 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
-        private DeviceInfo _currentDeviceInfo;
 
+        private ObservableCollection<DeviceInfo> _devices;
+        /// <summary>
+        /// Collection of all devices used previously to record data
+        /// </summary>
+        public ObservableCollection<DeviceInfo> Devices
+        {
+            get => _devices;
+            set
+            {
+                _devices = value;
+                OnPropertyChanged(nameof(Devices));
+            }
+        }
+
+        private DeviceInfo _currentDeviceInfo;
+        /// <summary>
+        /// The current selected device to live the temperature data for
+        /// </summary>
         public DeviceInfo CurrentDeviceInfo
         {
             get => _currentDeviceInfo;
@@ -125,15 +141,16 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
         #region Constructors
         public ShellHistoryViewModel(IShellTemperatureRepository<ShellTemp> shellTemperature,
-            IDeviceRepository<DeviceInfo> deviceRepository)
+            IDeviceRepository<DeviceInfo> deviceRepository, TemperatureSubject subject)
         {
             _shellTempRepo = shellTemperature;
             _deviceRepository = deviceRepository;
+            _temperatureSubject = subject;
 
-            _devices = _deviceRepository.GetAll();
-            CurrentDeviceInfo = _devices.FirstOrDefault();
+            _temperatureSubject.Attach(this);
 
             // get the last seven days of temps and display to the user in the list.
+            UpdateDevices();
             SetBluetoothData();
             SetDataPoints();
         }
@@ -166,6 +183,35 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(temp.RecordedDateTime), temp.Temperature));
             }
         }
+
+        /// <summary>
+        /// Update the devices collection
+        /// </summary>
+        private void UpdateDevices()
+        {
+            Devices = new ObservableCollection<DeviceInfo>(_deviceRepository.GetAll());
+            if (Devices.Count > 0)
+                CurrentDeviceInfo = Devices[0];
+        }
         #endregion
+
+        /// <summary>
+        /// Update the latest temperatures to include the latest readings
+        /// from the current device
+        /// </summary>
+        public override void Update()
+        {
+            ShellTemp latestReading = _temperatureSubject?.GetState();
+
+            if (latestReading == null) return;
+
+            if (latestReading.Device.DeviceAddress.Equals(CurrentDeviceInfo.DeviceAddress)
+            && End.Date.Equals(DateTime.Today))
+            {
+                BluetoothData.Add(latestReading);
+                DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(latestReading.RecordedDateTime),
+                    latestReading.Temperature));
+            }
+        }
     }
 }

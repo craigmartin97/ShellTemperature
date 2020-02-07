@@ -1,6 +1,7 @@
 ﻿using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
 using BluetoothService.Enums;
+using BluetoothService.Models;
 using InTheHand.Net.Sockets;
 using Microsoft.Extensions.Configuration;
 using OxyPlot;
@@ -18,8 +19,9 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using BluetoothService.Models;
-using Microsoft.EntityFrameworkCore.Internal;
+using CustomDialog.Dialogs;
+using CustomDialog.Services;
+using ShellTemperature.ViewModels.TemperatureObserver;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -45,6 +47,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// The subject observer pattern updater
         /// </summary>
         private readonly BluetoothConnectionSubject _subject;
+
+        /// <summary>
+        /// Temperature subject to update observers (observer pattern)
+        /// </summary>
+        private readonly TemperatureSubject _temperatureSubject;
 
         /// <summary>
         /// Bluetooth foundDevices finder
@@ -112,6 +119,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             if (SelectedDevice.IsConnected.Equals(DeviceConnectionStatus.FAILED)) return;
 
             SetConnectionStatus(SelectedDevice, DeviceConnectionStatus.PAUSED);
+
+            //TODO: Inject DialogService instead, factory pattern for injecting ADVM?
+            // TODO: Need to create a new one as well for display a list of devices that have been found.
+            //TODO: Sometimes get bad values Date and Times
+            DialogService service = new DialogService();
+            AlertDialogViewModel viewModel = new AlertDialogViewModel("test","test");
+            var res = service.OpenDialogService(viewModel);
+            
         });
 
         public RelayCommand SearchForDevices
@@ -182,12 +197,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #region Constructors
         public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder,
             IRepository<ShellTemp> repository, IDeviceRepository<DeviceInfo> deviceRepository,
-            IConfiguration configuration, BluetoothConnectionSubject subject)
+            IConfiguration configuration, BluetoothConnectionSubject subject,
+            TemperatureSubject temperatureSubject)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
             _deviceRepository = deviceRepository;
             _subject = subject;
+            _temperatureSubject = temperatureSubject;
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration
@@ -197,9 +214,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             _deviceDictionary = configDevices.ToDictionary(
                dev => dev.Key, dev => dev.Value);
 
-            List<BluetoothDevice> devices = bluetoothFinder.GetBluetoothDevices();
+            List<BluetoothDevice> bluetoothDevices = bluetoothFinder.GetBluetoothDevices();
 
-            foreach (BluetoothDevice device in devices)
+            foreach (BluetoothDevice device in bluetoothDevices)
             {
                 Device dev = new Device()
                 {
@@ -219,7 +236,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 dev.Timer.Interval = new TimeSpan(0, 0, 1);
                 dev.Timer.Start();
 
-                // check if device exists in the datastore
+                // check if device exists in the data store
                 CheckIfDeviceExistsAndCreate(dev);
 
                 Devices.Add(dev);
@@ -230,7 +247,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             Devices.OrderBy(x => x.DeviceName);
             SelectedDevice = Devices[0];
 
-            // get all the devices from the datastore, this is needed
+            // get all the devices from the data store, this is needed
             _datastoreDevices = _deviceRepository.GetAll();
         }
         #endregion
@@ -278,6 +295,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     shellTemp.Temperature)));
 
                 _shellRepo.Create(shellTemp); // create a new record in the database.
+                _temperatureSubject.SetState(shellTemp);
                 SetConnectionStatus(foundDevices, DeviceConnectionStatus.CONNECTED);
             }
             catch (NullReferenceException ex)
@@ -286,7 +304,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 if (foundDevices != null && SelectedDevice == foundDevices)
                 {
-                    SetConnectionStatus(foundDevices, DeviceConnectionStatus.FAILED);
+                    SetConnectionStatus(foundDevices, DeviceConnectionStatus.CONNECTING);
                     ResetDeviceCounter(foundDevices); // maybe this needs to be outside this if???
                     ResetBluetoothClient(foundDevices);
                 }

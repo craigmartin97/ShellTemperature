@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="CustomDialog.Views.AlertUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid Background="{StaticResource LightWhiteBrush}">
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.5*"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <!-- Question mark image for yes no dialog, as asking a question -->
+                <Image Source="{Binding Path=ImagePath}" Style="{StaticResource DialogImageStyle}" />
+
+                <!-- Message displayed to the user -->
+                <TextBlock Grid.Column="1" 
+                           Style="{StaticResource MessageTextBlockStyle}"  
+                           Text="{Binding Path=Message, FallbackValue='Error getting message'}" />
+            </Grid>
+
+
+            <Border Grid.Row="1" Style="{StaticResource BorderSeperator}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                    <!--  Close / OK btn to close dialog -->
+                    <Button Content="{StaticResource Ok}" 
+                            Style="{StaticResource DialogButtonsStyle}"
+                            Command="{Binding Path=OKCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" />
+                </StackPanel>
+            </Border>
+
+        </Grid>
+    </Grid>
+</UserControl>

@@ -5,6 +5,8 @@
              xmlns:connectionViews="clr-namespace:ShellTemperature.Views.ConnectionStatus"
              xmlns:vm="clr-namespace:ShellTemperature.ViewModels.ViewModels;assembly=ShellTemperature.ViewModels"
              xmlns:ladleVM="clr-namespace:ShellTemperature.ViewModels.ViewModels.LadleShell;assembly=ShellTemperature.ViewModels"
+             xmlns:dialogsVM="clr-namespace:CustomDialog.Dialogs;assembly=CustomDialog"
+             xmlns:dialogViews="clr-namespace:CustomDialog.Views;assembly=CustomDialog"
              Startup="OnStartup">
     <Application.Resources>
         <!-- Create merge dictionary for all style sheets -->
@@ -23,12 +25,20 @@
                 <connectionViews:BluetoothConnectionStatusUserControl DataContext="{Binding}" />
             </DataTemplate>
 
+            <!--  Custom Dialog -->
+            <!-- Alert Dialog -->
+            <DataTemplate DataType="{x:Type dialogsVM:AlertDialogViewModel}" >
+                <dialogViews:AlertUserControl DataContext="{Binding}"/>
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="./Styles/String.xaml" />
                 <ResourceDictionary Source="./Styles/Font.xaml" />
                 <ResourceDictionary Source="./Styles/Color.xaml" />
                 <ResourceDictionary Source="./Styles/Image.xaml" />
                 <ResourceDictionary Source="./Styles/Label.xaml" />
+                <ResourceDictionary Source="./Styles/TextBlock.xaml" />
+                <ResourceDictionary Source="./Styles/Border.xaml" />
                 <ResourceDictionary Source="./Styles/Button.xaml" />
                 <ResourceDictionary Source="./Styles/ComboBox.xaml" />
                 <ResourceDictionary Source="./Styles/DateTimerPicker.xaml" />

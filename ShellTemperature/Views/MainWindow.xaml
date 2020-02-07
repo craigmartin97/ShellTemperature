@@ -4,13 +4,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:window="clr-namespace:Behaviours.WindowBehaviours;assembly=Behaviours"
-        xmlns:connectionns="clr-namespace:ShellTemperature.Views.ConnectionStatus"
         mc:Ignorable="d"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Visibility="Visible"
         Title="Shell Temperature" MinWidth="1220" MinHeight="720" Width="1250"
-        ResizeMode="CanResize">
+        ResizeMode="CanResize"
+        Icon="../Images/mpiLion.png">
 
     <!-- Trigger on startup to fade in. Go from opacity 0 to 1 in 1 second -->
     <Window.Triggers>
@@ -113,13 +113,13 @@
             <!-- Navigation Area MinWidth="160" MaxWidth="220" -->
             <Grid x:Name="GridMenu" Background="{StaticResource NavyBlueBrush}" DockPanel.Dock="Left">
                 <Grid x:Name="NavigationSelectionArea" VerticalAlignment="Top">
-                        <StackPanel>
-                            <!-- Btn for displaying the live shell data -->
-                            <Button Content="Live Shell Data" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=LiveShellDataViewCommand}" />
-                            <!-- Btn for displaying the shell history -->
-                            <Button Content="Shell History" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ShellHistoryViewCommand}" />
-                        </StackPanel>
-                    </Grid>
+                    <StackPanel>
+                        <!-- Btn for displaying the live shell data -->
+                        <Button Content="Live Shell Data" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=LiveShellDataViewCommand}" />
+                        <!-- Btn for displaying the shell history -->
+                        <Button Content="Shell History" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ShellHistoryViewCommand}" />
+                    </StackPanel>
+                </Grid>
             </Grid>
 
             <!-- Main Content Area -->
@@ -155,11 +155,9 @@
 
                         <ContentPresenter Content="{Binding Path=ConnectionStatusViewModel}"/>
                     </DockPanel>
-                    
 
                     <ContentControl  Content="{Binding Path=CurrentView}" />
                 </DockPanel>
-
             </Grid>
         </DockPanel>
     </Border>

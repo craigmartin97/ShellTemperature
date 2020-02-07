@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Behaviours", "Behaviours\Be
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShellTemperature.Repository", "ShellTemperature.Repository\ShellTemperature.Repository.csproj", "{33FFF9CF-C757-4496-941A-DDDCC69FA1C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluetoothService", "BluetoothService.cs\BluetoothService.csproj", "{1262BA03-AC21-4DE2-BC26-33BD59FDB7B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluetoothService", "BluetoothService.cs\BluetoothService.csproj", "{1262BA03-AC21-4DE2-BC26-33BD59FDB7B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomDialog", "CustomDialog\CustomDialog.csproj", "{B4724970-A0A6-4151-A8D6-A041F992C091}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{1262BA03-AC21-4DE2-BC26-33BD59FDB7B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1262BA03-AC21-4DE2-BC26-33BD59FDB7B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1262BA03-AC21-4DE2-BC26-33BD59FDB7B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4724970-A0A6-4151-A8D6-A041F992C091}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4724970-A0A6-4151-A8D6-A041F992C091}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4724970-A0A6-4151-A8D6-A041F992C091}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4724970-A0A6-4151-A8D6-A041F992C091}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

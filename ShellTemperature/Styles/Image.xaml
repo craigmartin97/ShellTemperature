@@ -10,4 +10,9 @@
         <Setter Property="Source" Value="../Images/mpiLion.png" />
     </Style>
 
+    <!-- Dialog image style, for images on the custom dialog window/usercontrols -->
+    <Style x:Key="DialogImageStyle" TargetType="{x:Type Image}">
+        <Setter Property="Margin" Value="30" />
+    </Style>
+
 </ResourceDictionary>

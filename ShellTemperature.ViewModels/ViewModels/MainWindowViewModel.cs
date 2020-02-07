@@ -82,7 +82,6 @@ namespace ShellTemperature.ViewModels.ViewModels
         #endregion
 
         #region Constructor
-        // NOTE: DO NOT SWAP ORDER OF PARAMS ON CONSTRUCTOR HERE!!!! VERY IMPORTANT
         public MainWindowViewModel(TopBarViewModel topBarViewModel, LiveShellDataViewModel liveShellDataViewModel, ShellHistoryViewModel shellHistoryViewModel)
         {
             _topBarViewModel = topBarViewModel;

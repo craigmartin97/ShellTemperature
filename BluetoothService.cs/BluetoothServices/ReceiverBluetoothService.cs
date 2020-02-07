@@ -1,13 +1,12 @@
 ﻿using BluetoothService.cs.BluetoothServices;
+using BluetoothService.Models;
 using InTheHand.Net.Sockets;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
-using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading;
-using BluetoothService.Models;
 
 namespace BluetoothService.BluetoothServices
 {

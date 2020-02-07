@@ -25,13 +25,37 @@
         <!-- Current feed of temperatures -->
         <Grid Grid.Column="1" Margin="0,0,7,7">
             <Grid.RowDefinitions>
+                <RowDefinition Height="1.1*" />
                 <RowDefinition Height="6*"/>
-                <RowDefinition />
+                <RowDefinition Height="1.5*" />
             </Grid.RowDefinitions>
 
-            <DataOutput:DateOutputWithDateTimeUserControl />
+            <!-- Combobox for current device -->
+            <Grid Margin="0,7,0,0" VerticalAlignment="Bottom">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.4*"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
 
-            <Grid Grid.Row="1" Background="{StaticResource WhiteColorBrush}" Margin="8,8,0,0">
+                <Label Content="Device:" Style="{StaticResource DefaultDescriptorLabelStyle}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center" />
+
+                <ComboBox Grid.Column="1"
+                          Style="{StaticResource ComboBoxStyle}" 
+                          ItemsSource="{Binding Path=Devices}" 
+                          SelectedItem="{Binding Path=CurrentDeviceInfo, FallbackValue=Error}"
+                          DisplayMemberPath="DeviceName" 
+                          MaxWidth="300"
+                          MinHeight="45"
+                          MaxHeight="45"
+                          VerticalAlignment="Center"
+                          Margin="4,15,10,15" />
+            </Grid>
+
+            <DataOutput:DateOutputWithDateTimeUserControl Grid.Row="1" />
+
+            <Grid Grid.Row="2" Background="{StaticResource WhiteColorBrush}" Margin="8,8,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />

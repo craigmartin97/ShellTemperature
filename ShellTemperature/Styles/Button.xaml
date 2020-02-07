@@ -118,4 +118,12 @@
         <Setter Property="CommandParameter" Value="{Binding}" />
     </Style>
 
+    <!-- Button style for custom dialog messages -->
+    <Style x:Key="DialogButtonsStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,15,0" />
+        <Setter Property="MinWidth" Value="100" />
+        <Setter Property="IsDefault" Value="True" />
+    </Style>
+
 </ResourceDictionary>

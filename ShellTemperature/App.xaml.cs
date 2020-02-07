@@ -11,6 +11,7 @@ using ShellTemperature.Views;
 using System;
 using System.Linq;
 using System.Windows;
+using ShellTemperature.ViewModels.TemperatureObserver;
 
 namespace ShellTemperature
 {
@@ -48,10 +49,13 @@ namespace ShellTemperature
             ConfigureServices(serviceCollection);
             ConfigureViews(serviceCollection);
             ConfigureViewModels(serviceCollection);
+            ConfigDatabase(serviceCollection);
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
             Services = serviceCollection;
+
+            MigrateDatabase();
         }
 
         /// <summary>
@@ -74,28 +78,20 @@ namespace ShellTemperature
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<BluetoothConnectionSubject>();
+            services.AddSingleton<TemperatureSubject>();
 
             services.AddSingleton<IReceiverBluetoothService, ReceiverBluetoothService>();
             services.AddSingleton<IBluetoothFinder, BluetoothFinder>(x =>
             {
                 // get a string array of the devices to search for
                 var devicesToSearchFor = _configuration.GetSection("DevicesToSearchFor")
-                    .GetChildren().Select(dev=> dev.Value).ToArray();
+                    .GetChildren().Select(dev => dev.Value).ToArray();
                 return new BluetoothFinder(devicesToSearchFor);
             });
 
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IDeviceRepository<DeviceInfo>, DevicesRepository>();
-
-
-            services.AddDbContext<ShellDb>(options =>
-                options.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True"
-                , optionsBuilder =>
-                {
-                    optionsBuilder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(10), null);
-                }),
-                ServiceLifetime.Transient);
         }
 
         /// <summary>
@@ -120,6 +116,30 @@ namespace ShellTemperature
             services.AddSingleton<LiveShellDataViewModel>();
             services.AddSingleton<ShellHistoryViewModel>();
 
+        }
+        #endregion
+
+        #region Database
+
+        private void ConfigDatabase(IServiceCollection services)
+        {
+            // database config
+            services.AddDbContext<ShellDb>(options =>
+                    options.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True"
+                        , optionsBuilder =>
+                        {
+                            optionsBuilder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(10), null);
+                        }),
+                ServiceLifetime.Transient);
+        }
+
+        /// <summary>
+        /// Ensure the database is fully migrated
+        /// </summary>
+        private void MigrateDatabase()
+        {
+            var context = _serviceProvider.GetRequiredService<ShellDb>();
+            context.Database.Migrate(); // ensure fully migrated
         }
         #endregion
     }
