@@ -2,6 +2,7 @@
 using BluetoothService.cs.BluetoothServices;
 using BluetoothService.Enums;
 using BluetoothService.Models;
+using CustomDialog.Interfaces;
 using InTheHand.Net.Sockets;
 using Microsoft.Extensions.Configuration;
 using OxyPlot;
@@ -10,6 +11,7 @@ using ShellTemperature.Models;
 using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.ConnectionObserver;
+using ShellTemperature.ViewModels.TemperatureObserver;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,9 +21,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using CustomDialog.Dialogs;
-using CustomDialog.Services;
-using ShellTemperature.ViewModels.TemperatureObserver;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -57,6 +56,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Bluetooth foundDevices finder
         /// </summary>
         private readonly IBluetoothFinder _bluetoothFinder;
+
+        private readonly IDialogService _service;
 
         private readonly Dictionary<string, string> _deviceDictionary;
 
@@ -120,13 +121,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
             SetConnectionStatus(SelectedDevice, DeviceConnectionStatus.PAUSED);
 
-            //TODO: Inject DialogService instead, factory pattern for injecting ADVM?
-            // TODO: Need to create a new one as well for display a list of devices that have been found.
+            //TODO: Need to create a new one as well for display a list of devices that have been found.
             //TODO: Sometimes get bad values Date and Times
-            DialogService service = new DialogService();
-            AlertDialogViewModel viewModel = new AlertDialogViewModel("test","test");
-            var res = service.OpenDialogService(viewModel);
-            
         });
 
         public RelayCommand SearchForDevices
@@ -198,13 +194,15 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder,
             IRepository<ShellTemp> repository, IDeviceRepository<DeviceInfo> deviceRepository,
             IConfiguration configuration, BluetoothConnectionSubject subject,
-            TemperatureSubject temperatureSubject)
+            TemperatureSubject temperatureSubject,
+            IDialogService service)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
             _deviceRepository = deviceRepository;
             _subject = subject;
             _temperatureSubject = temperatureSubject;
+            _service = service;
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration
@@ -276,6 +274,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     return;
                 }
 
+                // is the date and time recorded valid?
+                if (!IsDateTimeValid(receivedData.RecordedDateTime))
+                    throw new InvalidOperationException("Invalid Date & Time, Try and Reset the DateTime Module - " +
+                                                        foundDevices.DeviceName);
+
                 foundDevices.CurrentData = receivedData.Temperature;
 
                 // get the device from the datastore collection
@@ -306,6 +309,18 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 {
                     SetConnectionStatus(foundDevices, DeviceConnectionStatus.CONNECTING);
                     ResetDeviceCounter(foundDevices); // maybe this needs to be outside this if???
+                    ResetBluetoothClient(foundDevices);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Debug.WriteLine(ex.Message);
+
+                if (foundDevices != null && SelectedDevice == foundDevices)
+                {
+                    StopCommand.Execute(null);
+                    SetConnectionStatus(foundDevices, DeviceConnectionStatus.FAILED, ex.Message);
+                    ResetDeviceCounter(foundDevices);
                     ResetBluetoothClient(foundDevices);
                 }
             }
@@ -369,10 +384,32 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         }
 
         /// <summary>
+        /// Change the connection status for the foundDevices
+        /// </summary>
+        /// <param name="foundDevices">The devices connection status to change</param>
+        /// <param name="status">The status to check and change to</param>
+        private void SetConnectionStatus(Device foundDevice, DeviceConnectionStatus status, string message)
+        {
+            if (!foundDevice.IsConnected.Equals(status) && SelectedDevice == foundDevice)
+            {
+                foundDevice.IsConnected = status;
+                SetDeviceState(foundDevice, message);
+            }
+        }
+
+        /// <summary>
         /// Update the connection status
         /// </summary>
         /// <param name="foundDevices">The foundDevices's connection status to update</param>
-        private void SetDeviceState(Device foundDevice) => _subject.SetState(foundDevice);
+        private void SetDeviceState(Device foundDevice) 
+            => _subject.SetState(foundDevice);
+
+        /// <summary>
+        /// Update the connection status
+        /// </summary>
+        /// <param name="foundDevices">The foundDevices's connection status to update</param>
+        private void SetDeviceState(Device foundDevice, string message)
+            => _subject.SetState(foundDevice, message);
 
         /// <summary>
         /// Get the value from the foundDevices name dictionary
@@ -408,6 +445,21 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     DeviceAddress = deviceAddress
                 });
             }
+        }
+
+        /// <summary>
+        /// Validate that the date and time is between two ranges
+        /// </summary>
+        /// <param name="currentDateTime">The date and time to validate</param>
+        /// <returns>Returns true if the datetime is valid</returns>
+        private bool IsDateTimeValid(DateTime currentDateTime)
+        {
+            // problem with setting time with DS3231 module as gets time at compile 
+            DateTime minDateTimeRange = DateTime.Now.AddMinutes(-5);
+            DateTime maxDateTimeRange = DateTime.Now.AddMinutes(5);
+
+            // current datetime is only valid if its between the two ranges
+            return minDateTimeRange < currentDateTime && maxDateTimeRange > currentDateTime;
         }
         #endregion
     }

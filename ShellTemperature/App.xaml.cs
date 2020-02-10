@@ -11,6 +11,9 @@ using ShellTemperature.Views;
 using System;
 using System.Linq;
 using System.Windows;
+using CustomDialog.Interfaces;
+using CustomDialog.Services;
+using CustomDialog.Views;
 using ShellTemperature.ViewModels.TemperatureObserver;
 
 namespace ShellTemperature
@@ -88,6 +91,8 @@ namespace ShellTemperature
                     .GetChildren().Select(dev => dev.Value).ToArray();
                 return new BluetoothFinder(devicesToSearchFor);
             });
+
+            services.AddSingleton<IDialogService, DialogService>();
 
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();

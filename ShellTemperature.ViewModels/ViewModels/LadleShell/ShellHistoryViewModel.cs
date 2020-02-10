@@ -6,6 +6,8 @@ using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels.TemperatureNotifier;
 using System;
 using System.Collections.ObjectModel;
+using System.Windows.Controls;
+using ShellTemperature.ViewModels.Commands;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -133,6 +135,24 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 OnPropertyChanged(nameof(CurrentDeviceInfo));
             }
         }
+
+        private ObservableCollection<ShellTemp> _selectedCells;
+
+        public ObservableCollection<ShellTemp> SelectedCells
+        {
+            get => _selectedCells;
+            set
+            {
+                _selectedCells = value;
+                OnPropertyChanged(nameof(SelectedCells));
+            }
+        }
+
+        public RelayCommand PressMe =>
+            new RelayCommand(param =>
+            {
+                var dt = param as DataGrid;
+            });
         #endregion
 
         #region Commands

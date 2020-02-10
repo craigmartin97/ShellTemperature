@@ -34,16 +34,12 @@ void setup() {
   pinMode(BTpin, INPUT);
 
   Serial.begin(9600);
-
-  if (rtc.lostPower()) {
-    Serial.println("RTC lost power, lets set the time!");
-    // following line sets the RTC to the date & time this sketch was compiled
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  }
+  
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
   setupSDCard();
   
-  delay(1000);  // Let IC stabilize or first readings will be garbage
+  delay(100);  // Let IC stabilize or first readings will be garbage
 }
 /**
  * Continuous loop every x seconds.
@@ -101,4 +97,8 @@ void accessFileOnSDCard(){
   {
     Serial.println("ERROR!!!");  
   }
+}
+
+bool RTC_DS3231::lostPower(void) {
+  return (read_i2c_register(DS3231_ADDRESS, DS3231_STATUSREG) >> 7);
 }

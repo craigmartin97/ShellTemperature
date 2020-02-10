@@ -53,10 +53,23 @@
                           Margin="4,15,10,15" />
             </Grid>
 
-            <DataOutput:DateOutputWithDateTimeUserControl Grid.Row="1" />
+            <!--<DataOutput:DateOutputWithDateTimeUserControl Grid.Row="1" x:Name="outputGraph" />-->
+            <DataGrid x:Name="dataGrid"
+                      Grid.Row="1"
+                      ItemsSource="{Binding Path=BluetoothData}" 
+                      Style="{StaticResource TemperatureDataGridStyle}"
+                      CellStyle="{StaticResource BaseDataGridCellStyle}">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Temperature" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                                            Width="*" CellTemplate="{StaticResource TemperatureTemplate}" />
+                    <DataGridTemplateColumn Header="DateTime" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                                            Width="*" CellTemplate="{StaticResource RecordedDateTimeTemplate}" />
+                </DataGrid.Columns>
+            </DataGrid>
 
             <Grid Grid.Row="2" Background="{StaticResource WhiteColorBrush}" Margin="8,8,0,0">
                 <Grid.RowDefinitions>
+                    <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
@@ -65,6 +78,9 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
+
+                <Button Grid.Row="2" Grid.ColumnSpan="2" VerticalAlignment="Bottom" Content="Press"
+                        Command="{Binding Path=PressMe}" CommandParameter="{Binding ElementName=dataGrid, Path=SelectedItems}"/>
                 
                 <!-- Labels -->
                 <Label Content="Start Date" FontSize="{StaticResource FontSize18}" FontFamily="{StaticResource LatoRegular}"

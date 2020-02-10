@@ -71,6 +71,7 @@ namespace BluetoothService.BluetoothServices
             {
                 do
                 {
+                    Thread.Sleep(100);
                     int numberOfBytesRead = stream.Read(_myReadBuffer, 0, _myReadBuffer.Length);
                     Debug.WriteLine("Got number of bytes: " + numberOfBytesRead);
                     if (numberOfBytesRead <= 1)

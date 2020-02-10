@@ -17,6 +17,12 @@ namespace ShellTemperature.ViewModels.ConnectionObserver
             NotifyAllObservers();
         }
 
+        public void SetState(Device foundDevices, string message)
+        {
+            _device = foundDevices;
+            NotifyAllObservers(message);
+        }
+
         public void Attach(BluetoothConnectionObserverViewModel observer)
         => _observer.Add(observer);
 
@@ -25,6 +31,14 @@ namespace ShellTemperature.ViewModels.ConnectionObserver
             foreach (var observer in _observer)
             {
                 observer.Update();
+            }
+        }
+
+        public void NotifyAllObservers(string message)
+        {
+            foreach (var observer in _observer)
+            {
+                observer.Update(message);
             }
         }
     }

@@ -7,5 +7,7 @@ namespace ShellTemperature.ViewModels.ViewModels.ConnectionStatus
     {
         protected BluetoothConnectionSubject _subject;
         public abstract void Update();
+
+        public abstract void Update(string message);
     }
 }
