@@ -34,6 +34,26 @@ namespace ShellTemperature.Repository
         public IEnumerable<DeviceInfo> GetAll()
             => _context.Devices;
 
+        public bool Delete(Guid id)
+        {
+            DeviceInfo dev = _context.Devices.FirstOrDefault(x => x.Id.Equals(id));
+            if (dev == null)
+                return false;
+
+            _context.Devices.Remove(dev);
+            return true;
+        }
+
+        public bool DeleteRange(IEnumerable<DeviceInfo> items)
+        {
+            if (items == null)
+                return false;
+
+            _context.Devices.RemoveRange(items);
+            _context.SaveChanges();
+            return true;
+        }
+
         /// <summary>
         /// Find the device by the device address.
         /// </summary>

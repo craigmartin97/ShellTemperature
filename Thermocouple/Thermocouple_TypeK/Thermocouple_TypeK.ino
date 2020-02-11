@@ -98,7 +98,3 @@ void accessFileOnSDCard(){
     Serial.println("ERROR!!!");  
   }
 }
-
-bool RTC_DS3231::lostPower(void) {
-  return (read_i2c_register(DS3231_ADDRESS, DS3231_STATUSREG) >> 7);
-}

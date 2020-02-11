@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ShellTemperature.Repository
 {
@@ -11,6 +12,24 @@ namespace ShellTemperature.Repository
         /// <returns></returns>
         bool Create(T model);
 
+        /// <summary>
+        /// Get a collection of type T
+        /// </summary>
+        /// <returns></returns>
         IEnumerable<T> GetAll();
+
+        /// <summary>
+        /// Delete an object by id
+        /// </summary>
+        /// <param name="id">The id of the object</param>
+        /// <returns>Returns true if the item was successfully deleted</returns>
+        bool Delete(Guid id);
+
+        /// <summary>
+        /// Remove range of items of type T from the data store
+        /// </summary>
+        /// <param name="items">Items to remove</param>
+        /// <returns>Returns true if the items where deleted</returns>
+        bool DeleteRange(IEnumerable<T> items);
     }
 }

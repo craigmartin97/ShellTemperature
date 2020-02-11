@@ -116,10 +116,10 @@ namespace ShellTemperature
         {
             services.AddSingleton(_configuration); // add in config
 
-            services.AddSingleton<TopBarViewModel>(); // BluetoothConnectionSubject gets injected.!!!
+            services.AddSingleton<TopBarViewModel>();
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LiveShellDataViewModel>();
-            services.AddSingleton<ShellHistoryViewModel>();
+            services.AddScoped<ShellHistoryViewModel>();
 
         }
         #endregion

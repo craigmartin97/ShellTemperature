@@ -2,12 +2,13 @@
 using OxyPlot.Axes;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
+using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels.TemperatureNotifier;
 using System;
+using System.Collections;
 using System.Collections.ObjectModel;
-using System.Windows.Controls;
-using ShellTemperature.ViewModels.Commands;
+using System.Linq;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -87,7 +88,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// The private end date field. By default set to the current date time 
         /// to search between
         /// </summary>
-        private DateTime _end = DateTime.Now;
+        private DateTime _end = DateTime.Now.Date.AddHours(23).AddMinutes(59).AddSeconds(59).AddMilliseconds(59);
         /// <summary>
         /// The end date to stop search for to get ladle shell temperature records for
         /// </summary>
@@ -132,26 +133,26 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             set
             {
                 _currentDeviceInfo = value;
+
+                SetBluetoothData();
+                SetDataPoints();
+
                 OnPropertyChanged(nameof(CurrentDeviceInfo));
             }
         }
 
-        private ObservableCollection<ShellTemp> _selectedCells;
-
-        public ObservableCollection<ShellTemp> SelectedCells
-        {
-            get => _selectedCells;
-            set
-            {
-                _selectedCells = value;
-                OnPropertyChanged(nameof(SelectedCells));
-            }
-        }
-
-        public RelayCommand PressMe =>
+        public RelayCommand DeleteSelected =>
             new RelayCommand(param =>
             {
-                var dt = param as DataGrid;
+                if (param == null)
+                    return;
+
+                var items = (IList)param;
+                var selectedShellTemps = items.Cast<ShellTemp>();
+                _shellTempRepo.DeleteRange(selectedShellTemps);
+
+                SetBluetoothData();
+                SetDataPoints();
             });
         #endregion
 
@@ -183,6 +184,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         private void SetBluetoothData()
         {
+            BluetoothData.Clear();
             if (CurrentDeviceInfo == null) return;
 
             BluetoothData = new ObservableCollection<ShellTemp>(_shellTempRepo.GetShellTemperatureData(Start, End,
@@ -194,8 +196,13 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         private void SetDataPoints()
         {
+            DataPoints.Clear();
             // have points to plot?
-            if (BluetoothData.Count == 0) return;
+            if (BluetoothData.Count == 0)
+            {
+                DataPoints.Clear();
+                return;
+            }
 
             DataPoints = new ObservableCollection<DataPoint>(); // reset collection
             foreach (ShellTemp temp in BluetoothData) // plot points

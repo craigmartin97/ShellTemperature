@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace ShellTemperature.Repository
 {
@@ -32,7 +33,27 @@ namespace ShellTemperature.Repository
         /// </summary>
         /// <returns>Returns an enumerable collection of all the temperature data</returns>
         public IEnumerable<ShellTemp> GetAll()
-        => _context.ShellTemperatures;
+        => _context.ShellTemperatures.Include(dev => dev.Device);
+
+        public bool Delete(Guid id)
+        {
+            ShellTemp shellTemp = _context.ShellTemperatures.Find(id);
+            if (shellTemp == null)
+                return false;
+
+            _context.ShellTemperatures.Remove(shellTemp);
+            return true;
+        }
+
+        public bool DeleteRange(IEnumerable<ShellTemp> items)
+        {
+            if (items == null)
+                return false;
+
+            _context.ShellTemperatures.RemoveRange(items);
+            _context.SaveChanges();
+            return true;
+        }
 
         /// <summary>
         /// Get all the shell temperature data between a date range.
@@ -47,9 +68,10 @@ namespace ShellTemperature.Repository
         {
             return _context.ShellTemperatures
                 .Where(device =>
-                    !string.IsNullOrWhiteSpace(deviceName) || device.Device.DeviceName.Equals(deviceName) &&
-                    !string.IsNullOrWhiteSpace(deviceAddress) || device.Device.DeviceAddress.Equals(deviceAddress))
-                .Where(time => time.RecordedDateTime >= start && time.RecordedDateTime <= end);
+                    string.IsNullOrWhiteSpace(deviceName) || device.Device.DeviceName.Equals(deviceName) &&
+                    string.IsNullOrWhiteSpace(deviceAddress) || device.Device.DeviceAddress.Equals(deviceAddress) &&
+                    device.RecordedDateTime >= start && device.RecordedDateTime <= end)
+                .Include(dev => dev.Device);
         }
     }
 }
