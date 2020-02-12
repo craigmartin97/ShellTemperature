@@ -30,9 +30,22 @@
                 </Grid.ColumnDefinitions>
 
                 <Button Content="{StaticResource SearchForDevice}"
-                        Style="{StaticResource BaseButtonStyle}"
                         MinWidth="200" MaxWidth="320" MinHeight="55" MaxHeight="90" Margin="8,8,4,12"
-                        Command="{Binding Path=SearchForDevices}"/>
+                        Command="{Binding Path=SearchForDevices}" 
+                        IsEnabled="{Binding Path=IsSearchForDevicesEnabled}">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsSearchForDevicesEnabled}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=IsSearchForDevicesEnabled}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
                 <Button Grid.Column="1" Content="{StaticResource RemoveDevice}"
                         Style="{StaticResource BaseButtonStyle}"

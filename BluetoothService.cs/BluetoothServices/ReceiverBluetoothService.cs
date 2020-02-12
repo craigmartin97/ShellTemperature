@@ -77,18 +77,14 @@ namespace BluetoothService.BluetoothServices
                     if (numberOfBytesRead <= 1)
                         continue;
 
-                    Debug.WriteLine("Doing sensor temp value");
                     string sensorTempValue = Encoding.ASCII.GetString(_myReadBuffer, 0, numberOfBytesRead);
                     if (string.IsNullOrWhiteSpace(sensorTempValue))
-                    {
-                        Debug.WriteLine("Sensor temp value was null");
                         return null;
-                    }
+                    
 
                     Debug.WriteLine("sensor temp value" + sensorTempValue);
                     string[] arr = sensorTempValue.Split(Environment.NewLine).ToArray();
 
-                    Debug.WriteLine(arr);
                     if (arr.Length == 0)
                         return null; // nothing to get
 

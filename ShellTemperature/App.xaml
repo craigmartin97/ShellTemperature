@@ -31,6 +31,11 @@
                 <dialogViews:AlertUserControl DataContext="{Binding}"/>
             </DataTemplate>
 
+            <!--  Confirmation Dialog -->
+            <DataTemplate DataType="{x:Type dialogsVM:ConfirmationDialogViewModel}" >
+                <dialogViews:ConfirmationUserControl DataContext="{Binding}"/>
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="./Styles/String.xaml" />
                 <ResourceDictionary Source="./Styles/Font.xaml" />

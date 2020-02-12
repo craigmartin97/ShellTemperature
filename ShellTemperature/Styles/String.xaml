@@ -7,4 +7,6 @@
     <system:String x:Key="SearchForDevice">Search For Device</system:String>
     
     <system:String x:Key="Ok">Ok</system:String>
+    <system:String x:Key="Yes">Yes</system:String>
+    <system:String x:Key="No">No</system:String>
 </ResourceDictionary>

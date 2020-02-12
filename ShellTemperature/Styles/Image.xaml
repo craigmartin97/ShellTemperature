@@ -12,7 +12,7 @@
 
     <!-- Dialog image style, for images on the custom dialog window/usercontrols -->
     <Style x:Key="DialogImageStyle" TargetType="{x:Type Image}">
-        <Setter Property="Margin" Value="30" />
+        <Setter Property="Margin" Value="10" />
     </Style>
 
 </ResourceDictionary>

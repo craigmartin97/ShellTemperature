@@ -1,20 +1,22 @@
 ﻿using BluetoothService.BluetoothServices;
+using CustomDialog.Interfaces;
+using CustomDialog.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.ConnectionObserver;
+using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.Views;
 using System;
 using System.Linq;
 using System.Windows;
-using CustomDialog.Interfaces;
-using CustomDialog.Services;
-using CustomDialog.Views;
-using ShellTemperature.ViewModels.TemperatureObserver;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
+using NLog.Extensions.Logging;
 
 namespace ShellTemperature
 {
@@ -47,6 +49,16 @@ namespace ShellTemperature
             _configuration = builder.Build();
 
             ServiceCollection serviceCollection = new ServiceCollection();
+
+            // Add NLog
+            serviceCollection.AddLogging(loggingProvider =>
+            {
+                // configure Logging with NLog
+                loggingProvider.ClearProviders();
+                loggingProvider.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
+                loggingProvider.AddConfiguration(_configuration.GetSection("Logging"));
+                loggingProvider.AddNLog(_configuration);
+            });
 
             // configure all classes that need to be injected
             ConfigureServices(serviceCollection);

@@ -1,4 +1,5 @@
-﻿using BluetoothService.BluetoothServices;
+﻿using System.Collections.Generic;
+using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
 using OxyPlot;
 using System.Collections.ObjectModel;
@@ -14,7 +15,15 @@ namespace ShellTemperature.Models
 
         public double CurrentData { get; set; }
 
+        /// <summary>
+        /// Stores all the shell readings, but excludes outliers
+        /// </summary>
         public ObservableCollection<ShellTemp> Temp { get; set; }
+
+        /// <summary>
+        /// Stores all the temperature points regardless if they are outliers or not.
+        /// </summary>
+        public List<double> AllTemperatureReadings { get; set; }
 
         public ObservableCollection<DataPoint> DataPoints { get; set; }
 
@@ -61,6 +70,28 @@ namespace ShellTemperature.Models
         }
 
         public int ReadingsCounter { get; set; }
+
+        #region Constructors
+
+        public Device()
+        {
+
+        }
+
+        public Device(BluetoothDevice device, string deviceName)
+        {
+            Timer = new DispatcherTimer();
+            CurrentData = 0;
+            DataPoints = new ObservableCollection<DataPoint>();
+            Temp = new ObservableCollection<ShellTemp>();
+            BluetoothService = new ReceiverBluetoothService();
+            BluetoothDevice = device;
+            IsTimerEnabled = false;
+            DeviceName = deviceName;
+            AllTemperatureReadings = new List<double>();
+        }
+        #endregion 
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
