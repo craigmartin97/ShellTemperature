@@ -1,26 +1,27 @@
-1. Better DateTime picker needed. I think its important to be able to choose time
-I may need to create on. XCeed's is a pain to use and doest respond well to the up/down arrow being pressed
+Azure save to live SQL server database
 
-2. Outiers - Can I use machine learning to detect outliers? i.e. Sudden drop to 2 and then straight back up
-is a clear outlier.
+Azure pipelines auto deployment
 
-3. Date time on XAxis - Needs to be a readable datetime i think.
+Unit tests
 
-5. What if config file does not contain the name, i.e. what is the device address is not in there
-and it outputs blank. Can I prompt the user / display message to say, "The device at address XXXXX needs 
-to be added to config for specific device name"???
+-- Outliers, when a value is perhaps 2 and based of previous readings the value should be marked as an outlier and on screen highlighted red -- 
 
-6. Can I make the system be able to find new sensors on a btn pressed
+NLog
 
-7. Should I have a seperate thread that checks if the device is connected and 
-another reading the data in?
+X-Axis, data and time needs to be better as current is ticks
 
-8. Add Btn to clear graph and temperature data
+Axis Labels
 
-9. Allow user to remove single temperature value
+Better datetime picker as only dates, need to be able to select time as well.
 
-10. Display DateTime next to temperature on Live Shell Data View
+Add global exception handler to project.
 
-11. Documentation
+What happens if you unplug real date time module through execution
 
-12. 
+What happens temperature sensor returns NaN, i.e. the thermocouple is not plugged in?
+
+DS3231, finds bad date time handle better as message just flashes on and off.
+
+Why does changing end throw StackOverflow exception?
+
+
