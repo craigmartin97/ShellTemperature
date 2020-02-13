@@ -39,17 +39,29 @@ namespace ShellTemperature.Models
             }
         }
 
-        private DeviceConnectionStatus _isConnected;
-        /// <summary>
-        /// Represents the status of the device connection status
-        /// </summary>
-        public DeviceConnectionStatus IsConnected
+        //private DeviceConnectionStatus _isConnected;
+        ///// <summary>
+        ///// Represents the status of the device connection status
+        ///// </summary>
+        //public DeviceConnectionStatus IsConnected
+        //{
+        //    get => _isConnected;
+        //    set
+        //    {
+        //        _isConnected = value;
+        //        OnPropertyChanged(nameof(IsConnected));
+        //    }
+        //}
+
+        private ConnectionState _state;
+
+        public ConnectionState State
         {
-            get => _isConnected;
+            get => _state;
             set
             {
-                _isConnected = value;
-                OnPropertyChanged(nameof(IsConnected));
+                _state = value;
+                OnPropertyChanged(nameof(State));
             }
         }
 
@@ -89,6 +101,7 @@ namespace ShellTemperature.Models
             IsTimerEnabled = false;
             DeviceName = deviceName;
             AllTemperatureReadings = new List<double>();
+            State = new ConnectionState();
         }
         #endregion 
 

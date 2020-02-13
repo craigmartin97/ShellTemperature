@@ -7,19 +7,19 @@ namespace ShellTemperature.ViewModels.ConnectionObserver
     public class BluetoothConnectionSubject
     {
         private readonly IList<BluetoothConnectionObserverViewModel> _observer = new List<BluetoothConnectionObserverViewModel>();
-        private Device _device;
+        private ConnectionState _connStatus;
 
-        public Device GetState() => _device;
+        public ConnectionState GetState() => _connStatus;
 
-        public void SetState(Device foundDevices)
+        public void SetState(ConnectionState connStatus)
         {
-            _device = foundDevices;
+            _connStatus = connStatus;
             NotifyAllObservers();
         }
 
-        public void SetState(Device foundDevices, string message)
+        public void SetState(ConnectionState connStatus, string message)
         {
-            _device = foundDevices;
+            _connStatus = connStatus;
             NotifyAllObservers(message);
         }
 

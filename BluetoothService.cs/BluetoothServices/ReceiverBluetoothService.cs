@@ -3,6 +3,7 @@ using BluetoothService.Models;
 using InTheHand.Net.Sockets;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -44,6 +45,12 @@ namespace BluetoothService.BluetoothServices
                 Debug.WriteLine(ex.Message);
                 throw;
             }
+            catch (IOException ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("Unable to get network stream");
+                throw;
+            }
             catch (Exception ex)
             {
                 Debug.WriteLine("Unexpected exception has occurred whilst reading the bluetooth data");
@@ -72,6 +79,7 @@ namespace BluetoothService.BluetoothServices
                 do
                 {
                     Thread.Sleep(100);
+                    stream.ReadTimeout = 500; // 500 millisecond timeout, if unable to get data feed
                     int numberOfBytesRead = stream.Read(_myReadBuffer, 0, _myReadBuffer.Length);
                     Debug.WriteLine("Got number of bytes: " + numberOfBytesRead);
                     if (numberOfBytesRead <= 1)
@@ -80,7 +88,7 @@ namespace BluetoothService.BluetoothServices
                     string sensorTempValue = Encoding.ASCII.GetString(_myReadBuffer, 0, numberOfBytesRead);
                     if (string.IsNullOrWhiteSpace(sensorTempValue))
                         return null;
-                    
+
 
                     Debug.WriteLine("sensor temp value" + sensorTempValue);
                     string[] arr = sensorTempValue.Split(Environment.NewLine).ToArray();
@@ -126,6 +134,7 @@ namespace BluetoothService.BluetoothServices
                 }
                 while (stream.DataAvailable); // only continue if there is more to stream and the parse was successful.
 
+                stream.Close(); // test
                 return null;
             }
             else

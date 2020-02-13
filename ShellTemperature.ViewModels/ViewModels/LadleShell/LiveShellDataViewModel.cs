@@ -18,11 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
+using BluetoothService;
 using CustomDialog.Dialogs;
 using CustomDialog.Enums;
 using CustomDialog.Services;
@@ -103,17 +105,21 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
-        private Device _selectedFoundDevices;
+        private Device _selectedDevice;
         /// <summary>
         /// The selected foundDevices from the list.
         /// </summary>
         public Device SelectedDevice
         {
-            get => _selectedFoundDevices;
+            get => _selectedDevice;
             set
             {
-                _selectedFoundDevices = value;
-                _subject.SetState(value);
+                if(value == null)
+                    return;
+
+                _selectedDevice = value;
+                _subject.SetState(value.State);
+
                 OnPropertyChanged(nameof(SelectedDevice));
             }
         }
@@ -157,8 +163,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             SelectedDevice.IsTimerEnabled = true; // enable the start button for the timer
 
             // can't change connection status if the foundDevices has failed to connect.
-            if (SelectedDevice.IsConnected.Equals(DeviceConnectionStatus.FAILED)) return;
+            if (SelectedDevice.State.IsConnected.Equals(DeviceConnectionStatus.FAILED)) return;
 
+            SelectedDevice.State.Message = BLTError.paused + SelectedDevice.DeviceName;
             SetConnectionStatus(SelectedDevice, DeviceConnectionStatus.PAUSED);
         });
 
@@ -336,6 +343,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     Debug.WriteLine("Connecting FoundDevices - " + currentDevice.DeviceName);
                     currentDevice.ReadingsCounter++;
 
+                    currentDevice.State.Message = BLTError.connecting + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTING);
                     return;
                 }
@@ -361,6 +369,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 _shellRepo.Create(shellTemp); // create a new record in the database.
                 _temperatureSubject.SetState(shellTemp);
+
+                currentDevice.State.Message = BLTError.connected + currentDevice.DeviceName;
                 SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTED);
             }
             catch (NullReferenceException ex)
@@ -370,7 +380,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 if (currentDevice != null && SelectedDevice == currentDevice)
                 {
+                    currentDevice.State.Message = BLTError.connecting + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTING);
+
                     ResetDeviceCounter(currentDevice); // maybe this needs to be outside this if???
                     ResetBluetoothClient(currentDevice);
                 }
@@ -382,7 +394,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 if (currentDevice != null && SelectedDevice == currentDevice)
                 {
-                    SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED, ex.Message);
+                    currentDevice.State.Message = ex.Message + " - " + currentDevice.DeviceName; 
+                    SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
+
                     ResetDeviceCounter(currentDevice);
                     ResetBluetoothClient(currentDevice);
                 }
@@ -395,7 +409,27 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 if (currentDevice != null && SelectedDevice == currentDevice)
                 {
                     StopCommand.Execute(null);
+
+                    currentDevice.State.Message = BLTError.error + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
+
+                    ResetDeviceCounter(currentDevice);
+                    ResetBluetoothClient(currentDevice);
+                }
+            }
+            catch (IOException ex) // thermocouple is probably broken, unplugged or not working
+            {
+                _logger.LogError("Check the thermocouple, it might be broken");
+                Debug.WriteLine("The thermocouple is suspected to not be working");
+                Debug.WriteLine(ex.Message);
+
+                if (currentDevice != null && SelectedDevice == currentDevice)
+                {
+                    StopCommand.Execute(null);
+
+                    currentDevice.State.Message = "The thermocouple is not working - " + currentDevice.DeviceName;
+                    SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
+
                     ResetDeviceCounter(currentDevice);
                     ResetBluetoothClient(currentDevice);
                 }
@@ -441,10 +475,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// <param name="status">The status to check and change to</param>
         private void SetConnectionStatus(Device foundDevice, DeviceConnectionStatus status)
         {
-            if (!foundDevice.IsConnected.Equals(status) && SelectedDevice == foundDevice)
+            if (!foundDevice.State.Equals(status) && SelectedDevice == foundDevice)
             {
-                foundDevice.IsConnected = status;
-                SetDeviceState(foundDevice);
+                foundDevice.State.IsConnected = status;
+                SetDeviceState(foundDevice.State);
             }
         }
 
@@ -453,27 +487,27 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         /// <param name="foundDevices">The devices connection status to change</param>
         /// <param name="status">The status to check and change to</param>
-        private void SetConnectionStatus(Device foundDevice, DeviceConnectionStatus status, string message)
-        {
-            if (!foundDevice.IsConnected.Equals(status) && SelectedDevice == foundDevice)
-            {
-                foundDevice.IsConnected = status;
-                SetDeviceState(foundDevice, message);
-            }
-        }
+        //private void SetConnectionStatus(Device foundDevice, DeviceConnectionStatus status, ConnectionState state, string message)
+        //{
+        //    if (!foundDevice.IsConnected.Equals(status) && SelectedDevice == foundDevice)
+        //    {
+        //        foundDevice.IsConnected = status;
+        //        SetDeviceState(state, message);
+        //    }
+        //}
 
         /// <summary>
         /// Update the connection status
         /// </summary>
         /// <param name="foundDevices">The foundDevices's connection status to update</param>
-        private void SetDeviceState(Device foundDevice)
+        private void SetDeviceState(ConnectionState foundDevice)
             => _subject.SetState(foundDevice);
 
         /// <summary>
         /// Update the connection status
         /// </summary>
         /// <param name="foundDevices">The foundDevices's connection status to update</param>
-        private void SetDeviceState(Device foundDevice, string message)
+        private void SetDeviceState(ConnectionState foundDevice, string message)
             => _subject.SetState(foundDevice, message);
 
         /// <summary>

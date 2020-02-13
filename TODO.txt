@@ -24,4 +24,4 @@ DS3231, finds bad date time handle better as message just flashes on and off.
 
 Why does changing end throw StackOverflow exception?
 
-
+Allow comments to be added to temperatures

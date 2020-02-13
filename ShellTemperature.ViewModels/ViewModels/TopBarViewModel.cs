@@ -1,7 +1,5 @@
-﻿using ShellTemperature.ViewModels.ConnectionObserver;
-using System.Diagnostics;
-using BluetoothService.Enums;
-using ShellTemperature.Models;
+﻿using ShellTemperature.Models;
+using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.ViewModels.ConnectionStatus;
 
 namespace ShellTemperature.ViewModels.ViewModels
@@ -10,12 +8,12 @@ namespace ShellTemperature.ViewModels.ViewModels
     {
         #region Properties
 
-        private Device _device;
+        private ConnectionState _device;
 
         /// <summary>
         /// The current foundDevices
         /// </summary>
-        public Device Device
+        public ConnectionState Device
         {
             get => _device;
             set
@@ -54,7 +52,7 @@ namespace ShellTemperature.ViewModels.ViewModels
 
             if (Device == null) return;
 
-            ConnectionMessage = GetConnectionStatus();
+            ConnectionMessage = Device.Message;
         }
 
         public override void Update(string message)
@@ -68,16 +66,16 @@ namespace ShellTemperature.ViewModels.ViewModels
 
         #endregion
 
-        private string GetConnectionStatus()
-        {
-            return Device.IsConnected switch
-            {
-                DeviceConnectionStatus.CONNECTED => ("Connected - " + Device.DeviceName),
-                DeviceConnectionStatus.CONNECTING => ("Connecting to - " + Device.DeviceName),
-                DeviceConnectionStatus.FAILED => ("Failed to Connect - " + Device.DeviceName),
-                DeviceConnectionStatus.PAUSED => ("Paused - " + Device.DeviceName),
-                _ => "Error"
-            };
-        }
+        //private string GetConnectionStatus()
+        //{
+        //    return Device.IsConnected switch
+        //    {
+        //        DeviceConnectionStatus.CONNECTED => ("Connected - " + Device.DeviceName),
+        //        DeviceConnectionStatus.CONNECTING => ("Connecting to - " + Device.DeviceName),
+        //        DeviceConnectionStatus.FAILED => ("Failed to Connect - " + Device.DeviceName),
+        //        DeviceConnectionStatus.PAUSED => ("Paused - " + Device.DeviceName),
+        //        _ => "Error"
+        //    };
+        //}
     }
 }

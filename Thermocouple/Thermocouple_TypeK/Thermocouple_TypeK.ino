@@ -47,6 +47,11 @@ void setup() {
 void loop() {
   // Read the temperature in Celsius
   float temperature = probe.readTempC();
+
+  if(isnan(temperature)) // not a number, then can't continue as its wrong
+  {
+    return;
+  }
     
   if(digitalRead(BTpin) == 1) // the arduino's bluetooth sensor is connected to another device
   {
