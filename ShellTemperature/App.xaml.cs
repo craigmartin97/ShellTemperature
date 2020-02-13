@@ -17,6 +17,7 @@ using System.Windows;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using NLog.Extensions.Logging;
+using ShellTemperature.ViewModels.ViewModels.Reports;
 
 namespace ShellTemperature
 {
@@ -132,6 +133,7 @@ namespace ShellTemperature
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LiveShellDataViewModel>();
             services.AddScoped<ShellHistoryViewModel>();
+            services.AddSingleton<ReportViewModel>();
 
         }
         #endregion

@@ -118,6 +118,9 @@
                         <Button Content="Live Shell Data" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=LiveShellDataViewCommand}" />
                         <!-- Btn for displaying the shell history -->
                         <Button Content="Shell History" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ShellHistoryViewCommand}" />
+
+                        <!-- Btn for report history -->
+                        <Button Content="Report" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ReportHistoryViewCommand}" />
                     </StackPanel>
                 </Grid>
             </Grid>
