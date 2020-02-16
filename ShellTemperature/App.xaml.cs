@@ -15,7 +15,6 @@ using System;
 using System.Linq;
 using System.Windows;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Configuration;
 using NLog.Extensions.Logging;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 
