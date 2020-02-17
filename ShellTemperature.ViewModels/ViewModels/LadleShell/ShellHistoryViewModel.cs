@@ -7,6 +7,7 @@ using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels.TemperatureNotifier;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -187,8 +188,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             BluetoothData.Clear();
             if (CurrentDeviceInfo == null) return;
 
-            BluetoothData = new ObservableCollection<ShellTemp>(_shellTempRepo.GetShellTemperatureData(Start, End,
-                CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress));
+            IEnumerable<ShellTemp> tempData = _shellTempRepo.GetShellTemperatureData(Start, End,
+                CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress);
+
+            if (tempData == null) return;
+
+            tempData = tempData.OrderBy(time => time.RecordedDateTime);
+
+            BluetoothData = new ObservableCollection<ShellTemp>(tempData);
         }
 
         /// <summary>

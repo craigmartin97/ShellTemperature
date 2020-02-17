@@ -5,6 +5,7 @@ using OxyPlot;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Threading;
+using BluetoothService;
 using BluetoothService.Enums;
 
 namespace ShellTemperature.Models
@@ -38,20 +39,6 @@ namespace ShellTemperature.Models
                 OnPropertyChanged(nameof(IsTimerEnabled));
             }
         }
-
-        //private DeviceConnectionStatus _isConnected;
-        ///// <summary>
-        ///// Represents the status of the device connection status
-        ///// </summary>
-        //public DeviceConnectionStatus IsConnected
-        //{
-        //    get => _isConnected;
-        //    set
-        //    {
-        //        _isConnected = value;
-        //        OnPropertyChanged(nameof(IsConnected));
-        //    }
-        //}
 
         private ConnectionState _state;
 
@@ -101,7 +88,11 @@ namespace ShellTemperature.Models
             IsTimerEnabled = false;
             DeviceName = deviceName;
             AllTemperatureReadings = new List<double>();
-            State = new ConnectionState();
+            State = new ConnectionState()
+            {
+                IsConnected = DeviceConnectionStatus.CONNECTING,
+                Message = BLTError.connecting + deviceName
+            };
         }
         #endregion 
 

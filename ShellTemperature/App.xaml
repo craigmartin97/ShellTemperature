@@ -6,6 +6,8 @@
              xmlns:vm="clr-namespace:ShellTemperature.ViewModels.ViewModels;assembly=ShellTemperature.ViewModels"
              xmlns:ladleVM="clr-namespace:ShellTemperature.ViewModels.ViewModels.LadleShell;assembly=ShellTemperature.ViewModels"
              xmlns:dialogsVM="clr-namespace:CustomDialog.Dialogs;assembly=CustomDialog"
+             xmlns:reportsVM="clr-namespace:ShellTemperature.ViewModels.ViewModels.Reports;assembly=ShellTemperature.ViewModels"
+             xmlns:reportsView="clr-namespace:ShellTemperature.Views.Reports"
              xmlns:dialogViews="clr-namespace:CustomDialog.Views;assembly=CustomDialog"
              Startup="OnStartup">
     <Application.Resources>
@@ -23,6 +25,11 @@
             <!-- The bar at the top of the main window -->
             <DataTemplate DataType="{x:Type vm:TopBarViewModel}">
                 <connectionViews:BluetoothConnectionStatusUserControl DataContext="{Binding}" />
+            </DataTemplate>
+
+            <!-- Reports view, to gen daily, weekly and monthly reports -->
+            <DataTemplate DataType="{x:Type reportsVM:ReportViewModel}">
+                <reportsView:ReportUserControl DataContext="{Binding}" />
             </DataTemplate>
 
             <!--  Custom Dialog -->
