@@ -425,7 +425,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 if (currentDevice != null && SelectedDevice == currentDevice)
                 {
-                    StopCommand.Execute(null);
+                    //StopCommand.Execute(null);
 
                     currentDevice.State.Message = "The thermocouple is not working - " + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
@@ -483,32 +483,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         }
 
         /// <summary>
-        /// Change the connection status for the foundDevices
-        /// </summary>
-        /// <param name="foundDevices">The devices connection status to change</param>
-        /// <param name="status">The status to check and change to</param>
-        //private void SetConnectionStatus(Device foundDevice, DeviceConnectionStatus status, ConnectionState state, string message)
-        //{
-        //    if (!foundDevice.IsConnected.Equals(status) && SelectedDevice == foundDevice)
-        //    {
-        //        foundDevice.IsConnected = status;
-        //        SetDeviceState(state, message);
-        //    }
-        //}
-
-        /// <summary>
         /// Update the connection status
         /// </summary>
         /// <param name="foundDevices">The foundDevices's connection status to update</param>
         private void SetDeviceState(ConnectionState foundDevice)
             => _subject.SetState(foundDevice);
-
-        /// <summary>
-        /// Update the connection status
-        /// </summary>
-        /// <param name="foundDevices">The foundDevices's connection status to update</param>
-        private void SetDeviceState(ConnectionState foundDevice, string message)
-            => _subject.SetState(foundDevice, message);
 
         /// <summary>
         /// Get the value from the foundDevices name dictionary

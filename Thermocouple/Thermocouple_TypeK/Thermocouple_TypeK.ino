@@ -1,13 +1,14 @@
-#include <Wire.h>
+ #include <Wire.h>
 #include "RTClib.h"
 
 #include <SoftwareSerial.h>
 #include <SparkFunMAX31855k.h> // Using the max31855k driver
 #include <SPI.h>  // Included here too due Arduino IDE; Used in above header
 #include <SD.h>
+#include <TinyGPS.h>
 
 // Pins for the thermocouple
-const uint8_t CHIP_SELECT_PIN = 10; // Using standard CS line (SS)
+const uint8_t CHIP_SELECT_PIN = 7; // Using standard CS line (SS)
 const uint8_t VCC = 14; // Powering board straight from Arduino Pro Mini
 const uint8_t GND = 15;
 
@@ -16,10 +17,14 @@ SparkFunMAX31855k probe(CHIP_SELECT_PIN, VCC, GND);
 
 // Bluetooth setup
 SoftwareSerial BTserial(0,1); // RX | TX
-const byte BTpin = 3; // STATE pin to arduino pin D4
+const byte BTpin = 6; // STATE pin to arduino pin D4
 
 // Micro SD card adapter setup
 File myFile;
+
+//GPS
+TinyGPS gps;
+SoftwareSerial ss(3, 4);
 
 //DateTime
 RTC_DS3231 rtc;
@@ -30,43 +35,52 @@ char DateAndTimeString[20]; // 19 digits plus the null char
  */
 void setup() {
   Wire.begin(); // for recording the datetime
-  
-  pinMode(BTpin, INPUT);
 
   Serial.begin(9600);
+  ss.begin(9600);
   
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  pinMode(BTpin, INPUT);
+  pinMode(10, OUTPUT);
 
-  setupSDCard();
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   
   delay(100);  // Let IC stabilize or first readings will be garbage
 }
 /**
  * Continuous loop every x seconds.
  */
-void loop() {
+void loop() {  
   // Read the temperature in Celsius
   float temperature = probe.readTempC();
+  String dateTime = getCurrentDateTime();
+  String gpsLocation = getGPSLocation();
 
   if(isnan(temperature)) // not a number, then can't continue as its wrong
   {
     return;
   }
-    
-  if(digitalRead(BTpin) == 1) // the arduino's bluetooth sensor is connected to another device
+  
+
+  if(digitalRead(BTpin) >= 1) // the arduino's bluetooth sensor is connected to another device
   {
+    Serial.print("TEMP: ");
     Serial.print(temperature);
+
+    if(dateTime.length() > 0) // has datetime, otherwise dont print
+    {
+      Serial.print(" DATETIME: ");
+      Serial.print(dateTime);
+    }
+    
     Serial.print(" ");
-    Serial.print(getCurrentDateTime());
+    
+    Serial.print(gpsLocation);
     Serial.println(); 
   }
   else // the arduino's bluetooth sensor is NOT connected to another device
   {
-    // config to write to SD card reader here
+    writeToFile(temperature, dateTime, gpsLocation);
   }
-  
-  // Delay 1 second and get next reading
-  delay(1000);
 }
 
 /**
@@ -74,32 +88,74 @@ void loop() {
  */
 String getCurrentDateTime() {
   DateTime now = rtc.now();
+
+  if(now.day() == 165)
+    return "";
+  
   sprintf_P(DateAndTimeString, PSTR("%02d/%02d/%4d %02u:%02u:%02u"), now.day(), now.month(), now.year(), now.hour(), now.minute(), now.second());
   return DateAndTimeString;
 }
 
 /**
- * Setup the sd card for usage
+ * Get the current GPS Location of the sensor
  */
-void setupSDCard(){
-  if(!SD.begin(4)) {
-    Serial.println("Init failed!");
-    //while(1);
+String getGPSLocation(){
+  bool newData = false;
+  unsigned long chars;
+  unsigned short sentences, failed;
+
+  // For one second we parse GPS data and report some key values
+  for (unsigned long start = millis(); millis() - start < 1000;)
+  {
+    while (ss.available())
+    {
+      //char c = ss.read();
+      int i = ss.read();
+      
+      //Serial.write(c); // uncomment this line if you want to see the GPS data flowing
+      if (gps.encode(i)) // Did a new valid sentence come in?
+        newData = true;
+    }
   }
-  Serial.println("Init done.");
+
+  if (newData)
+  {
+    float flat, flon;
+    unsigned long age;
+    gps.f_get_position(&flat, &flon, &age);
+
+    return String("LAT: " + String(flat, 7) + " LONG: " + String(flon, 7));
+  }
+
+  return "";
 }
 
 /**
- * Access a file on the sd card
+ * Setup the SD Card to write data to
  */
-void accessFileOnSDCard(){
-  myFile = SD.open("data.txt", FILE_WRITE);
-  if(myFile) // my file opened correctly
+void writeToFile(float temperature, String dateTime, String gpsLocation){
+  if(!SD.begin(10)) // can't access sd card so stop
   {
-    Serial.println("the file was opened correctly");
+    return;
   }
-  else
+
+  myFile = SD.open("data.txt", FILE_WRITE);
+  if(myFile)
   {
-    Serial.println("ERROR!!!");  
+    myFile.print("TEMP: ");
+    myFile.print(temperature);
+
+    if(dateTime.length() > 0) // has datetime, otherwise dont print
+    {
+      myFile.print(" DATETIME: ");
+      myFile.print(dateTime);
+    }
+    
+    myFile.print(" ");
+    
+    myFile.print(gpsLocation);
+    myFile.println(); 
+
+    myFile.close();
   }
 }

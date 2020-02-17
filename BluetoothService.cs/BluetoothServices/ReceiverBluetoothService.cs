@@ -79,7 +79,7 @@ namespace BluetoothService.BluetoothServices
                 do
                 {
                     Thread.Sleep(100);
-                    stream.ReadTimeout = 500; // 500 millisecond timeout, if unable to get data feed
+                    stream.ReadTimeout = 1000; // 500 millisecond timeout, if unable to get data feed
                     int numberOfBytesRead = stream.Read(_myReadBuffer, 0, _myReadBuffer.Length);
                     Debug.WriteLine("Got number of bytes: " + numberOfBytesRead);
                     if (numberOfBytesRead <= 1)
@@ -96,41 +96,92 @@ namespace BluetoothService.BluetoothServices
                     if (arr.Length == 0)
                         return null; // nothing to get
 
-                    DeviceReading deviceReading;
+                    DeviceReading deviceReading = new DeviceReading();
 
                     string latestReading = arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x));
-                    int indexOfFirstSpace = latestReading.IndexOf(' ');
-                    if (indexOfFirstSpace > 0) // got space
+
+                    if (string.IsNullOrWhiteSpace(latestReading))
+                        return null;
+
+                    string[] latestData = latestReading.Split(' ')
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .ToArray();
+
+                    bool hasDateTime = false;
+                    
+                    for (int i = 0; i < latestData.Length - 1; i++)
                     {
-                        string temp = latestReading.Substring(0, indexOfFirstSpace);
-                        string dateTime = latestReading.Substring(indexOfFirstSpace);
-
-                        if (!double.TryParse(temp, out double tempAsDouble) ||
-                            !DateTime.TryParse(dateTime, out DateTime dateAsDateTime)) continue;
-
-                        Debug.WriteLine("GOT DOUBLE: " + tempAsDouble);
-                        deviceReading = new DeviceReading
+                        string data = latestData[i].Trim();
+                        // sometimes its stupid and trims the leading T off :/
+                        if (data.Equals("TEMP:", StringComparison.CurrentCultureIgnoreCase) ||
+                            data.Equals("EMP:", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            Temperature = tempAsDouble,
-                            RecordedDateTime = dateAsDateTime
-                        };
-                    }
-                    else
-                    {
-                        bool isDouble = double.TryParse(arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x)),
-                            out double d);
-
-                        if (!isDouble)
-                            continue;
-
-                        deviceReading = new DeviceReading
+                            bool isDouble = double.TryParse(latestData[i + 1], out double temp);
+                            if (isDouble)
+                                deviceReading.Temperature = temp;
+                        }
+                        else if (data.Equals("DATETIME:", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            Temperature = d,
-                            RecordedDateTime = DateTime.Now // no date time read, so just use best next thing :/
-                        };
+                            string stringDateTime = latestData[i + 1] + " " + latestData[i + 2];
+                            bool isDateTime = DateTime.TryParse(stringDateTime, out DateTime dateTime);
+                            if (isDateTime)
+                            {
+                                deviceReading.RecordedDateTime = dateTime;
+                                hasDateTime = true;
+                            }
+                        }
+                        else if (data.Equals("LAT:", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            bool isFloat = float.TryParse(latestData[i + 1], out float latitude);
+                            if (isFloat)
+                                deviceReading.Latitude = latitude;
+                        }
+                        else if (data.Equals("LONG:", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            bool isFloat = float.TryParse(latestData[i+1], out float longitude);
+                            if (isFloat)
+                                deviceReading.Longitude = longitude;
+                        }
                     }
+
+                    // no date time then set to current
+                    if (!hasDateTime) 
+                        deviceReading.RecordedDateTime = DateTime.Now;
 
                     return deviceReading;
+
+                    //int indexOfFirstSpace = latestReading.IndexOf(' ');
+                    //if (indexOfFirstSpace > 0) // got space
+                    //{
+                    //    string temp = latestReading.Substring(0, indexOfFirstSpace);
+                    //    string dateTime = latestReading.Substring(indexOfFirstSpace);
+
+                    //    if (!double.TryParse(temp, out double tempAsDouble) ||
+                    //        !DateTime.TryParse(dateTime, out DateTime dateAsDateTime)) continue;
+
+                    //    Debug.WriteLine("GOT DOUBLE: " + tempAsDouble);
+                    //    deviceReading = new DeviceReading
+                    //    {
+                    //        Temperature = tempAsDouble,
+                    //        RecordedDateTime = dateAsDateTime
+                    //    };
+                    //}
+                    //else
+                    //{
+                    //    bool isDouble = double.TryParse(arr.LastOrDefault(x => !string.IsNullOrWhiteSpace(x)),
+                    //        out double d);
+
+                    //    if (!isDouble)
+                    //        continue;
+
+                    //    deviceReading = new DeviceReading
+                    //    {
+                    //        Temperature = d,
+                    //        RecordedDateTime = DateTime.Now // no date time read, so just use best next thing :/
+                    //    };
+                    //}
+
+
                 }
                 while (stream.DataAvailable); // only continue if there is more to stream and the parse was successful.
 
