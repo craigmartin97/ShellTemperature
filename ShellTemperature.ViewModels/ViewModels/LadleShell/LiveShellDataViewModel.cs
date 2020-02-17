@@ -1,8 +1,12 @@
-﻿using BluetoothService.BluetoothServices;
+﻿using BluetoothService;
+using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
 using BluetoothService.Enums;
 using BluetoothService.Models;
+using CustomDialog.Dialogs;
+using CustomDialog.Enums;
 using CustomDialog.Interfaces;
+using CustomDialog.Services;
 using InTheHand.Net.Sockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -24,10 +28,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using BluetoothService;
-using CustomDialog.Dialogs;
-using CustomDialog.Enums;
-using CustomDialog.Services;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -114,13 +114,42 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             get => _selectedDevice;
             set
             {
-                if(value == null)
-                    return;
-
                 _selectedDevice = value;
-                _subject.SetState(value.State);
-
                 OnPropertyChanged(nameof(SelectedDevice));
+                if (value == null)
+                {
+                    return;
+                }
+
+                _subject.SetState(value.State);
+            }
+        }
+
+        private string _latestLatitude = "N/A";
+        /// <summary>
+        /// Latest latitude value that has been recorded for the selected sensor
+        /// </summary>
+        public string LatestLatitude
+        {
+            get => _latestLatitude;
+            set
+            {
+                _latestLatitude = value;
+                OnPropertyChanged(nameof(LatestLatitude));
+            }
+        }
+
+        private string _latestLongitude = "N/A";
+        /// <summary>
+        /// Latest longitude value that has been recorded for the selected sensor
+        /// </summary>
+        public string LatestLongitude
+        {
+            get => _latestLongitude;
+            set
+            {
+                _latestLongitude = value;
+                OnPropertyChanged(nameof(LatestLongitude));
             }
         }
 
@@ -139,6 +168,19 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
+        private bool _canRemoveDevice;
+        /// <summary>
+        /// Property indicating if devices can be removed from
+        /// </summary>
+        public bool CanRemoveDevice
+        {
+            get => _canRemoveDevice;
+            set
+            {
+                _canRemoveDevice = value;
+                OnPropertyChanged(nameof(CanRemoveDevice));
+            }
+        }
         #endregion
 
         #region Commands
@@ -148,6 +190,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         public RelayCommand StartCommand
         => new RelayCommand(param =>
         {
+            if (SelectedDevice == null)
+                return;
+
             SelectedDevice.Timer.Start();
             SelectedDevice.IsTimerEnabled = false; // disable the foundDevices start button as already running.
         });
@@ -159,6 +204,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         public RelayCommand StopCommand
         => new RelayCommand(param =>
         {
+            if (SelectedDevice == null)
+                return;
+
             SelectedDevice.Timer.Stop(); // stop the current selected timer.
             SelectedDevice.IsTimerEnabled = true; // enable the start button for the timer
 
@@ -236,7 +284,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 }
                 finally
                 {
+                    OrderDevices();
                     Application.Current.Dispatcher?.Invoke(() => IsSearchForDevicesEnabled = true);
+                    SetSelectedDeviceWhenNull();
+                    SetCanRemoveDevices();
                 }
             });
 
@@ -252,7 +303,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             SelectedDevice.BluetoothDevice.Client.Close();
             Devices.Remove(SelectedDevice);
 
-            SelectedDevice = Devices.FirstOrDefault(); // reset to the next item
+            SelectedDevice = Devices == null || Devices.Count == 0 ? null : Devices.FirstOrDefault();
+            SetCanRemoveDevices();
         });
         #endregion
 
@@ -301,8 +353,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
             if (Devices.Count == 0) return;
 
-            Devices.OrderBy(x => x.DeviceName);
-            SelectedDevice = Devices[0];
+            OrderDevices();
+            SetSelectedDeviceWhenNull();
+
+            SetCanRemoveDevices();
 
             // get all the devices from the data store, this is needed
             _datastoreDevices = _deviceRepository.GetAll();
@@ -337,6 +391,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 if (isOutlier) // value is outlier cannot be added
                     return;
 
+                // format the datetime, so if its invalid it is corrected
+                FormatDateTime(currentDevice, receivedData);
+
                 // first three readings ignore as they could be bad, often they are
                 if (currentDevice.ReadingsCounter <= 3 && SelectedDevice == currentDevice)
                 {
@@ -347,7 +404,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTING);
                     return;
                 }
-
 
                 currentDevice.CurrentData = receivedData.Temperature;
 
@@ -360,10 +416,18 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 {
                     Temperature = receivedData.Temperature,
                     RecordedDateTime = receivedData.RecordedDateTime,
+                    Latitude = receivedData.Latitude,
+                    Longitude = receivedData.Longitude,
                     Device = device
                 };
 
+                LatestLatitude = receivedData.Latitude == null ? "N/A" : receivedData.Latitude.ToString();
+                LatestLongitude = receivedData.Longitude == null ? "N/A" : receivedData.Longitude.ToString();
+
                 currentDevice.Temp.Add(shellTemp);
+                IEnumerable<ShellTemp> shellTemps = currentDevice.Temp.OrderBy(x => x.RecordedDateTime);
+                currentDevice.Temp = new ObservableCollection<ShellTemp>(shellTemps);
+
                 currentDevice.DataPoints.Add((new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime),
                     shellTemp.Temperature)));
 
@@ -394,7 +458,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 if (currentDevice != null && SelectedDevice == currentDevice)
                 {
-                    currentDevice.State.Message = ex.Message + " - " + currentDevice.DeviceName; 
+                    currentDevice.State.Message = ex.Message + " - " + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
 
                     ResetDeviceCounter(currentDevice);
@@ -463,9 +527,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private void ResetDeviceCounter(Device foundDevices)
         {
             if (foundDevices.ReadingsCounter > 3)
-            {
                 foundDevices.ReadingsCounter = 0;
-            }
         }
 
         /// <summary>
@@ -538,6 +600,60 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
             // current datetime is only valid if its between the two ranges
             return minDateTimeRange < currentDateTime && maxDateTimeRange > currentDateTime;
+        }
+
+        /// <summary>
+        /// If the received data is before the previous oe
+        /// or much greater than the previous one then it must be
+        /// an outlier and needs fixing.
+        /// Reset the value to the prev plus one second
+        /// </summary>
+        /// <param name="currentDevice"></param>
+        /// <param name="receivedData"></param>
+        private void FormatDateTime(Device currentDevice, DeviceReading receivedData)
+        {
+            // format the datetime if incorrect
+            // sometimes the datetime is to far in advance compared to the previous
+            ShellTemp prev = currentDevice.Temp.LastOrDefault();
+            if (prev != null)
+            {
+                DateTime min = prev.RecordedDateTime;
+                DateTime max = prev.RecordedDateTime.AddSeconds(2);
+
+                if (receivedData.RecordedDateTime < min || receivedData.RecordedDateTime > max)
+                {
+                    receivedData.RecordedDateTime = prev.RecordedDateTime.AddSeconds(1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Order the devices in alphabetical order
+        /// </summary>
+        private void OrderDevices()
+        {
+            // order the devices
+            IEnumerable<Device> orderedDevices = Devices.OrderBy(x => x.DeviceName);
+            Devices = new ObservableCollection<Device>(orderedDevices);
+        }
+
+        /// <summary>
+        /// Function to set the property can remove devices
+        /// based upon the number of devices inside the collection.
+        /// If the collection has items then they can be removed.
+        /// Otherwise, they cannot.
+        /// </summary>
+        private void SetCanRemoveDevices()
+         => CanRemoveDevice = Devices.Count > 0;
+
+        /// <summary>
+        /// Set the selected device when it is null
+        /// with the first item from the devices list.
+        /// </summary>
+        private void SetSelectedDeviceWhenNull()
+        {
+            if (SelectedDevice == null && Devices.Count > 0)
+                SelectedDevice = Devices[0];
         }
         #endregion
     }

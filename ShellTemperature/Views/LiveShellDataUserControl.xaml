@@ -48,23 +48,60 @@
                 </Button>
 
                 <Button Grid.Column="1" Content="{StaticResource RemoveDevice}"
-                        Style="{StaticResource BaseButtonStyle}"
                         MinWidth="150" MaxWidth="300" MinHeight="55" MaxHeight="90" Margin="8,8,8,12"
-                        Command="{Binding Path=RemoveSelectedDevice}"/>
+                        IsEnabled="{Binding Path=CanRemoveDevice}"
+                        Command="{Binding Path=RemoveSelectedDevice}">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=CanRemoveDevice}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=CanRemoveDevice}" Value="True">
+                                    <Setter Property="Opacity" Value="1" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </Grid>
         </Grid>
 
         <!-- Current feed of temperatures -->
-        <Grid Grid.Column="1" Margin="0,7,7,7">
+        <Grid Grid.Column="1" Margin="0,1,7,7">
             <Grid.RowDefinitions>
-                <RowDefinition Height="1.2*" />
-                <RowDefinition Height="7.2*"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="9*"/>
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
 
-            <Grid Margin="0,7,0,0" VerticalAlignment="Bottom">
+            <Grid Background="{StaticResource WhiteColorBrush}"
+                  VerticalAlignment="Bottom" Margin="0,0,0,-8">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0.4*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Content="Latitude: " Style="{StaticResource DefaultDescriptorLabelStyle}"
+                       HorizontalContentAlignment="Left" Margin="10,0,0,0" FontWeight="DemiBold"  />
+                <Label Grid.Column="1" Content="{Binding Path=LatestLatitude}" Style="{StaticResource DefaultDescriptorLabelStyle}"
+                       HorizontalContentAlignment="Left" />
+
+                <Label Grid.Row="1" Content="Longitude: " Style="{StaticResource DefaultDescriptorLabelStyle}" 
+                       HorizontalContentAlignment="Left" Margin="10,0,0,0" FontWeight="DemiBold"/>
+                <Label Grid.Row="1" Grid.Column="1" Content="{Binding Path=LatestLongitude}" Style="{StaticResource DefaultDescriptorLabelStyle}"
+                       HorizontalContentAlignment="Left" />
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="10,2,0,0" VerticalAlignment="Bottom">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
 
@@ -84,9 +121,21 @@
                           Margin="4,15,10,15" />
             </Grid>
 
-            <DataOutput:DataOutputUserControl Grid.Row="1" />
+            <!--DataOutput:DataOutputUserControl Grid.Row="1" />-->
+            <DataGrid x:Name="dataGrid"
+                      Grid.Row="2"
+                      ItemsSource="{Binding Path=SelectedDevice.Temp}" 
+                      Style="{StaticResource TemperatureDataGridStyle}"
+                      CellStyle="{StaticResource BaseDataGridCellStyle}">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Temperature" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                                            Width="*" CellTemplate="{StaticResource TemperatureTemplate}" />
+                    <DataGridTemplateColumn Header="DateTime" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                                            Width="*" CellTemplate="{StaticResource RecordedDateTimeTemplate}" />
+                </DataGrid.Columns>
+            </DataGrid>
 
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />

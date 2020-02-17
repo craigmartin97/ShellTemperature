@@ -43,6 +43,8 @@
                 <dialogViews:ConfirmationUserControl DataContext="{Binding}"/>
             </DataTemplate>
 
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="./Styles/String.xaml" />
                 <ResourceDictionary Source="./Styles/Font.xaml" />

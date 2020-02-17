@@ -18,10 +18,21 @@ Add global exception handler to project.
 
 What happens if you unplug real date time module through execution
 
-What happens temperature sensor returns NaN, i.e. the thermocouple is not plugged in?
+-- What happens temperature sensor returns NaN, i.e. the thermocouple is not plugged in?
 
 DS3231, finds bad date time handle better as message just flashes on and off.
 
 Why does changing end throw StackOverflow exception?
 
 Allow comments to be added to temperatures
+
+-- Record GPS, latitude and longitude
+-- Save to SD card
+
+Add daily, monthly, yearly and custom reports between two dates
+
+SSRS reports and reports server
+
+Machine learning and analysis of data
+
+

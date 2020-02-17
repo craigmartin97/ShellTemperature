@@ -1,4 +1,4 @@
- #include <Wire.h>
+#include <Wire.h>
 #include "RTClib.h"
 
 #include <SoftwareSerial.h>
@@ -63,12 +63,12 @@ void loop() {
 
   if(digitalRead(BTpin) >= 1) // the arduino's bluetooth sensor is connected to another device
   {
-    Serial.print("TEMP: ");
+    Serial.print("-temp ");
     Serial.print(temperature);
 
     if(dateTime.length() > 0) // has datetime, otherwise dont print
     {
-      Serial.print(" DATETIME: ");
+      Serial.print(" -datetime ");
       Serial.print(dateTime);
     }
     
@@ -88,8 +88,8 @@ void loop() {
  */
 String getCurrentDateTime() {
   DateTime now = rtc.now();
-
-  if(now.day() == 165)
+  int day = now.day();
+  if(day < 1 || day > 31) // invalid day, max month has 31. Usually if RTC is not connected it comes out as 165. 
     return "";
   
   sprintf_P(DateAndTimeString, PSTR("%02d/%02d/%4d %02u:%02u:%02u"), now.day(), now.month(), now.year(), now.hour(), now.minute(), now.second());
@@ -124,7 +124,7 @@ String getGPSLocation(){
     unsigned long age;
     gps.f_get_position(&flat, &flon, &age);
 
-    return String("LAT: " + String(flat, 7) + " LONG: " + String(flon, 7));
+    return String("-lat " + String(flat, 7) + " -long " + String(flon, 7));
   }
 
   return "";
@@ -142,12 +142,12 @@ void writeToFile(float temperature, String dateTime, String gpsLocation){
   myFile = SD.open("data.txt", FILE_WRITE);
   if(myFile)
   {
-    myFile.print("TEMP: ");
+    myFile.print("-temp ");
     myFile.print(temperature);
 
     if(dateTime.length() > 0) // has datetime, otherwise dont print
     {
-      myFile.print(" DATETIME: ");
+      myFile.print(" -datetime ");
       myFile.print(dateTime);
     }
     

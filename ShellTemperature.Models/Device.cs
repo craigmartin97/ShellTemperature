@@ -16,10 +16,20 @@ namespace ShellTemperature.Models
 
         public double CurrentData { get; set; }
 
+        private ObservableCollection<ShellTemp> _temp;
+
         /// <summary>
         /// Stores all the shell readings, but excludes outliers
         /// </summary>
-        public ObservableCollection<ShellTemp> Temp { get; set; }
+        public ObservableCollection<ShellTemp> Temp
+        {
+            get => _temp;
+            set
+            {
+                _temp = value;
+                OnPropertyChanged(nameof(Temp));
+            }
+        }
 
         /// <summary>
         /// Stores all the temperature points regardless if they are outliers or not.

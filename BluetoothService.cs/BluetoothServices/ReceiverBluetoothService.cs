@@ -108,19 +108,18 @@ namespace BluetoothService.BluetoothServices
                         .ToArray();
 
                     bool hasDateTime = false;
-                    
+
                     for (int i = 0; i < latestData.Length - 1; i++)
                     {
                         string data = latestData[i].Trim();
                         // sometimes its stupid and trims the leading T off :/
-                        if (data.Equals("TEMP:", StringComparison.CurrentCultureIgnoreCase) ||
-                            data.Equals("EMP:", StringComparison.CurrentCultureIgnoreCase))
+                        if (data.Equals("-temp", StringComparison.CurrentCultureIgnoreCase))
                         {
                             bool isDouble = double.TryParse(latestData[i + 1], out double temp);
                             if (isDouble)
                                 deviceReading.Temperature = temp;
                         }
-                        else if (data.Equals("DATETIME:", StringComparison.CurrentCultureIgnoreCase))
+                        else if (data.Equals("-datetime", StringComparison.CurrentCultureIgnoreCase))
                         {
                             string stringDateTime = latestData[i + 1] + " " + latestData[i + 2];
                             bool isDateTime = DateTime.TryParse(stringDateTime, out DateTime dateTime);
@@ -130,22 +129,22 @@ namespace BluetoothService.BluetoothServices
                                 hasDateTime = true;
                             }
                         }
-                        else if (data.Equals("LAT:", StringComparison.CurrentCultureIgnoreCase))
+                        else if (data.Equals("-lat", StringComparison.CurrentCultureIgnoreCase))
                         {
                             bool isFloat = float.TryParse(latestData[i + 1], out float latitude);
                             if (isFloat)
                                 deviceReading.Latitude = latitude;
                         }
-                        else if (data.Equals("LONG:", StringComparison.CurrentCultureIgnoreCase))
+                        else if (data.Equals("-long", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            bool isFloat = float.TryParse(latestData[i+1], out float longitude);
+                            bool isFloat = float.TryParse(latestData[i + 1], out float longitude);
                             if (isFloat)
                                 deviceReading.Longitude = longitude;
                         }
                     }
 
                     // no date time then set to current
-                    if (!hasDateTime) 
+                    if (!hasDateTime)
                         deviceReading.RecordedDateTime = DateTime.Now;
 
                     return deviceReading;
@@ -220,16 +219,13 @@ namespace BluetoothService.BluetoothServices
         /// </param>  
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                if (_cancelSource != null)
-                {
-                    _listener.Stop();
-                    _listener = null;
-                    _cancelSource.Dispose();
-                    _cancelSource = null;
-                }
-            }
+            if (!disposing) return;
+            if (_cancelSource == null) return;
+
+            _listener.Stop();
+            _listener = null;
+            _cancelSource.Dispose();
+            _cancelSource = null;
         }
     }
 }

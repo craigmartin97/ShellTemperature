@@ -7,9 +7,9 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Collections.Specialized;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace ShellTemperature.Views
 {
@@ -21,6 +21,7 @@ namespace ShellTemperature.Views
         public LiveShellDataUserControl()
         {
             InitializeComponent();
+            ((INotifyCollectionChanged)dataGrid.Items).CollectionChanged += DataOutputUserControl_CollectionChanged;
         }
 
         private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -28,6 +29,17 @@ namespace ShellTemperature.Views
             ScrollViewer scv = (ScrollViewer)sender;
             scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
             e.Handled = true;
+        }
+
+        private void DataOutputUserControl_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (dataGrid.Items.Count > 0)
+            {
+                if (VisualTreeHelper.GetChild(dataGrid, 0) is Decorator border)
+                {
+                    if (border.Child is ScrollViewer scroll) scroll.ScrollToEnd();
+                }
+            }
         }
     }
 }
