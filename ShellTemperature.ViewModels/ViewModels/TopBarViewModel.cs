@@ -39,13 +39,17 @@ namespace ShellTemperature.ViewModels.ViewModels
         #region Constructors
         public TopBarViewModel(BluetoothConnectionSubject subject)
         {
+            if (subject == null) return;
+
             _subject = subject;
             _subject.Attach(this);
         }
         #endregion
 
         #region Updator
-
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Update()
         {
             Device = _subject?.GetState();
@@ -55,6 +59,10 @@ namespace ShellTemperature.ViewModels.ViewModels
             ConnectionMessage = Device.Message;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         public override void Update(string message)
         {
             Device = _subject?.GetState();
@@ -63,19 +71,6 @@ namespace ShellTemperature.ViewModels.ViewModels
 
             ConnectionMessage = message;
         }
-
         #endregion
-
-        //private string GetConnectionStatus()
-        //{
-        //    return Device.IsConnected switch
-        //    {
-        //        DeviceConnectionStatus.CONNECTED => ("Connected - " + Device.DeviceName),
-        //        DeviceConnectionStatus.CONNECTING => ("Connecting to - " + Device.DeviceName),
-        //        DeviceConnectionStatus.FAILED => ("Failed to Connect - " + Device.DeviceName),
-        //        DeviceConnectionStatus.PAUSED => ("Paused - " + Device.DeviceName),
-        //        _ => "Error"
-        //    };
-        //}
     }
 }
