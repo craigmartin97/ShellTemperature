@@ -5,7 +5,57 @@
     <DataTemplate x:Key="TemperatureTemplate">
         <Border>
             <Label Content="{Binding Path=Temperature}" 
-                   Style="{StaticResource ListViewContentLabelStyle}" />
+                   Style="{StaticResource ListViewContentLabelStyle}">
+                <Label.ToolTip>
+                    <Border x:Name="Border"
+                            BorderThickness="1"
+                            Width="250"
+                            Height="170"
+                            Background="{StaticResource OffsetWhiteBrush}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+
+                            <Label Content="Reading Data" Background="{StaticResource NavyBlueBrush}" 
+                                   FontSize="{StaticResource FontSize18}" FontFamily="{StaticResource LatoRegular}"
+                                   Foreground="{StaticResource WhiteColorBrush}" FontWeight="DemiBold"
+                                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+
+                            <StackPanel Orientation="Vertical" Grid.Row="1">
+
+                                <!-- Temperature -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Temperature: " FontSize="{StaticResource FontSize16}"/>
+                                    <Label Content="{Binding Path=Temperature}" FontSize="{StaticResource FontSize16}"/>
+                                </StackPanel>
+
+                                <!-- RecordedDateTime -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="DateTime: " FontSize="{StaticResource FontSize16}"/>
+                                    <Label Content="{Binding Path=RecordedDateTime}" FontSize="{StaticResource FontSize16}"
+                                           ContentStringFormat="dd/MM/yyyy HH:mm:ss"/>
+                                </StackPanel>
+
+                                <!-- Latitude -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Latitude: " FontSize="{StaticResource FontSize16}"/>
+                                    <Label Content="{Binding Path=Latitude}" FontSize="{StaticResource FontSize16}" />
+                                </StackPanel>
+
+                                <!-- Longitude -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Longitude: " FontSize="{StaticResource FontSize16}"/>
+                                    <Label Content="{Binding Path=Longitude}" FontSize="{StaticResource FontSize16}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+
+
+                    </Border>
+                </Label.ToolTip>
+            </Label>
         </Border>
     </DataTemplate>
 

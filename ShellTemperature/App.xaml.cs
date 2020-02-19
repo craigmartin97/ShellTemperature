@@ -4,19 +4,20 @@ using CustomDialog.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
+using ShellTemperature.ViewModels.ViewModels.Reports;
 using ShellTemperature.Views;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
-using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
-using ShellTemperature.ViewModels.ViewModels.Reports;
 
 namespace ShellTemperature
 {
@@ -33,6 +34,10 @@ namespace ShellTemperature
 
         public App()
         {
+            // global exception handler for unhandled exceptions
+            AppDomain domain = AppDomain.CurrentDomain;
+            domain.UnhandledException += DomainOnUnhandledException;
+
             // get the environment variable, for the release version of the app
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") switch
             {
@@ -71,6 +76,18 @@ namespace ShellTemperature
             Services = serviceCollection;
 
             MigrateDatabase();
+        }
+
+        /// <summary>
+        ///  Global expcetion handler incase of unhandled expcetion
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = (Exception)e.ExceptionObject;
+            Debug.WriteLine("Global Exception Handler Caught: " + ex.Message);
+            MessageBox.Show(ex.Message, "Unhandled exception has occurred");
         }
 
         /// <summary>

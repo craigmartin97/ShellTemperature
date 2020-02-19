@@ -74,6 +74,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             get => _start;
             set
             {
+                // prevent stack overflow
+                if (_start == value)
+                    return;
+
                 if (value > End) // the Start date cannot be after the end
                     return;
 
@@ -98,7 +102,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             get => _end;
             set
             {
-                if (value < Start) // the end date cannot be before the start date
+                // prevent stack overflow
+                if (_end == value)
+                    return;
+
+                // the end date cannot be before the start date, cannot be in future either
+                if (value < Start || value > DateTime.Now.Date)
                     return;
 
                 _end = value;

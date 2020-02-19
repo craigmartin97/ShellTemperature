@@ -14,7 +14,7 @@ Axis Labels
 
 Better datetime picker as only dates, need to be able to select time as well.
 
-Add global exception handler to project.
+-- Add global exception handler to project.
 
 What happens if you unplug real date time module through execution
 
@@ -22,17 +22,17 @@ What happens if you unplug real date time module through execution
 
 DS3231, finds bad date time handle better as message just flashes on and off.
 
-Why does changing end throw StackOverflow exception?
+-- Why does changing end throw StackOverflow exception?
 
 Allow comments to be added to temperatures
 
 -- Record GPS, latitude and longitude
 -- Save to SD card
 
-Add daily, monthly, yearly and custom reports between two dates
+-- Add daily, monthly, yearly and custom reports between two dates
 
 SSRS reports and reports server
 
 Machine learning and analysis of data
 
-
+Look at interquartile range for outliers as a more scientific method for finding outliers

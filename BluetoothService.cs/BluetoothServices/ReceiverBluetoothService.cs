@@ -18,7 +18,7 @@ namespace BluetoothService.BluetoothServices
 
         private readonly BluetoothClient _client = new BluetoothClient();
 
-        private readonly byte[] _myReadBuffer = new byte[1024];
+        private readonly byte[] _myReadBuffer = new byte[2048];
 
 
         /// <summary>  

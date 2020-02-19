@@ -6,7 +6,38 @@
              xmlns:local="clr-namespace:ShellTemperature.Views.Reports"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="Pink">
+    <Grid Background="{StaticResource WhiteColorBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
 
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <DatePicker Style="{StaticResource DatePickerStyle}" Text="{Binding Path=Start, StringFormat='dd/MM/yyyy HH:mm:ss'}" 
+                    SelectedDate="{Binding Path=Start}" />
+
+        <DatePicker Grid.Row="0" Grid.Column="1" Style="{StaticResource DatePickerStyle}" 
+                    Text="{Binding Path=End, StringFormat='dd/MM/yyyy HH:mm:ss'}" SelectedDate="{Binding Path=End}" />
+
+        <!-- Minimum -->
+        <Label Grid.Row="1" Content="Minimum:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+        <Label Grid.Row="1" Grid.Column="1" Content="{Binding Path=Minimum, FallbackValue=Error}"
+               Style="{StaticResource DefaultDescriptorLabelStyle}"/>
+
+        <!-- Maximum -->
+        <Label Grid.Row="2" Content="Maximum:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+        <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=Maximum, FallbackValue=Error}"
+               Style="{StaticResource DefaultDescriptorLabelStyle}"/>
+
+        <!-- Average -->
+        <Label Grid.Row="3" Content="Average:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+        <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Average, FallbackValue=Error}"
+               Style="{StaticResource DefaultDescriptorLabelStyle}"/>
     </Grid>
 </UserControl>

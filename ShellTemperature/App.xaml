@@ -50,6 +50,7 @@
                 <ResourceDictionary Source="./Styles/Font.xaml" />
                 <ResourceDictionary Source="./Styles/Color.xaml" />
                 <ResourceDictionary Source="./Styles/Image.xaml" />
+                <ResourceDictionary Source="Styles/ToolTip.xaml" />
                 <ResourceDictionary Source="./Styles/Label.xaml" />
                 <ResourceDictionary Source="./Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="./Styles/Border.xaml" />
