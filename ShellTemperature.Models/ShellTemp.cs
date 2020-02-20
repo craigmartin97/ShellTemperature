@@ -43,5 +43,23 @@ namespace ShellTemperature.Models
         /// The device the temperature was recorded on
         /// </summary>
         public DeviceInfo Device { get; set; }
+
+        #region Constructors
+
+        public ShellTemp()
+        {
+            
+        }
+
+        public ShellTemp(double temperature, DateTime dateTime, float? latitude, float? 
+            longitude, DeviceInfo deviceInfo)
+        {
+            Temperature = temperature;
+            RecordedDateTime = dateTime;
+            Latitude = latitude;
+            Longitude = longitude;
+            Device = deviceInfo;
+        }
+        #endregion
     }
 }

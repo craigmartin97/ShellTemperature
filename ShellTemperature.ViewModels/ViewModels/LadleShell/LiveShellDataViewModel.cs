@@ -412,14 +412,15 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     x.DeviceAddress.Equals(currentDevice.BluetoothDevice.Device.DeviceAddress.ToString()));
 
                 // create new shell obj for database submission
-                ShellTemp shellTemp = new ShellTemp
+                ShellTemp shellTemp = new ShellTemp(receivedData.Temperature, receivedData.RecordedDateTime,
+                    receivedData.Latitude, receivedData.Longitude, device);
+
+                if (receivedData.HasSdCardData)
                 {
-                    Temperature = receivedData.Temperature,
-                    RecordedDateTime = receivedData.RecordedDateTime,
-                    Latitude = receivedData.Latitude,
-                    Longitude = receivedData.Longitude,
-                    Device = device
-                };
+                    ShellTemp sdShellTemp = new ShellTemp(receivedData.SdTemperature, receivedData.SdRecordedDateTime,
+                        receivedData.SdLatitude, receivedData.SdLongitude, device);
+                    _shellRepo.Create(sdShellTemp);
+                }
 
                 LatestLatitude = receivedData.Latitude == null ? "N/A" : receivedData.Latitude.ToString();
                 LatestLongitude = receivedData.Longitude == null ? "N/A" : receivedData.Longitude.ToString();

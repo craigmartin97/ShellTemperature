@@ -21,6 +21,7 @@ const byte BTpin = 6; // STATE pin to arduino pin D4
 
 // Micro SD card adapter setup
 File myFile;
+String fileName = "data.txt";
 
 //GPS
 TinyGPS gps;
@@ -49,20 +50,61 @@ void setup() {
 /**
  * Continuous loop every x seconds.
  */
-void loop() {  
-  // Read the temperature in Celsius
-  float temperature = probe.readTempC();
-  String dateTime = getCurrentDateTime();
-  String gpsLocation = getGPSLocation();
-
-  if(isnan(temperature)) // not a number, then can't continue as its wrong
-  {
-    return;
-  }
-  
-
+void loop() { 
   if(digitalRead(BTpin) >= 1) // the arduino's bluetooth sensor is connected to another device
   {
+    File file = SD.open(fileName); // open in read mode
+    if(file)
+    {
+      while(file.available())
+      {
+        while(digitalRead(BTpin) == 0) // no BLT devices connected, loop until we are connected again.
+        {
+            writeToFile();
+        }
+        
+        // Read the temperature in Celsius
+        float temperature = getTemperatureReading();
+
+        if(isnan(temperature)) // not a number, then can't continue as its wrong
+          continue;
+    
+        String dateTime = getCurrentDateTime();
+        String gpsLocation = getGPSLocation();
+        
+        printSensorReadings(temperature, dateTime, gpsLocation);
+        
+        String sdData = file.readStringUntil('\n');
+        Serial.print(String(" -sdCardData " + sdData));
+        Serial.println();
+      }
+      file.close();
+      //SD.remove(fileName); // finished printing the sd card data, now delete the file
+    }
+    else
+    {
+      float temperature = getTemperatureReading();
+
+      if(isnan(temperature)) // not a number, then can't continue as its wrong
+         return;
+    
+      String dateTime = getCurrentDateTime();
+      String gpsLocation = getGPSLocation();
+        
+      printSensorReadings(temperature, dateTime, gpsLocation);
+      Serial.println();
+    }
+  }
+  else // the arduino's bluetooth sensor is NOT connected to another device
+  {
+    writeToFile();
+  }
+}
+
+/**
+ * Print the values from the sensor with corresponding identity tags
+ */
+void printSensorReadings(float temperature, String dateTime, String gpsLocation){
     Serial.print("-temp ");
     Serial.print(temperature);
 
@@ -75,12 +117,10 @@ void loop() {
     Serial.print(" ");
     
     Serial.print(gpsLocation);
-    Serial.println(); 
-  }
-  else // the arduino's bluetooth sensor is NOT connected to another device
-  {
-    writeToFile(temperature, dateTime, gpsLocation);
-  }
+}
+
+float getTemperatureReading(){
+  return probe.readTempC();
 }
 
 /**
@@ -133,13 +173,21 @@ String getGPSLocation(){
 /**
  * Setup the SD Card to write data to
  */
-void writeToFile(float temperature, String dateTime, String gpsLocation){
+void writeToFile(){
   if(!SD.begin(10)) // can't access sd card so stop
-  {
     return;
-  }
 
-  myFile = SD.open("data.txt", FILE_WRITE);
+  // Read the temperature in Celsius
+  float temperature = getTemperatureReading();
+  if(isnan(temperature)) // not a number, then can't continue as its wrong
+    return;
+
+  // Read the datetime 
+  String dateTime = getCurrentDateTime();
+  // Read the gps location
+  String gpsLocation = getGPSLocation();
+
+  myFile = SD.open(fileName, FILE_WRITE);
   if(myFile)
   {
     myFile.print("-temp ");
