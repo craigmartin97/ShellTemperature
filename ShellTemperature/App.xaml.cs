@@ -18,6 +18,9 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using ShellTemperature.ViewModels.Interfaces;
+using ShellTemperature.ViewModels.Outliers;
+using ShellTemperature.ViewModels.Statistics;
 
 namespace ShellTemperature
 {
@@ -26,25 +29,43 @@ namespace ShellTemperature
     /// </summary>
     public partial class App : Application
     {
-        private readonly IServiceProvider _serviceProvider;
+        private IServiceProvider _serviceProvider;
 
         public ServiceCollection Services { get; set; }
 
-        private readonly IConfiguration _configuration;
+        private IConfiguration _configuration;
 
-        public App()
+        /// <summary>
+        /// Method initiates the startup of the application.
+        /// The MainWindow entity is retrieved from the services provider and rendered to the user
+        /// </summary>
+        /// <param name="sender">The caller of the method</param>
+        /// <param name="e">Any startup arguments provided</param>
+        private void OnStartup(object sender, StartupEventArgs e)
         {
             // global exception handler for unhandled exceptions
             AppDomain domain = AppDomain.CurrentDomain;
             domain.UnhandledException += DomainOnUnhandledException;
 
-            // get the environment variable, for the release version of the app
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") switch
+            string env = null;
+            for (int i = 0; i < e.Args.Length; i++)
             {
-                "Development" => "appsettings.Development.json",
-                "Release" => "appsettings.json",
-                _ => null
-            };
+                if (e.Args[i].Equals("-config"))
+                {
+                    switch (e.Args[i + 1])
+                    {
+                        case "Development":
+                            env = "appsettings.Development.json";
+                            break;
+                        case "Live":
+                            env = "appsettings.json";
+                            break;
+                        default:
+                            env = null;
+                            break;
+                    }
+                }
+            }
 
             // add in the app settings file
             var builder = new ConfigurationBuilder()
@@ -76,10 +97,13 @@ namespace ShellTemperature
             Services = serviceCollection;
 
             MigrateDatabase();
+
+            MainWindow mainWindow = _serviceProvider.GetService<MainWindow>();
+            mainWindow.Show();
         }
 
         /// <summary>
-        ///  Global expcetion handler incase of unhandled expcetion
+        ///  Global exception handler in-case of unhandled exception
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -88,18 +112,6 @@ namespace ShellTemperature
             Exception ex = (Exception)e.ExceptionObject;
             Debug.WriteLine("Global Exception Handler Caught: " + ex.Message);
             MessageBox.Show(ex.Message, "Unhandled exception has occurred");
-        }
-
-        /// <summary>
-        /// Method initiates the startup of the application.
-        /// The MainWindow entity is retrieved from the services provider and rendered to the user
-        /// </summary>
-        /// <param name="sender">The caller of the method</param>
-        /// <param name="e">Any startup arguments provided</param>
-        private void OnStartup(object sender, StartupEventArgs e)
-        {
-            MainWindow mainWindow = _serviceProvider.GetService<MainWindow>();
-            mainWindow.Show();
         }
 
         #region Configuration
@@ -126,6 +138,14 @@ namespace ShellTemperature
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IDeviceRepository<DeviceInfo>, DevicesRepository>();
+
+            // add the outlier detector
+            services.AddSingleton<OutlierDetector>();
+
+            // statistics & sorting
+            services.AddSingleton<ISorter, SortingAlgorithm>();
+            services.AddSingleton<IBasicStats, BasicStats>();
+            services.AddSingleton<IMeasureSpreadStats, MeasureSpreadStats>();
         }
 
         /// <summary>
@@ -160,7 +180,7 @@ namespace ShellTemperature
         {
             // database config
             services.AddDbContext<ShellDb>(options =>
-                    options.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True"
+                    options.UseSqlServer(_configuration.GetConnectionString("ShellConnection")
                         , optionsBuilder =>
                         {
                             optionsBuilder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(10), null);

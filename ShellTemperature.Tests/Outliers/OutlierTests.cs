@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Reflection.Metadata.Ecma335;
 using NUnit.Framework;
+using ShellTemperature.ViewModels.Interfaces;
 using ShellTemperature.ViewModels.Outliers;
+using ShellTemperature.ViewModels.Statistics;
 
 namespace ShellTemperature.Tests.Outliers
 {
@@ -15,8 +17,10 @@ namespace ShellTemperature.Tests.Outliers
         public void IsOutlier()
         {
             //Arrange
-            OutlierDetector detector = new OutlierDetector();
-            int outlierWeight = 5;
+            ISorter sorter = new SortingAlgorithm();
+            IBasicStats basicStats = new BasicStats(); ;
+            IMeasureSpreadStats measureSpreadStats = new MeasureSpreadStats(sorter, basicStats);
+            OutlierDetector detector = new OutlierDetector(measureSpreadStats);
 
             List<double> temps = new List<double>();
             Random random = new Random();
@@ -35,7 +39,7 @@ namespace ShellTemperature.Tests.Outliers
             {
                 int latestReading = random.Next(0, 9);
                 // Act
-                bool isOutlier = detector.IsOutlier(latestReading, outlierWeight, temps);
+                bool isOutlier = detector.IsOutlier(temps, latestReading);
 
                 // Assert
                 Assert.IsTrue(isOutlier);
@@ -48,8 +52,10 @@ namespace ShellTemperature.Tests.Outliers
         [Test]
         public void IsNotOutlier()
         {
-            OutlierDetector detector = new OutlierDetector();
-            int outlierWeight = 5;
+            ISorter sorter = new SortingAlgorithm();
+            IBasicStats basicStats = new BasicStats(); ;
+            IMeasureSpreadStats measureSpreadStats = new MeasureSpreadStats(sorter, basicStats);
+            OutlierDetector detector = new OutlierDetector(measureSpreadStats);
 
             Random random = new Random();
 
@@ -68,7 +74,7 @@ namespace ShellTemperature.Tests.Outliers
 
             for (int i = 0; i < 5; i++)
             {
-                bool isOutlier = detector.IsOutlier(i, outlierWeight, temps);
+                bool isOutlier = detector.IsOutlier(temps, i);
                 Assert.IsFalse(isOutlier);
             }
         }

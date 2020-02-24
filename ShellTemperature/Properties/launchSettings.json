@@ -2,9 +2,7 @@
   "profiles": {
     "ShellTemperature": {
       "commandName": "Project",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      "commandLineArgs": "-config Development"
     }
   }
 }

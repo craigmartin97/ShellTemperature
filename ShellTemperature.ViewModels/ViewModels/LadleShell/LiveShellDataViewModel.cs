@@ -82,7 +82,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// <summary>
         /// Outlier detector to determined if the current value is an outlier.
         /// </summary>
-        private readonly OutlierDetector _outlierDetector = new OutlierDetector();
+        private readonly OutlierDetector _outlierDetector;
 
         /// <summary>
         /// Logger to record system messages
@@ -314,7 +314,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             IConfiguration configuration, BluetoothConnectionSubject subject,
             TemperatureSubject temperatureSubject,
             IDialogService service,
-            ILogger<LiveShellDataViewModel> logger)
+            ILogger<LiveShellDataViewModel> logger,
+            OutlierDetector outlierDetector)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
@@ -323,6 +324,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             _temperatureSubject = temperatureSubject;
             _service = service;
             _logger = logger;
+            _outlierDetector = outlierDetector;
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration

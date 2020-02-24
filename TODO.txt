@@ -1,4 +1,4 @@
-Azure save to live SQL server database
+-- Azure save to live SQL server database
 
 Azure pipelines auto deployment
 
@@ -6,7 +6,7 @@ Unit tests
 
 -- Outliers, when a value is perhaps 2 and based of previous readings the value should be marked as an outlier and on screen highlighted red -- 
 
-NLog
+-- NLog
 
 X-Axis, data and time needs to be better as current is ticks
 
@@ -35,4 +35,4 @@ SSRS reports and reports server
 
 Machine learning and analysis of data
 
-Look at interquartile range for outliers as a more scientific method for finding outliers
+-- Look at interquartile range for outliers as a more scientific method for finding outliers

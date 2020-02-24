@@ -3,15 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:ShellTemperature.Views.Reports"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Background="{StaticResource WhiteColorBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -19,11 +23,13 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <DatePicker Style="{StaticResource DatePickerStyle}" Text="{Binding Path=Start, StringFormat='dd/MM/yyyy HH:mm:ss'}" 
-                    SelectedDate="{Binding Path=Start}" />
+        <xctk:DateTimePickerBase FontSize="{StaticResource FontSize20}" Margin="10,2,20,2"
+                                 HorizontalContentAlignment="Left"
+                                 Text="{Binding Path=Start, StringFormat='dd/MM/yyyy HH:mm:ss', UpdateSourceTrigger=PropertyChanged}" />
 
-        <DatePicker Grid.Row="0" Grid.Column="1" Style="{StaticResource DatePickerStyle}" 
-                    Text="{Binding Path=End, StringFormat='dd/MM/yyyy HH:mm:ss'}" SelectedDate="{Binding Path=End}" />
+        <xctk:DateTimePickerBase Grid.Row="0" Grid.Column="1" FontSize="{StaticResource FontSize20}" Margin="10,2,20,2"
+                                 HorizontalContentAlignment="Left"
+                                 Text="{Binding Path=End, StringFormat='dd/MM/yyyy HH:mm:ss', UpdateSourceTrigger=PropertyChanged}" />
 
         <!-- Minimum -->
         <Label Grid.Row="1" Content="Minimum:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
@@ -38,6 +44,26 @@
         <!-- Average -->
         <Label Grid.Row="3" Content="Average:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
         <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Average, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}"/>
+               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+
+        <!--  Range -->
+        <Label Grid.Row="4" Content="Range:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+        <Label Grid.Row="4" Grid.Column="1" Content="{Binding Path=Range, FallbackValue=Error}"
+               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+
+        <!--  Interquartile Range -->
+        <Label Grid.Row="5" Content="Interquartile Range:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+        <Label Grid.Row="5" Grid.Column="1" Content="{Binding Path=InterquartileRange, FallbackValue=Error}"
+               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+
+        <!--  Standard Deviation -->
+        <Label Grid.Row="6" Content="Standard Deviation:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+        <Label Grid.Row="6" Grid.Column="1" Content="{Binding Path=StandardDeviation, FallbackValue=Error}"
+               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+
+        <!--  Mean Deviation -->
+        <Label Grid.Row="7" Content="Mean Deviation:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+        <Label Grid.Row="7" Grid.Column="1" Content="{Binding Path=MeanDeviation, FallbackValue=Error}"
+               Style="{StaticResource DefaultDescriptorLabelStyle}" />
     </Grid>
 </UserControl>
