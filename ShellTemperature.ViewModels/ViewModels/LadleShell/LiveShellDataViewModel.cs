@@ -385,11 +385,13 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 currentDevice.AllTemperatureReadings.Add(receivedData.Temperature);
 
                 // check if outlier
-                bool isOutlier = _outlierDetector.IsOutlier(receivedData.Temperature,
-                    5, currentDevice.AllTemperatureReadings);
+                bool isOutlier = _outlierDetector.IsOutlier(currentDevice.AllTemperatureReadings, receivedData.Temperature);
 
                 if (isOutlier) // value is outlier cannot be added
+                {
                     return;
+                }
+                    
 
                 // format the datetime, so if its invalid it is corrected
                 FormatDateTime(currentDevice, receivedData);
@@ -490,8 +492,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 if (currentDevice != null && SelectedDevice == currentDevice)
                 {
-                    //StopCommand.Execute(null);
-
                     currentDevice.State.Message = "The thermocouple is not working - " + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
 
