@@ -36,3 +36,14 @@ SSRS reports and reports server
 Machine learning and analysis of data
 
 -- Look at interquartile range for outliers as a more scientific method for finding outliers
+
+
+
+
+Add filter on Shell Temperature page where users can search for tempeartures equal to or less than or equal to
+
+Add google maps, so the GPS position can be seen on google maps
+
+Add a function that allows the data to be sent to excel. I.e. you press the button and the data is sent to an excel spread sheet
+
+Graphs on the report page, so plot the standard deviation, mean deviation on charts

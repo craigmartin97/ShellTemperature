@@ -393,7 +393,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 {
                     return;
                 }
-                    
+
 
                 // format the datetime, so if its invalid it is corrected
                 FormatDateTime(currentDevice, receivedData);
@@ -426,8 +426,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     _shellRepo.Create(sdShellTemp);
                 }
 
-                LatestLatitude = receivedData.Latitude == null ? "N/A" : receivedData.Latitude.ToString();
-                LatestLongitude = receivedData.Longitude == null ? "N/A" : receivedData.Longitude.ToString();
+                if (SelectedDevice == currentDevice)
+                {
+                    LatestLatitude = receivedData.Latitude == null ? "N/A" : receivedData.Latitude.ToString();
+                    LatestLongitude = receivedData.Longitude == null ? "N/A" : receivedData.Longitude.ToString();
+                }
 
                 currentDevice.Temp.Add(shellTemp);
                 IEnumerable<ShellTemp> shellTemps = currentDevice.Temp.OrderBy(x => x.RecordedDateTime);
@@ -621,9 +624,15 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             if (prev != null)
             {
                 DateTime min = prev.RecordedDateTime;
-                DateTime max = prev.RecordedDateTime.AddSeconds(2);
-
-                if (receivedData.RecordedDateTime < min || receivedData.RecordedDateTime > max)
+                //DateTime max = prev.RecordedDateTime.AddSeconds(2);
+                /*
+                 * TODO: I no longer think it makes sense to say if greater than the max as
+                 * if you stop recording for ages i.e. 3hours, then the times will
+                 * always say 3 hours prev
+                 * 
+                 *
+                 */
+                if (receivedData.RecordedDateTime < min) // || receivedData.RecordedDateTime > max
                 {
                     receivedData.RecordedDateTime = prev.RecordedDateTime.AddSeconds(1);
                 }
