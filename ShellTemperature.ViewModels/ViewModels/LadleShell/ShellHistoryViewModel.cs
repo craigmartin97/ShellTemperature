@@ -1,4 +1,6 @@
-﻿using OxyPlot;
+﻿using ExcelDataWriter.Excel;
+using ExcelDataWriter.Interfaces;
+using OxyPlot;
 using OxyPlot.Axes;
 using ShellTemperature.Models;
 using ShellTemperature.Repository;
@@ -9,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
@@ -167,7 +170,32 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #endregion
 
         #region Commands
+        public RelayCommand SendToExcelCommand =>
+        new RelayCommand(param =>
+        {
+            if (BluetoothData == null || BluetoothData.Count == 0)
+                return;
 
+            ShellTemp temp = BluetoothData[0];
+            string[] headers = temp.GetType().GetProperties().Select(x => x.Name).ToArray();
+
+            string path = Path.GetTempPath() + "ShellTemperatures.xlsx";
+            const string worksheetName = "ShellTempData";
+
+            IExcelData excelData = new ExcelData();
+            excelData.CreateExcelWorkSheet(path,worksheetName);
+            excelData.OpenExcelFile(path,worksheetName);
+
+            IExcelStyler excelStyler = new ExcelStyler(excelData);
+
+            ExcelWriter excelWriter = new ExcelWriter(excelData, excelStyler);
+
+            excelWriter.WriteHeaders(headers);
+            excelWriter.WriteToExcelFile(BluetoothData.ToArray());
+
+            excelWriter.OpenFile(path);
+
+        });
         #endregion
 
         #region Constructors

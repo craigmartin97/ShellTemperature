@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CustomDialog\CustomDialog.csproj" />
+    <ProjectReference Include="..\ExcelDataWriter\ExcelDataWriter.csproj" />
     <ProjectReference Include="..\ShellTemperature.Models\ShellTemperature.Models.csproj" />
     <ProjectReference Include="..\ShellTemperature.Repository\ShellTemperature.Repository.csproj" />
   </ItemGroup>

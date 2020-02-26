@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-             xmlns:DataOutput="clr-namespace:ShellTemperature.Views.DataOutput"
              xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1200">
@@ -14,13 +13,24 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <!-- Oxy plot graph to show live shell data -->
-        <oxy:Plot Title="Ladle Shell Temperature">
-            <oxy:Plot.Series>
-                <oxy:LineSeries ItemsSource="{Binding Path=DataPoints}">
-                </oxy:LineSeries>
-            </oxy:Plot.Series>
-        </oxy:Plot>
+        <Grid>
+            <Grid.RowDefinitions >
+                <RowDefinition />
+                <RowDefinition Height="Auto" MinHeight="45"/>
+            </Grid.RowDefinitions>
+
+            <!-- Oxy plot graph to show live shell data -->
+            <oxy:Plot Title="Ladle Shell Temperature">
+                <oxy:Plot.Series>
+                    <oxy:LineSeries ItemsSource="{Binding Path=DataPoints}">
+                    </oxy:LineSeries>
+                </oxy:Plot.Series>
+            </oxy:Plot>
+
+            <Button Grid.Row="1" Content="Send To Excel" Style="{StaticResource BaseButtonStyle}"
+                    Command="{Binding Path=SendToExcelCommand}"
+                    HorizontalAlignment="Left" Margin="10,2,0,2" MinWidth="150"/>
+        </Grid>
 
         <!-- Current feed of temperatures -->
         <Grid Grid.Column="1" Margin="0,0,7,7">
