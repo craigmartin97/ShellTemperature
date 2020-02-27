@@ -170,28 +170,40 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #endregion
 
         #region Commands
+        /// <summary>
+        /// A command to the shell data between the two specified date ranges
+        /// to an excel spreadsheet for further analysis.
+        /// </summary>
         public RelayCommand SendToExcelCommand =>
         new RelayCommand(param =>
         {
-            if (BluetoothData == null || BluetoothData.Count == 0)
+            // get all the temperatures between the two dates for all devices
+            IEnumerable<ShellTemp> tempData = _shellTempRepo.GetShellTemperatureData(Start, End);
+
+            if (tempData == null || !tempData.Any())
                 return;
 
-            ShellTemp temp = BluetoothData[0];
+            // order them by datetime
+            ShellTemp[] orderedShellTemps = tempData.OrderBy(x => x.RecordedDateTime).ToArray();
+
+            // get the properties to be able to write the header information into the excel file
+            ShellTemp temp = orderedShellTemps[0];
             string[] headers = temp.GetType().GetProperties().Select(x => x.Name).ToArray();
 
+            // path and sheet info for the excel file
             string path = Path.GetTempPath() + "ShellTemperatures.xlsx";
             const string worksheetName = "ShellTempData";
 
             IExcelData excelData = new ExcelData();
-            excelData.CreateExcelWorkSheet(path,worksheetName);
-            excelData.OpenExcelFile(path,worksheetName);
+            excelData.CreateExcelWorkSheet(path, worksheetName);
+            excelData.OpenExcelFile(path, worksheetName);
 
             IExcelStyler excelStyler = new ExcelStyler(excelData);
 
             ExcelWriter excelWriter = new ExcelWriter(excelData, excelStyler);
 
             excelWriter.WriteHeaders(headers);
-            excelWriter.WriteToExcelFile(BluetoothData.ToArray());
+            excelWriter.WriteToExcelFile(orderedShellTemps);
 
             excelWriter.OpenFile(path);
 

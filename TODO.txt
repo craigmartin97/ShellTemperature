@@ -44,6 +44,8 @@ Add filter on Shell Temperature page where users can search for tempeartures equ
 
 Add google maps, so the GPS position can be seen on google maps
 
-Add a function that allows the data to be sent to excel. I.e. you press the button and the data is sent to an excel spread sheet
+-- Add a function that allows the data to be sent to excel. I.e. you press the button and the data is sent to an excel spread sheet
 
 Graphs on the report page, so plot the standard deviation, mean deviation on charts
+
+When no devices are connected, change message bar at top to display that

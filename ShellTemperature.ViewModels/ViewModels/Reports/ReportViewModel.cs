@@ -1,9 +1,8 @@
 ﻿using ShellTemperature.Models;
 using ShellTemperature.Repository;
+using ShellTemperature.ViewModels.Interfaces;
 using System;
 using System.Linq;
-using ShellTemperature.ViewModels.Interfaces;
-using ShellTemperature.ViewModels.Statistics;
 
 namespace ShellTemperature.ViewModels.ViewModels.Reports
 {
@@ -44,9 +43,12 @@ namespace ShellTemperature.ViewModels.ViewModels.Reports
 
                 double[] temperatureValues = GetShellTemperaturesBetweenRange();
 
-                SetMinimum(temperatureValues); // change min value as could have changed
+                SetMinimum(temperatureValues);
+                SetMaximum(temperatureValues);
                 SetAverage(temperatureValues);
                 SetRange(temperatureValues);
+                SetMedian(temperatureValues);
+                SetMode(temperatureValues);
                 SetInterquartileRange(temperatureValues);
                 SetStandardDeviation(temperatureValues);
                 SetMeanDeviation(temperatureValues);
@@ -78,9 +80,12 @@ namespace ShellTemperature.ViewModels.ViewModels.Reports
 
                 double[] temperatureValues = GetShellTemperaturesBetweenRange();
 
-                SetMaximum(temperatureValues); // change the max value as could have changed
+                SetMinimum(temperatureValues);
+                SetMaximum(temperatureValues);
                 SetAverage(temperatureValues);
                 SetRange(temperatureValues);
+                SetMedian(temperatureValues);
+                SetMode(temperatureValues);
                 SetInterquartileRange(temperatureValues);
                 SetStandardDeviation(temperatureValues);
                 SetMeanDeviation(temperatureValues);
@@ -128,6 +133,34 @@ namespace ShellTemperature.ViewModels.ViewModels.Reports
             {
                 _average = value;
                 OnPropertyChanged(nameof(Average));
+            }
+        }
+
+        private double _median;
+        /// <summary>
+        /// The median for the report
+        /// </summary>
+        public double Median
+        {
+            get => _median;
+            set
+            {
+                _median = value;
+                OnPropertyChanged(nameof(Median));
+            }
+        }
+
+        private double _mode;
+        /// <summary>
+        /// The mode for the report
+        /// </summary>
+        public double Mode
+        {
+            get => _mode;
+            set
+            {
+                _mode = value;
+                OnPropertyChanged(nameof(Mode));
             }
         }
 
@@ -204,6 +237,8 @@ namespace ShellTemperature.ViewModels.ViewModels.Reports
             SetMaximum(temperatureValues);
             SetAverage(temperatureValues);
             SetRange(temperatureValues);
+            SetMedian(temperatureValues);
+            SetMode(temperatureValues);
             SetInterquartileRange(temperatureValues);
             SetStandardDeviation(temperatureValues);
             SetMeanDeviation(temperatureValues);
@@ -243,6 +278,22 @@ namespace ShellTemperature.ViewModels.ViewModels.Reports
                 return;
 
             Average = _stats.Mean(temps);
+        }
+
+        private void SetMedian(double[] temps)
+        {
+            if (!temps.Any())
+                return;
+
+            Median = _stats.Median(temps);
+        }
+
+        private void SetMode(double[] temps)
+        {
+            if (!temps.Any())
+                return;
+
+            Mode = _stats.Mode(temps);
         }
 
         /// <summary>

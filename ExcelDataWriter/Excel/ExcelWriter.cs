@@ -1,4 +1,5 @@
-﻿using ExcelDataWriter.Interfaces;
+﻿using System.Diagnostics;
+using ExcelDataWriter.Interfaces;
 using ShellTemperature.Models;
 
 namespace ExcelDataWriter.Excel
@@ -34,7 +35,12 @@ namespace ExcelDataWriter.Excel
                 _excelData.Worksheet.Cells[row, longitude].Value = reading.Longitude != null
                     ? reading.Longitude.ToString() : "N/A";
 
-                _excelData.Worksheet.Cells[row, device].Value = reading.Device.DeviceName;
+                if(reading.Device != null)
+                    _excelData.Worksheet.Cells[row, device].Value = reading.Device.DeviceName;
+                else
+                {
+                    Debug.WriteLine("Null Device?!?!?!?");
+                }
 
                 row++;
             }

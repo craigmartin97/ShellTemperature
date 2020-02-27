@@ -18,7 +18,7 @@ namespace ShellTemperature.Tests.Outliers
         {
             //Arrange
             ISorter sorter = new SortingAlgorithm();
-            IBasicStats basicStats = new BasicStats(); ;
+            IBasicStats basicStats = new BasicStats(sorter);
             IMeasureSpreadStats measureSpreadStats = new MeasureSpreadStats(sorter, basicStats);
             OutlierDetector detector = new OutlierDetector(measureSpreadStats);
 

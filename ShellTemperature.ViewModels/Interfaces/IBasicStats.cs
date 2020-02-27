@@ -7,5 +7,9 @@
         double Maximum(double[] values);
 
         double Mean(double[] values);
+
+        double Median(double[] values);
+
+        double Mode(double[] values);
     }
 }

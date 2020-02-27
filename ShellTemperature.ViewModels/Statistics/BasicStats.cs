@@ -1,10 +1,19 @@
 ﻿using ShellTemperature.ViewModels.Interfaces;
 using System;
+using System.Diagnostics;
+using System.Linq;
 
 namespace ShellTemperature.ViewModels.Statistics
 {
     public class BasicStats : IBasicStats
     {
+        private readonly ISorter _sorter;
+
+        public BasicStats(ISorter sorter)
+        {
+            _sorter = sorter;
+        }
+
         /// <summary>
         /// Get the minimum value from a collection
         /// </summary>
@@ -57,10 +66,48 @@ namespace ShellTemperature.ViewModels.Statistics
 
             double total = 0;
             for (int i = 0; i < values.Length; i++)
+            {
                 total += values[i];
+            }
 
             double average = total / values.Length;
             return Math.Round(average, 2);
+        }
+
+        /// <summary>
+        /// Find the mode of the data set
+        /// </summary>
+        /// <param name="values">The values to find the mode for</param>
+        /// <returns>Returns the most often occuring number in the data set</returns>
+        public double Mode(double[] values)
+        {
+            return values.GroupBy(v => v)
+                .OrderByDescending(g => g.Count())
+                .First()
+                .Key;
+        }
+
+        /// <summary>
+        /// Find the median in the data set
+        /// </summary>
+        /// <param name="values">The values to find the median for</param>
+        /// <returns>Returns the median value of the data set</returns>
+        public double Median(double[] values)
+        {
+            double[] orderedValues = _sorter.BubbleSort(values);
+
+            if (orderedValues.Length % 2 == 0) // even
+            {
+                int startIndex = (orderedValues.Length / 2) - 1;
+                int endIndex = startIndex + 1;
+
+                return (orderedValues[startIndex] + orderedValues[endIndex]) / 2;
+            }
+            else // odd
+            {
+                int medianIndex = ((orderedValues.Length + 1) / 2) - 1;
+                return orderedValues[medianIndex];
+            }
         }
     }
 }

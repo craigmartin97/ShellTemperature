@@ -62,16 +62,29 @@ namespace ShellTemperature.Repository
         /// <param name="end">The end of the range to search for</param>
         /// <returns>Returns an enumerable of shell temperatures</returns>
         public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end)
-        => _context.ShellTemperatures.Where(x => x.RecordedDateTime >= start && x.RecordedDateTime <= end);
+        {
+            return _context.ShellTemperatures
+                .Include(dev => dev.Device)
+                .Where(dateTime => dateTime.RecordedDateTime >= start && dateTime.RecordedDateTime <= end);
+        }
 
+        /// <summary>
+        /// Get the shell temperature data between two dates.
+        /// Optional filter on the device name and device address can be provided
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="deviceName"></param>
+        /// <param name="deviceAddress"></param>
+        /// <returns></returns>
         public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end, string deviceName = null, string deviceAddress = null)
         {
             return _context.ShellTemperatures
+                .Include(dev => dev.Device)
                 .Where(device =>
                     string.IsNullOrWhiteSpace(deviceName) || device.Device.DeviceName.Equals(deviceName) &&
                     string.IsNullOrWhiteSpace(deviceAddress) || device.Device.DeviceAddress.Equals(deviceAddress) &&
-                    device.RecordedDateTime >= start && device.RecordedDateTime <= end)
-                .Include(dev => dev.Device);
+                    device.RecordedDateTime >= start && device.RecordedDateTime <= end);
         }
     }
 }

@@ -97,22 +97,25 @@
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                
+
                 <!-- Labels -->
                 <Label Content="Start Date" FontSize="{StaticResource FontSize18}" FontFamily="{StaticResource LatoRegular}"
+                       HorizontalAlignment="Left"
                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                 <Label Grid.Row="1" Content="End Date" FontSize="{StaticResource FontSize18}" FontFamily="{StaticResource LatoRegular}"
+                       HorizontalAlignment="Left"
                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
 
-                <DatePicker Grid.Column="1" Style="{StaticResource DatePickerStyle}" Text="{Binding Path=Start}" SelectedDate="{Binding Path=Start}" />
-                <DatePicker Grid.Row="1" Grid.Column="1" Style="{StaticResource DatePickerStyle}" Text="{Binding Path=End}" SelectedDate="{Binding Path=End}" />
-                
-            </Grid>
-            
-        </Grid>
+                <!-- DateTime pickers -->
+                <xctk:DateTimePickerBase Grid.Row="0" Grid.Column="1" Style="{StaticResource BaseDateTimePickerStyle}"
+                                         Value="{Binding Path=Start, UpdateSourceTrigger=PropertyChanged}" />
 
+                <xctk:DateTimePickerBase Grid.Row="1" Grid.Column="1" Style="{StaticResource BaseDateTimePickerStyle}"
+                                         Value="{Binding Path=End, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>
