@@ -1,6 +1,6 @@
 -- Azure save to live SQL server database
 
-Azure pipelines auto deployment
+-- Azure pipelines auto deployment
 
 Unit tests
 
@@ -12,7 +12,7 @@ X-Axis, data and time needs to be better as current is ticks
 
 Axis Labels
 
-Better datetime picker as only dates, need to be able to select time as well.
+-- Better datetime picker as only dates, need to be able to select time as well.
 
 -- Add global exception handler to project.
 
@@ -49,3 +49,5 @@ Add google maps, so the GPS position can be seen on google maps
 Graphs on the report page, so plot the standard deviation, mean deviation on charts
 
 When no devices are connected, change message bar at top to display that
+
+When inital connection, why does it flicker between thermocouple error and connecting numerous times

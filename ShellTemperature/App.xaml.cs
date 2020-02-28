@@ -21,6 +21,7 @@ using System.Windows;
 using ShellTemperature.ViewModels.Interfaces;
 using ShellTemperature.ViewModels.Outliers;
 using ShellTemperature.ViewModels.Statistics;
+using ShellTemperature.ViewModels.ViewModels.Maps;
 
 namespace ShellTemperature
 {
@@ -170,6 +171,7 @@ namespace ShellTemperature
             services.AddSingleton<LiveShellDataViewModel>();
             services.AddScoped<ShellHistoryViewModel>();
             services.AddSingleton<ReportViewModel>();
+            services.AddSingleton<GoogleMapViewModel>();
 
         }
         #endregion

@@ -3,6 +3,7 @@ using ShellTemperature.ViewModels.ViewModels.ConnectionStatus;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using System.Reflection;
 using OxyPlot.Reporting;
+using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 
 namespace ShellTemperature.ViewModels.ViewModels
@@ -14,6 +15,7 @@ namespace ShellTemperature.ViewModels.ViewModels
         private readonly ShellHistoryViewModel _shellHistoryViewModel;
         private readonly TopBarViewModel _topBarViewModel;
         private readonly ReportViewModel _reportViewModel;
+        private readonly GoogleMapViewModel _googleMapViewModel;
         #endregion
 
         #region Public Properties
@@ -65,36 +67,31 @@ namespace ShellTemperature.ViewModels.ViewModels
         /// Display the live shell data view to the user
         /// </summary>
         public RelayCommand LiveShellDataViewCommand =>
-            new RelayCommand(param =>
-            {
-                CurrentView = _liveShellDataViewModel;
-            });
+            new RelayCommand(param => CurrentView = _liveShellDataViewModel);
 
         /// <summary>
         /// Command to show the Shell history view to the user.
         /// </summary>
         public RelayCommand ShellHistoryViewCommand =>
-            new RelayCommand(param =>
-            {
-                CurrentView = _shellHistoryViewModel;
-            });
+            new RelayCommand(param => CurrentView = _shellHistoryViewModel);
 
         public RelayCommand ReportHistoryViewCommand =>
-            new RelayCommand(param =>
-            {
-                CurrentView = _reportViewModel;
-            });
+            new RelayCommand(param => CurrentView = _reportViewModel);
 
+        public RelayCommand MapViewCommand =>
+        new RelayCommand(param => CurrentView = _googleMapViewModel);
         #endregion
 
         #region Constructor
         public MainWindowViewModel(TopBarViewModel topBarViewModel, LiveShellDataViewModel liveShellDataViewModel,
-            ShellHistoryViewModel shellHistoryViewModel, ReportViewModel reportViewModel)
+            ShellHistoryViewModel shellHistoryViewModel, ReportViewModel reportViewModel,
+            GoogleMapViewModel map)
         {
             _topBarViewModel = topBarViewModel;
             _liveShellDataViewModel = liveShellDataViewModel;
             _shellHistoryViewModel = shellHistoryViewModel;
             _reportViewModel = reportViewModel;
+            _googleMapViewModel = map;
 
             CurrentView = _liveShellDataViewModel;
             ConnectionStatusViewModel = _topBarViewModel;

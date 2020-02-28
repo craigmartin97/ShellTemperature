@@ -19,13 +19,12 @@ namespace ShellTemperature.ViewModels.Outliers
             if (temps.Count == 0) return true;
             if (temps.Count <= 4)
             {
-                double latestTemp = temps[^1];
-                if (latestTemp <= 10)
+                if (latestReading <= 10)
                 {
-                    temps.Remove(latestTemp);
+                    temps.Remove(latestReading);
                 }
 
-                return temps[^1] < 5;
+                return latestReading < 5;
             }
 
             double[] arrTemps = temps.TakeLast(10).ToArray();

@@ -121,6 +121,9 @@
 
                         <!-- Btn for report history -->
                         <Button Content="Report" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ReportHistoryViewCommand}" />
+
+                        <!-- Btn for showing google map -->
+                        <Button Content="Map" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=MapViewCommand}" />
                     </StackPanel>
                 </Grid>
             </Grid>

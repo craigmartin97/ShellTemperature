@@ -79,7 +79,7 @@ void loop() {
         Serial.println();
       }
       file.close();
-      //SD.remove(fileName); // finished printing the sd card data, now delete the file
+      SD.remove(fileName); // finished printing the sd card data, now delete the file
     }
     else
     {
