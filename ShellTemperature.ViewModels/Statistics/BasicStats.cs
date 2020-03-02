@@ -1,6 +1,5 @@
 ﻿using ShellTemperature.ViewModels.Interfaces;
 using System;
-using System.Diagnostics;
 using System.Linq;
 
 namespace ShellTemperature.ViewModels.Statistics
@@ -81,6 +80,9 @@ namespace ShellTemperature.ViewModels.Statistics
         /// <returns>Returns the most often occuring number in the data set</returns>
         public double Mode(double[] values)
         {
+            if (values == null || values.Length == 0)
+                throw new ArgumentNullException(nameof(values), "No data available");
+
             return values.GroupBy(v => v)
                 .OrderByDescending(g => g.Count())
                 .First()
@@ -94,6 +96,9 @@ namespace ShellTemperature.ViewModels.Statistics
         /// <returns>Returns the median value of the data set</returns>
         public double Median(double[] values)
         {
+            if (values == null || values.Length == 0)
+                throw new ArgumentNullException(nameof(values), "No data available");
+
             double[] orderedValues = _sorter.BubbleSort(values);
 
             if (orderedValues.Length % 2 == 0) // even

@@ -23,6 +23,9 @@ namespace ShellTemperature.ViewModels.Statistics
         {
             if (values == null || values.Length == 0)
                 throw new ArgumentNullException(nameof(values), "No data available");
+            if (values.Length == 1)
+                throw new InvalidOperationException("Unable to calculate range with only one value");
+            
 
             double[] sortedValues = _sortingAlgorithm.BubbleSort(values);
             double min = sortedValues[0];
@@ -89,20 +92,21 @@ namespace ShellTemperature.ViewModels.Statistics
             double[] thirdQuartile;
 
             int index;
+            int thirdQuantileStartIndex;
             // is even
             if (sortedTemps.Length % 2 == 0)
             {
                 index = sortedTemps.Length / 2;
-                firstQuartile = new double[index];
-                thirdQuartile = new double[index];
+                thirdQuantileStartIndex = index;
             }
             else // is odd
             {
-                index = ((sortedTemps.Length + 1) / 2) - 1;
-                int size = sortedTemps.Length - index;
-                firstQuartile = new double[size];
-                thirdQuartile = new double[size];
+                index = (sortedTemps.Length - 1) / 2;
+                thirdQuantileStartIndex = index + 1;
             }
+
+            firstQuartile = new double[index];
+            thirdQuartile = new double[index];
 
             for (int i = 0; i < index; i++)
             {
@@ -110,7 +114,7 @@ namespace ShellTemperature.ViewModels.Statistics
             }
 
             int indexCounter = 0;
-            for (int i = index; i < sortedTemps.Length; i++)
+            for (int i = thirdQuantileStartIndex; i < sortedTemps.Length; i++)
             {
                 thirdQuartile[indexCounter] = sortedTemps[i];
                 indexCounter++;

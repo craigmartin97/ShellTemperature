@@ -28,9 +28,9 @@ namespace ShellTemperature.ViewModels.Outliers
             }
 
             double[] arrTemps = temps.TakeLast(10).ToArray();
-            double interQuartileRange = _measureSpreadStats.InterquartileRange(arrTemps, 
-                out var firstQuartileMedian,
-                out var thirdQuartileMedian);
+            double interQuartileRange = _measureSpreadStats.InterquartileRange(arrTemps,
+                out double firstQuartileMedian,
+                out double thirdQuartileMedian);
 
             if (Math.Abs(interQuartileRange) < 0.03)
                 interQuartileRange += 0.4;
