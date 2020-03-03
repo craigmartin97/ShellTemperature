@@ -136,10 +136,7 @@ namespace ShellTemperature.ViewModels.Statistics
 
             if (quantile.Length % 2 == 0) // even
             {
-                int startIndex = (quantile.Length / 2);
-
-                if (startIndex == 1)
-                    startIndex = 0;
+                int startIndex = (quantile.Length / 2) == 1 ? (quantile.Length / 2) - 1 : (quantile.Length / 2);
 
                 int endIndex = startIndex + 1;
 
