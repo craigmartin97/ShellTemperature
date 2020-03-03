@@ -188,6 +188,10 @@ namespace ShellTemperature.Tests.Statistics
             Assert.AreEqual(expectedStandardDeviation, standardDeviation);
         }
 
+        /// <summary>
+        /// Test that the function to retrieve the quartile ranges
+        /// is correct with an odd sized data set
+        /// </summary>
         [Test]
         public void GetQuartiles_OddSet_Test()
         {
@@ -249,6 +253,10 @@ namespace ShellTemperature.Tests.Statistics
             Assert.AreEqual(expectedThirdQuantile, thirdQuantile);
         }
 
+        /// <summary>
+        /// Test that the function to retrieve the quartile ranges
+        /// is correct with an even sized data set
+        /// </summary>
         [Test]
         public void GetQuartiles_EvenSet_Test()
         {
@@ -305,6 +313,238 @@ namespace ShellTemperature.Tests.Statistics
 
             Assert.AreEqual(expectedFirstQuantile, firstQuantile);
             Assert.AreEqual(expectedThirdQuantile, thirdQuantile);
+        }
+
+        /// <summary>
+        /// Manually calculate the interquantile range and compare it with
+        /// the function to calculate the value
+        /// </summary>
+        [Test]
+        public void InterquartileRange_OddSet_Test()
+        {
+            // Arrange
+            double[] values = new double[]
+            {
+                1, 2, 2, 3, 3
+            };
+
+            double[] firstQuantile = new double[2];
+            double[] thirdQuantile = new double[2];
+
+            for (int i = 0; i < 2; i++)
+            {
+                firstQuantile[i] = values[i];
+            }
+
+            int counter = 0;
+            for (int i = 3; i < values.Length; i++)
+            {
+                thirdQuantile[counter] = values[i];
+                counter++;
+            }
+
+            //first quantile length is 2 and is even so...
+            double expectedFirstQuantileMedian = (firstQuantile[0] + firstQuantile[1]) / 2;
+            double expectedThirdQuantileMedian = (thirdQuantile[0] + thirdQuantile[1]) / 2;
+            double expectedInterquantileRange = expectedThirdQuantileMedian - expectedFirstQuantileMedian;
+
+            // Act
+            double interquantileRange = _measureSpreadStats.InterquartileRange(values,
+                out double actualFirstQuantile, out double actualThirdQuantile);
+
+            // Assert
+            Assert.AreEqual(expectedFirstQuantileMedian, actualFirstQuantile);
+            Assert.AreEqual(expectedThirdQuantileMedian, actualThirdQuantile);
+            Assert.AreEqual(expectedInterquantileRange, interquantileRange);
+        }
+
+        /// <summary>
+        /// Manually calculate the interquantile range and compare it with
+        /// the function to calculate the value
+        /// </summary>
+        [Test]
+        public void InterquartileRange_EvenSet_Test()
+        {
+            // Arrange
+            double[] values = new double[]
+            {
+                1, 2, 2, 3, 3, 4
+            };
+
+            double[] firstQuantile = new double[3];
+            double[] thirdQuantile = new double[3];
+
+            for (int i = 0; i < 3; i++)
+            {
+                firstQuantile[i] = values[i];
+            }
+
+            int counter = 0;
+            for (int i = 3; i < values.Length; i++)
+            {
+                thirdQuantile[counter] = values[i];
+                counter++;
+            }
+
+            // quantiles are odd sized so selected middle element...
+            double expectedFirstQuantileMedian = 2;
+            double expectedThirdQuantileMedian = 3;
+            double expectedInterquantileRange = expectedThirdQuantileMedian - expectedFirstQuantileMedian;
+
+            // Act
+            double interquantileRange = _measureSpreadStats.InterquartileRange(values,
+                out double actualFirstQuantile, out double actualThirdQuantile);
+
+            // Assert
+            Assert.AreEqual(expectedFirstQuantileMedian, actualFirstQuantile);
+            Assert.AreEqual(expectedThirdQuantileMedian, actualThirdQuantile);
+            Assert.AreEqual(expectedInterquantileRange, interquantileRange);
+        }
+
+        /// <summary>
+        /// Manually calculate the interquantile range and compare it with
+        /// the function to calculate the value
+        /// </summary>
+        [Test]
+        public void InterquartileRange_EvenSetManyItems_Test()
+        {
+            // Arrange
+            Random random = new Random();
+
+            double[] values = new double[100];
+
+            for(int i = 0; i < values.Length; i++)
+            {
+                int num = random.Next(18,26);
+                double dec = random.NextDouble();
+
+                double value = num + dec;
+                values[i] = value;
+            }
+
+            values = values.OrderBy(x => x).ToArray();
+
+            double[] firstQuantile = new double[50];
+            double[] thirdQuantile = new double[50];
+
+            for (int i = 0; i < 50; i++)
+            {
+                firstQuantile[i] = values[i];
+            }
+
+            int counter = 0;
+            for (int i = 50; i < values.Length; i++)
+            {
+                thirdQuantile[counter] = values[i];
+                counter++;
+            }
+
+            // quantiles are odd sized so selected middle element...
+            double expectedFirstQuantileMedian = (firstQuantile[25] + firstQuantile[26]) / 2;
+            double expectedThirdQuantileMedian = (thirdQuantile[25] + thirdQuantile[26]) / 2;
+            double expectedInterquantileRange = expectedThirdQuantileMedian - expectedFirstQuantileMedian;
+
+            // Act
+            double interquantileRange = _measureSpreadStats.InterquartileRange(values,
+                out double actualFirstQuantile, out double actualThirdQuantile);
+
+            // Assert
+            Assert.AreEqual(expectedFirstQuantileMedian, actualFirstQuantile);
+            Assert.AreEqual(expectedThirdQuantileMedian, actualThirdQuantile);
+            Assert.AreEqual(expectedInterquantileRange, interquantileRange);
+        }
+
+        /// <summary>
+        /// Manually calculate the interquantile range and compare it with
+        /// the function to calculate the value
+        /// </summary>
+        [Test]
+        public void InterquartileRange_OddSetManyItems_Test()
+        {
+            // Arrange
+            Random random = new Random();
+
+            double[] values = new double[99];
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                int num = random.Next(18, 26);
+                double dec = random.NextDouble();
+
+                double value = num + dec;
+                values[i] = value;
+            }
+
+            values = values.OrderBy(x => x).ToArray();
+
+            double[] firstQuantile = new double[49];
+            double[] thirdQuantile = new double[49];
+
+            for (int i = 0; i < 49; i++)
+            {
+                firstQuantile[i] = values[i];
+            }
+
+            int counter = 0;
+            for (int i = 50; i < values.Length; i++)
+            {
+                thirdQuantile[counter] = values[i];
+                counter++;
+            }
+
+            // quantiles are odd sized so selected middle element...
+            double expectedFirstQuantileMedian = firstQuantile[((firstQuantile.Length - 1) / 2)];
+            double expectedThirdQuantileMedian = thirdQuantile[((thirdQuantile.Length - 1) / 2)];
+            double expectedInterquantileRange = expectedThirdQuantileMedian - expectedFirstQuantileMedian;
+
+            // Act
+            double interquantileRange = _measureSpreadStats.InterquartileRange(values,
+                out double actualFirstQuantile, out double actualThirdQuantile);
+
+            // Assert
+            Assert.AreEqual(expectedFirstQuantileMedian, actualFirstQuantile);
+            Assert.AreEqual(expectedThirdQuantileMedian, actualThirdQuantile);
+            Assert.AreEqual(expectedInterquantileRange, interquantileRange);
+        }
+
+        /// <summary>
+        /// Manually calculate the interquantile range and compare it with
+        /// the function to calculate the value
+        /// </summary>
+        [Test]
+        public void InterquartileRange_Test()
+        {
+            // Arrange
+            double[] values = new double[]
+            {
+                1, 2, 2, 3, 3, 4
+            };
+
+            double[] firstQuantile = new double[3];
+            double[] thirdQuantile = new double[3];
+
+            for (int i = 0; i < 3; i++)
+            {
+                firstQuantile[i] = values[i];
+            }
+
+            int counter = 0;
+            for (int i = 3; i < values.Length; i++)
+            {
+                thirdQuantile[counter] = values[i];
+                counter++;
+            }
+
+            // quantiles are odd sized so selected middle element...
+            double expectedFirstQuantileMedian = 2;
+            double expectedThirdQuantileMedian = 3;
+            double expectedInterquantileRange = expectedThirdQuantileMedian - expectedFirstQuantileMedian;
+
+            // Act
+            double interquantileRange = _measureSpreadStats.InterquartileRange(values);
+
+            // Assert
+            Assert.AreEqual(expectedInterquantileRange, interquantileRange);
         }
     }
 }

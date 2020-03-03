@@ -136,14 +136,19 @@ namespace ShellTemperature.ViewModels.Statistics
 
             if (quantile.Length % 2 == 0) // even
             {
-                int startIndex = (quantile.Length / 2) - 1;
+                int startIndex = (quantile.Length / 2);
+
+                if (startIndex == 1)
+                    startIndex = 0;
+
                 int endIndex = startIndex + 1;
 
                 return (quantile[startIndex] + quantile[endIndex]) / 2;
             }
             else // odd
             {
-                int medianIndex = ((quantile.Length + 1) / 2) - 1;
+                //int medianIndex = ((quantile.Length + 1) / 2) - 1;
+                int medianIndex = (quantile.Length - 1) / 2;
                 return quantile[medianIndex];
             }
         }
