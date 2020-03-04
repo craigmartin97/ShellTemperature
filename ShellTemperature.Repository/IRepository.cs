@@ -19,6 +19,12 @@ namespace ShellTemperature.Repository
         IEnumerable<T> GetAll();
 
         /// <summary>
+        /// Get the item from the database
+        /// </summary>
+        /// <returns></returns>
+        T GetItem(Guid id);
+
+        /// <summary>
         /// Delete an object by id
         /// </summary>
         /// <param name="id">The id of the object</param>

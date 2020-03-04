@@ -9,17 +9,22 @@ namespace ExcelDataWriter.Excel
 {
     public class ExcelData : IExcelData
     {
+        #region Fields
+        private readonly string file;
+        #endregion
+
         public ExcelWorksheet Worksheet { get; private set; }
         public ExcelPackage Package { get; private set; }
 
-        public ExcelData()
+        public ExcelData(string path)
         {
-
+            file = path;
         }
 
         public ExcelData(string path, string worksheetName)
         {
-            OpenExcelFile(path,worksheetName);
+            file = path;
+            OpenExcelFile(path, worksheetName);
         }
 
         public void CreateExcelWorkSheet(string path, string worksheetName)
@@ -59,6 +64,20 @@ namespace ExcelDataWriter.Excel
             if (Worksheet == null)
                 throw new FileNotFoundException("Could not find the worksheet. Check the file path and worksheet " +
                                                 "name are correct and are correct.");
+        }
+
+        public bool DeleteExcelFile()
+        {
+            if (file == null)
+                throw new NullReferenceException("The package is null");
+
+            if (File.Exists(file))
+            {
+                File.Delete(file);
+                return true;
+            }
+
+            return false;
         }
     }
 }

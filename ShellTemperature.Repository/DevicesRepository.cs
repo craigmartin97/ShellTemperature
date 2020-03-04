@@ -62,5 +62,12 @@ namespace ShellTemperature.Repository
         public DeviceInfo GetDevice(string deviceAddress)
             => _context.Devices.FirstOrDefault(x => x.DeviceAddress.Equals(deviceAddress));
 
+        /// <summary>
+        /// Get a single device from the database
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public DeviceInfo GetItem(Guid id)
+            => _context.Devices.FirstOrDefault(x => x.Id.Equals(id));
     }
 }

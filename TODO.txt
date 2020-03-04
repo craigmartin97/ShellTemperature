@@ -1,50 +1,22 @@
--- Azure save to live SQL server database
-
--- Azure pipelines auto deployment
-
 Unit tests
-
--- Outliers, when a value is perhaps 2 and based of previous readings the value should be marked as an outlier and on screen highlighted red -- 
-
--- NLog
 
 X-Axis, data and time needs to be better as current is ticks
 
 Axis Labels
 
--- Better datetime picker as only dates, need to be able to select time as well.
-
--- Add global exception handler to project.
-
 What happens if you unplug real date time module through execution
-
--- What happens temperature sensor returns NaN, i.e. the thermocouple is not plugged in?
 
 DS3231, finds bad date time handle better as message just flashes on and off.
 
--- Why does changing end throw StackOverflow exception?
-
 Allow comments to be added to temperatures
-
--- Record GPS, latitude and longitude
--- Save to SD card
-
--- Add daily, monthly, yearly and custom reports between two dates
 
 SSRS reports and reports server
 
 Machine learning and analysis of data
 
--- Look at interquartile range for outliers as a more scientific method for finding outliers
-
-
-
-
 Add filter on Shell Temperature page where users can search for tempeartures equal to or less than or equal to
 
 Add google maps, so the GPS position can be seen on google maps
-
--- Add a function that allows the data to be sent to excel. I.e. you press the button and the data is sent to an excel spread sheet
 
 Graphs on the report page, so plot the standard deviation, mean deviation on charts
 

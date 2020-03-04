@@ -194,7 +194,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             string path = Path.GetTempPath() + "ShellTemperatures.xlsx";
             const string worksheetName = "ShellTempData";
 
-            IExcelData excelData = new ExcelData();
+            IExcelData excelData = new ExcelData(path);
             excelData.CreateExcelWorkSheet(path, worksheetName);
             excelData.OpenExcelFile(path, worksheetName);
 

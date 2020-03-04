@@ -310,8 +310,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
         #region Constructors
         public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder,
-            IRepository<ShellTemp> repository, IDeviceRepository<DeviceInfo> deviceRepository,
-            IConfiguration configuration, BluetoothConnectionSubject subject,
+            IRepository<ShellTemp> repository, 
+            IDeviceRepository<DeviceInfo> deviceRepository,
+            IConfiguration configuration,
+            BluetoothConnectionSubject subject,
             TemperatureSubject temperatureSubject,
             IDialogService service,
             ILogger<LiveShellDataViewModel> logger,

@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ShellTemperature.ViewModels.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShellTemperature.ViewModels.Interfaces;
 
 namespace ShellTemperature.ViewModels.Outliers
 {
@@ -14,6 +14,13 @@ namespace ShellTemperature.ViewModels.Outliers
             _measureSpreadStats = measureSpreadStats;
         }
 
+        /// <summary>
+        /// Check if the latest reading is an outlier by calculating
+        /// and using the interqartile range.
+        /// </summary>
+        /// <param name="temps">Collection of previous readings</param>
+        /// <param name="latestReading">The latest reading</param>
+        /// <returns>Returns true if the latest reading is an outlier</returns>
         public bool IsOutlier(IList<double> temps, double latestReading)
         {
             if (temps.Count == 0) return true;

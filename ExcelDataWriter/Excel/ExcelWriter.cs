@@ -14,7 +14,12 @@ namespace ExcelDataWriter.Excel
 
         public void WriteToExcelFile(ShellTemp[] temps)
         {
-            int row = 2;
+            if (_excelData.Worksheet.Dimension == null)
+            {
+                return;
+            }
+
+            int row = _excelData.Worksheet.Dimension.Start.Row + 1;
 
             int id = GetIndexOfColumnHeader(nameof(ShellTemp.Id));
             int temp = GetIndexOfColumnHeader(nameof(ShellTemp.Temperature));
@@ -35,12 +40,8 @@ namespace ExcelDataWriter.Excel
                 _excelData.Worksheet.Cells[row, longitude].Value = reading.Longitude != null
                     ? reading.Longitude.ToString() : "N/A";
 
-                if(reading.Device != null)
+                if (reading.Device != null)
                     _excelData.Worksheet.Cells[row, device].Value = reading.Device.DeviceName;
-                else
-                {
-                    Debug.WriteLine("Null Device?!?!?!?");
-                }
 
                 row++;
             }

@@ -42,6 +42,7 @@ namespace ShellTemperature.Repository
                 return false;
 
             _context.ShellTemperatures.Remove(shellTemp);
+            _context.SaveChanges();
             return true;
         }
 
@@ -86,5 +87,13 @@ namespace ShellTemperature.Repository
                     string.IsNullOrWhiteSpace(deviceAddress) || device.Device.DeviceAddress.Equals(deviceAddress) &&
                     device.RecordedDateTime >= start && device.RecordedDateTime <= end);
         }
+
+        /// <summary>
+        /// Get the item from the database matching the id
+        /// </summary>
+        /// <param name="id">Id of the item to retrieve</param>
+        /// <returns>Returns the item from database matching the id value</returns>
+        public ShellTemp GetItem(Guid id)
+            => _context.ShellTemperatures.Find(id);
     }
 }

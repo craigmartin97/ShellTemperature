@@ -17,5 +17,7 @@ namespace ExcelDataWriter.Interfaces
         void CreateExcelWorkSheet(string path, string worksheetName);
 
         void OpenExcelFile(string path, string worksheetName);
+
+        bool DeleteExcelFile();
     }
 }
