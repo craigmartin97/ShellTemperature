@@ -91,16 +91,16 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #endregion
 
         #region Properties
-        private ObservableCollection<Device> devices = new ObservableCollection<Device>();
+        private ObservableCollection<Device> _devices = new ObservableCollection<Device>();
         /// <summary>
         /// A collection of devices that bluetooth data can be retrieved from
         /// </summary>
         public ObservableCollection<Device> Devices
         {
-            get => devices;
+            get => _devices;
             set
             {
-                devices = value;
+                _devices = value;
                 OnPropertyChanged(nameof(Devices));
             }
         }
@@ -303,14 +303,20 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             SelectedDevice.BluetoothDevice.Client.Close();
             Devices.Remove(SelectedDevice);
 
-            SelectedDevice = Devices == null || Devices.Count == 0 ? null : Devices.FirstOrDefault();
+            if (Devices == null || Devices.Count == 0) // nothing in the collection
+            {
+                SelectedDevice = null;
+                SetConnectionStatus();
+            }
+            else SelectedDevice = Devices.FirstOrDefault();
+
             SetCanRemoveDevices();
         });
         #endregion
 
         #region Constructors
         public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder,
-            IRepository<ShellTemp> repository, 
+            IRepository<ShellTemp> repository,
             IDeviceRepository<DeviceInfo> deviceRepository,
             IConfiguration configuration,
             BluetoothConnectionSubject subject,
@@ -355,7 +361,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 Devices.Add(dev);
             }
 
-            if (Devices.Count == 0) return;
+            if (Devices.Count == 0)
+            {
+                SetConnectionStatus();
+                return;
+            }
 
             OrderDevices();
             SetSelectedDeviceWhenNull();
@@ -392,24 +402,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 bool isOutlier = _outlierDetector.IsOutlier(currentDevice.AllTemperatureReadings, receivedData.Temperature);
 
                 if (isOutlier) // value is outlier cannot be added
-                {
                     return;
-                }
-
 
                 // format the datetime, so if its invalid it is corrected
-                FormatDateTime(currentDevice, receivedData);
-
-                // first three readings ignore as they could be bad, often they are
-                if (currentDevice.ReadingsCounter <= 3 && SelectedDevice == currentDevice)
-                {
-                    Debug.WriteLine("Connecting FoundDevices - " + currentDevice.DeviceName);
-                    currentDevice.ReadingsCounter++;
-
-                    currentDevice.State.Message = BLTError.connecting + currentDevice.DeviceName;
-                    SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTING);
-                    return;
-                }
+                // FormatDateTime(currentDevice, receivedData);
 
                 currentDevice.CurrentData = receivedData.Temperature;
 
@@ -457,7 +453,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     currentDevice.State.Message = BLTError.connecting + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTING);
 
-                    ResetDeviceCounter(currentDevice); // maybe this needs to be outside this if???
+                    //ResetDeviceCounter(currentDevice); // maybe this needs to be outside this if???
                     ResetBluetoothClient(currentDevice);
                 }
             }
@@ -471,7 +467,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     currentDevice.State.Message = ex.Message + " - " + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
 
-                    ResetDeviceCounter(currentDevice);
                     ResetBluetoothClient(currentDevice);
                 }
             }
@@ -487,7 +482,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     currentDevice.State.Message = BLTError.error + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
 
-                    ResetDeviceCounter(currentDevice);
                     ResetBluetoothClient(currentDevice);
                 }
             }
@@ -502,15 +496,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     currentDevice.State.Message = "The thermocouple is not working - " + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.FAILED);
 
-                    ResetDeviceCounter(currentDevice);
                     ResetBluetoothClient(currentDevice);
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("An exception occurred");
-                Debug.WriteLine(ex.Message);
-                _logger.LogError(ex.Message);
             }
         }
         #endregion
@@ -529,13 +516,17 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         }
 
         /// <summary>
-        /// Reset the foundDevices counter
+        /// Set connection status to none
         /// </summary>
-        /// <param name="foundDevices">The devices counter to reset</param>
-        private void ResetDeviceCounter(Device foundDevices)
+        private void SetConnectionStatus()
         {
-            if (foundDevices.ReadingsCounter > 3)
-                foundDevices.ReadingsCounter = 0;
+            ConnectionState state = new ConnectionState
+            {
+                IsConnected = DeviceConnectionStatus.NONE,
+                Message = "No Devices Found"
+            };
+
+            SetDeviceState(state);
         }
 
         /// <summary>
@@ -626,14 +617,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             if (prev != null)
             {
                 DateTime min = prev.RecordedDateTime;
-                //DateTime max = prev.RecordedDateTime.AddSeconds(2);
-                /*
-                 * TODO: I no longer think it makes sense to say if greater than the max as
-                 * if you stop recording for ages i.e. 3hours, then the times will
-                 * always say 3 hours prev
-                 * 
-                 *
-                 */
                 if (receivedData.RecordedDateTime < min) // || receivedData.RecordedDateTime > max
                 {
                     receivedData.RecordedDateTime = prev.RecordedDateTime.AddSeconds(1);

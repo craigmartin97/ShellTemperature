@@ -70,7 +70,6 @@ namespace BluetoothService.BluetoothServices
 
         private DeviceReading Connect(BluetoothDevice device)
         {
-            Debug.WriteLine("Getting network stream");
             // client is connected
             NetworkStream stream = device.Client.GetStream();
 
@@ -78,10 +77,8 @@ namespace BluetoothService.BluetoothServices
             {
                 do
                 {
-                    Thread.Sleep(100);
-                    stream.ReadTimeout = 1000; // 500 millisecond timeout, if unable to get data feed
+                    stream.ReadTimeout = 2500; // 500 millisecond timeout, if unable to get data feed
                     int numberOfBytesRead = stream.Read(_myReadBuffer, 0, _myReadBuffer.Length);
-                    Debug.WriteLine("Got number of bytes: " + numberOfBytesRead);
                     if (numberOfBytesRead <= 1)
                         continue;
 
@@ -89,8 +86,6 @@ namespace BluetoothService.BluetoothServices
                     if (string.IsNullOrWhiteSpace(sensorTempValue))
                         return null;
 
-
-                    Debug.WriteLine("sensor temp value" + sensorTempValue);
                     string[] arr = sensorTempValue.Split(Environment.NewLine).ToArray();
 
                     if (arr.Length == 0)
@@ -130,11 +125,10 @@ namespace BluetoothService.BluetoothServices
                 }
                 while (stream.DataAvailable); // only continue if there is more to stream and the parse was successful.
 
-                stream.Close(); // test
+                //stream.Close(); // test
                 return null;
             }
 
-            Debug.WriteLine("Sorry.  You cannot read from this NetworkStream.");
             return null;
         }
 
@@ -143,7 +137,6 @@ namespace BluetoothService.BluetoothServices
             device.Client.Connect(device.Device.DeviceAddress,
                 InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
 
-            //return null;
             return Connect(device);
         }
 
@@ -212,9 +205,7 @@ namespace BluetoothService.BluetoothServices
                         deviceReading.Longitude = longitude;
                 }
                 else if (data.Equals("-sdCardData", StringComparison.CurrentCultureIgnoreCase))
-                {
                     break;
-                }
             }
 
             // no date time then set to current

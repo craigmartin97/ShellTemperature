@@ -1,6 +1,7 @@
 ﻿using ShellTemperature.ViewModels.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ShellTemperature.ViewModels.Outliers
@@ -32,6 +33,11 @@ namespace ShellTemperature.ViewModels.Outliers
                 }
 
                 return latestReading < 5;
+            }
+
+            if(latestReading <= 10)
+            {
+                Debug.WriteLine(latestReading);
             }
 
             double[] arrTemps = temps.TakeLast(10).ToArray();

@@ -109,7 +109,7 @@ namespace ShellTemperature.Tests.OutlierDetector
                 values[i] = value;
             }
 
-            double[] latestReadings = new double[3];
+            double[] latestReadings = new double[2];
             for (int i = 0; i < latestReadings.Length; i++)
             {
                 int num = random.Next(20, 27);

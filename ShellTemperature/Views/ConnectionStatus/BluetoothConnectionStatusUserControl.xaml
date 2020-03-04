@@ -25,6 +25,9 @@
                         <DataTrigger Binding="{Binding Path=Device.IsConnected}" Value="PAUSED">
                             <Setter Property="Background" Value="DarkGray" />
                         </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=Device.IsConnected}" Value="NONE">
+                            <Setter Property="Background" Value="DarkGray" />
+                        </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Label.Style>
