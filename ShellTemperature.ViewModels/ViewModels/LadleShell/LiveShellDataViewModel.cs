@@ -453,7 +453,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     currentDevice.State.Message = BLTError.connecting + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTING);
 
-                    //ResetDeviceCounter(currentDevice); // maybe this needs to be outside this if???
                     ResetBluetoothClient(currentDevice);
                 }
             }
