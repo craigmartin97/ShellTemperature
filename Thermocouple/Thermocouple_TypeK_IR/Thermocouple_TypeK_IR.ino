@@ -1,6 +1,11 @@
 #include <Wire.h>
 #include "RTClib.h"
 
+// for sleep and infared
+#include <avr/sleep.h>//this AVR library contains the methods that controls the sleep modes
+#define interruptPin 2 //Pin we are going to use to wake up the Arduino
+#include <IRremote.h>
+
 #include <SoftwareSerial.h>
 #include <SparkFunMAX31855k.h> // Using the max31855k driver
 #include <SPI.h>  // Included here too due Arduino IDE; Used in above header
@@ -31,11 +36,21 @@ SoftwareSerial ss(3, 4);
 RTC_DS3231 rtc;
 char DateAndTimeString[20]; // 19 digits plus the null char
 
+// IR and LED Light
+int receiver = 2;
+int led = 8;
+IRrecv irrecv(receiver);
+decode_results results;
+
 /**
  * setup constructor to initalize the sketch
  */
 void setup() {
   Wire.begin(); // for recording the datetime
+
+  // Do LED Light
+  pinMode(led, OUTPUT);
+  digitalWrite(led, LOW); // turn on LED light
 
   Serial.begin(9600);
   ss.begin(9600);
@@ -43,22 +58,30 @@ void setup() {
   pinMode(BTpin, INPUT);
   pinMode(10, OUTPUT);
 
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-
-  // attempt to connect using WEP encryption:
-  Serial.println("Initializing Wifi...");
-  printMacAddress();
-
-  // scan for existing networks:
-  Serial.println("Scanning available networks...");
-  listNetworks();
+  // Do IR 
+  pinMode(interruptPin,INPUT_PULLUP);//Set pin d2 to input using the buildin pullup resistor
+  irrecv.enableIRIn();
   
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   delay(100);  // Let IC stabilize or first readings will be garbage
 }
 /**
  * Continuous loop every x seconds.
  */
 void loop() { 
+  Serial.println(irrecv.decode(&results));
+    if(irrecv.decode(&results))
+    {
+      String reading = String(results.value, HEX);
+      if(reading == "ffa25d")
+      {
+        Serial.println("PWR BTN: Go to sleep");
+        digitalWrite(led, HIGH);   
+        Going_To_Sleep();
+      }
+      irrecv.resume();
+  }
+ 
   if(digitalRead(BTpin) >= 1) // the arduino's bluetooth sensor is connected to another device
   {
     File file = SD.open(fileName); // open in read mode
@@ -214,4 +237,43 @@ void writeToFile(){
 
     myFile.close();
   }
+}
+
+void checkIRStatus(){
+  if(irrecv.decode(&results))
+  {
+    String reading = String(results.value, HEX);
+    if(reading == "ffa25d")
+    {
+      Serial.println("PWR BTN: Go to sleep");
+      digitalWrite(led, HIGH);   
+      Going_To_Sleep();
+    }
+    irrecv.resume();
+ }
+}
+
+/**
+ * Go to sleep stop recording
+ */
+void Going_To_Sleep(){
+    Serial.println("Going to bed now");
+    sleep_enable();//Enabling sleep mode
+    attachInterrupt(digitalPinToInterrupt(interruptPin), wakeUp, LOW);//attaching a interrupt to pin d2
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);//Setting the sleep mode, in our case full sleep
+    digitalWrite(LED_BUILTIN,LOW);//turning LED off
+    delay(1000); //wait a second to allow the led to be turned off before going to sleep
+    sleep_cpu();//activating sleep mode
+    Serial.println("just woke up!");//next line of code executed after the interrupt 
+    digitalWrite(LED_BUILTIN,HIGH);//turning LED on
+  }
+
+/**
+ * Start recording again
+ */
+void wakeUp(){
+  digitalWrite(led, LOW);
+  Serial.println("Interrrupt Fired");//Print message to serial monitor
+  sleep_disable();//Disable sleep mode
+  detachInterrupt(digitalPinToInterrupt(interruptPin)); //Removes the interrupt from pin 2;
 }
