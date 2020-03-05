@@ -69,19 +69,6 @@ void setup() {
  * Continuous loop every x seconds.
  */
 void loop() { 
-  Serial.println(irrecv.decode(&results));
-    if(irrecv.decode(&results))
-    {
-      String reading = String(results.value, HEX);
-      if(reading == "ffa25d")
-      {
-        Serial.println("PWR BTN: Go to sleep");
-        digitalWrite(led, HIGH);   
-        Going_To_Sleep();
-      }
-      irrecv.resume();
-  }
- 
   if(digitalRead(BTpin) >= 1) // the arduino's bluetooth sensor is connected to another device
   {
     File file = SD.open(fileName); // open in read mode
@@ -130,6 +117,22 @@ void loop() {
   {
     writeToFile();
   }
+
+  if(irrecv.decode(&results))
+    {
+      Serial.println("PRESSED");
+      //String reading = String(results.value, HEX);
+      //Serial.println(reading);
+      Serial.println(results.value);
+      String value = String(results.value); //String(16753245);
+      if(value == "16753245")
+      {
+        Serial.println("PWR BTN: Go to sleep");
+        digitalWrite(led, HIGH);   
+        Going_To_Sleep();
+      }
+      irrecv.resume();
+    }
 }
 
 /**

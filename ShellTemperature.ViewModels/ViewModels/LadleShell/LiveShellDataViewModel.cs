@@ -399,7 +399,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 currentDevice.AllTemperatureReadings.Add(receivedData.Temperature);
 
                 // check if outlier
-                bool isOutlier = _outlierDetector.IsOutlier(currentDevice.AllTemperatureReadings, receivedData.Temperature);
+                bool isOutlier =
+                    _outlierDetector.IsOutlier(currentDevice.AllTemperatureReadings, receivedData.Temperature);
 
                 if (isOutlier) // value is outlier cannot be added
                     return;
@@ -497,6 +498,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                     ResetBluetoothClient(currentDevice);
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("HIT");
             }
         }
         #endregion
