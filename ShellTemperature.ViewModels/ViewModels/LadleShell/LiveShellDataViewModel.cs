@@ -499,9 +499,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     ResetBluetoothClient(currentDevice);
                 }
             }
-            catch (Exception ex)
+            catch (IndexOutOfRangeException ex)
             {
-                Debug.WriteLine("HIT");
+                Debug.WriteLine("The index was out of range whilst extracting the data from the bluetooth device");
+                Debug.WriteLine(ex.Message);
             }
         }
         #endregion

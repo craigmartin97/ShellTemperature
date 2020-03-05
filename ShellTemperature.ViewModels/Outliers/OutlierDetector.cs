@@ -40,7 +40,7 @@ namespace ShellTemperature.ViewModels.Outliers
                 Debug.WriteLine(latestReading);
             }
 
-            double[] arrTemps = temps.TakeLast(10).ToArray();
+            double[] arrTemps = temps.TakeLast(20).ToArray();
             double interQuartileRange = _measureSpreadStats.InterquartileRange(arrTemps,
                 out double firstQuartileMedian,
                 out double thirdQuartileMedian);

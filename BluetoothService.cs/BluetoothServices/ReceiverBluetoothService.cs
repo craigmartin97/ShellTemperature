@@ -20,7 +20,6 @@ namespace BluetoothService.BluetoothServices
 
         private readonly byte[] _myReadBuffer = new byte[2048];
 
-
         /// <summary>  
         /// Starts the listening from Senders.  
         /// </summary>  
@@ -49,6 +48,11 @@ namespace BluetoothService.BluetoothServices
             {
                 Debug.WriteLine(ex.Message);
                 Debug.WriteLine("Unable to get network stream");
+                throw;
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                Debug.WriteLine("The index extracting the data was out of range");
                 throw;
             }
             catch (Exception ex)
@@ -174,6 +178,10 @@ namespace BluetoothService.BluetoothServices
 
             for (int i = index; i < latestData.Length - 1; i++)
             {
+                // has next element
+                if (i + 1 > latestData.Length)
+                    break;
+
                 string data = latestData[i].Trim();
                 // sometimes its stupid and trims the leading T off :/
                 if (data.Equals("-temp", StringComparison.CurrentCultureIgnoreCase))
@@ -184,6 +192,9 @@ namespace BluetoothService.BluetoothServices
                 }
                 else if (data.Equals("-datetime", StringComparison.CurrentCultureIgnoreCase))
                 {
+                    if (i + 2 > latestData.Length)
+                        break;
+
                     string stringDateTime = latestData[i + 1] + " " + latestData[i + 2];
                     bool isDateTime = DateTime.TryParse(stringDateTime, out DateTime dateTime);
                     if (isDateTime)
