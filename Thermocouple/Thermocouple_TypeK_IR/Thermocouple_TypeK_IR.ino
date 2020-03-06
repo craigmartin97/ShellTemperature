@@ -69,65 +69,23 @@ void setup() {
  * Continuous loop every x seconds.
  */
 void loop() { 
-  if(digitalRead(BTpin) >= 1) // the arduino's bluetooth sensor is connected to another device
-  {
-    File file = SD.open(fileName); // open in read mode
-    if(file)
-    {
-      while(file.available())
-      {
-        while(digitalRead(BTpin) == 0) // no BLT devices connected, loop until we are connected again.
-        {
-            writeToFile();
-        }
-        
-        // Read the temperature in Celsius
-        float temperature = getTemperatureReading();
+    float temperature = getTemperatureReading();
 
-        if(isnan(temperature)) // not a number, then can't continue as its wrong
-          continue;
+    if(isnan(temperature)) // not a number, then can't continue as its wrong
+       return;
     
-        String dateTime = getCurrentDateTime();
-        String gpsLocation = getGPSLocation();
+    String dateTime = getCurrentDateTime();
+    String gpsLocation = getGPSLocation();
         
-        printSensorReadings(temperature, dateTime, gpsLocation);
-        
-        String sdData = file.readStringUntil('\n');
-        Serial.print(String(" -sdCardData " + sdData));
-        Serial.println();
-      }
-      file.close();
-      SD.remove(fileName); // finished printing the sd card data, now delete the file
-    }
-    else
-    {
-      float temperature = getTemperatureReading();
-
-      if(isnan(temperature)) // not a number, then can't continue as its wrong
-         return;
+    printSensorReadings(temperature, dateTime, gpsLocation);
+    Serial.println();
     
-      String dateTime = getCurrentDateTime();
-      String gpsLocation = getGPSLocation();
-        
-      printSensorReadings(temperature, dateTime, gpsLocation);
-      Serial.println();
-    }
-  }
-  else // the arduino's bluetooth sensor is NOT connected to another device
-  {
-    writeToFile();
-  }
-
-  if(irrecv.decode(&results))
+    if(irrecv.decode(&results))
     {
-      Serial.println("PRESSED");
-      //String reading = String(results.value, HEX);
-      //Serial.println(reading);
-      Serial.println(results.value);
       String value = String(results.value); //String(16753245);
       if(value == "16753245")
       {
-        Serial.println("PWR BTN: Go to sleep");
+        //Serial.println("PWR BTN: Go to sleep");
         digitalWrite(led, HIGH);   
         Going_To_Sleep();
       }
@@ -242,32 +200,18 @@ void writeToFile(){
   }
 }
 
-void checkIRStatus(){
-  if(irrecv.decode(&results))
-  {
-    String reading = String(results.value, HEX);
-    if(reading == "ffa25d")
-    {
-      Serial.println("PWR BTN: Go to sleep");
-      digitalWrite(led, HIGH);   
-      Going_To_Sleep();
-    }
-    irrecv.resume();
- }
-}
-
 /**
  * Go to sleep stop recording
  */
 void Going_To_Sleep(){
-    Serial.println("Going to bed now");
+    Serial.println("-sleep");
     sleep_enable();//Enabling sleep mode
     attachInterrupt(digitalPinToInterrupt(interruptPin), wakeUp, LOW);//attaching a interrupt to pin d2
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);//Setting the sleep mode, in our case full sleep
     digitalWrite(LED_BUILTIN,LOW);//turning LED off
     delay(1000); //wait a second to allow the led to be turned off before going to sleep
     sleep_cpu();//activating sleep mode
-    Serial.println("just woke up!");//next line of code executed after the interrupt 
+    Serial.println("-awake");//next line of code executed after the interrupt 
     digitalWrite(LED_BUILTIN,HIGH);//turning LED on
   }
 
@@ -276,7 +220,6 @@ void Going_To_Sleep(){
  */
 void wakeUp(){
   digitalWrite(led, LOW);
-  Serial.println("Interrrupt Fired");//Print message to serial monitor
   sleep_disable();//Disable sleep mode
   detachInterrupt(digitalPinToInterrupt(interruptPin)); //Removes the interrupt from pin 2;
 }

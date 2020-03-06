@@ -55,6 +55,10 @@ namespace BluetoothService.BluetoothServices
                 Debug.WriteLine("The index extracting the data was out of range");
                 throw;
             }
+            catch (SleepException ex)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 Debug.WriteLine("Unexpected exception has occurred whilst reading the bluetooth data");
@@ -106,6 +110,15 @@ namespace BluetoothService.BluetoothServices
                         .Where(x => !string.IsNullOrWhiteSpace(x))
                         .ToArray();
 
+                    
+                    if (latestData.Length == 1) // only one value in the array suspect stoppage
+                    {
+                        if (latestData[0].Equals("-sleep", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            throw new SleepException("The device is now sleeping");
+                        }
+                    }
+
                     int sdCardIndex = Array.IndexOf(latestData, "-sdCardData");
                     if (sdCardIndex > -1) // has sd card data
                     {
@@ -129,7 +142,6 @@ namespace BluetoothService.BluetoothServices
                 }
                 while (stream.DataAvailable); // only continue if there is more to stream and the parse was successful.
 
-                //stream.Close(); // test
                 return null;
             }
 

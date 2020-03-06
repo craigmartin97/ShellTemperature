@@ -6,5 +6,6 @@
         public const string connected = "Connected to - ";
         public const string connecting = "Connecting to - ";
         public const string paused = "Paused - ";
+        public const string sleep = "Sleeping - ";
     }
 }

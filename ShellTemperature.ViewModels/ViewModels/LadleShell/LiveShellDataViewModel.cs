@@ -453,8 +453,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 {
                     currentDevice.State.Message = BLTError.connecting + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTING);
-
-                    //ResetBluetoothClient(currentDevice);
                 }
             }
             catch (InvalidOperationException ex)
@@ -491,6 +489,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 Debug.WriteLine("The thermocouple is suspected to not be working");
                 Debug.WriteLine(ex.Message);
 
+                if (SelectedDevice.State.IsConnected == DeviceConnectionStatus.SLEEP)
+                {
+                    return; // don't do anything
+                }
+
                 if (currentDevice != null && SelectedDevice == currentDevice)
                 {
                     currentDevice.State.Message = "The thermocouple is not working - " + currentDevice.DeviceName;
@@ -503,6 +506,15 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             {
                 Debug.WriteLine("The index was out of range whilst extracting the data from the bluetooth device");
                 Debug.WriteLine(ex.Message);
+            }
+            catch (SleepException ex)
+            {
+                if(currentDevice != null && SelectedDevice == currentDevice)
+                {
+                    currentDevice.State.Message = "The Device Is Sleeping - " + currentDevice.DeviceName;
+                    SetConnectionStatus(currentDevice, DeviceConnectionStatus.SLEEP);
+                    //StopCommand.Execute(null);
+                }
             }
         }
         #endregion
