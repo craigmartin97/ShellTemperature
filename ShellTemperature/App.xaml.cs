@@ -22,6 +22,7 @@ using ShellTemperature.ViewModels.Interfaces;
 using ShellTemperature.ViewModels.Outliers;
 using ShellTemperature.ViewModels.Statistics;
 using ShellTemperature.ViewModels.ViewModels.Maps;
+using ShellTemperature.ViewModels;
 
 namespace ShellTemperature
 {
@@ -33,6 +34,8 @@ namespace ShellTemperature
         private IServiceProvider _serviceProvider;
 
         public ServiceCollection Services { get; set; }
+
+        private ClearList clearList = new ClearList();
 
         private IConfiguration _configuration;
 
@@ -65,6 +68,11 @@ namespace ShellTemperature
                             env = null;
                             break;
                     }
+                }
+                else if (e.Args[i].Equals("-clear"))
+                {
+                    clearList.Clear = true;
+                    clearList.ClearValue = int.Parse(e.Args[i + 1]);
                 }
             }
 
@@ -147,6 +155,8 @@ namespace ShellTemperature
             services.AddSingleton<ISorter, SortingAlgorithm>();
             services.AddSingleton<IBasicStats, BasicStats>();
             services.AddSingleton<IMeasureSpreadStats, MeasureSpreadStats>();
+
+            services.AddSingleton(clearList);
         }
 
         /// <summary>

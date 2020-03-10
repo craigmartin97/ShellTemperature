@@ -83,6 +83,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Outlier detector to determined if the current value is an outlier.
         /// </summary>
         private readonly OutlierDetector _outlierDetector;
+        private readonly ClearList _clear;
 
         /// <summary>
         /// Logger to record system messages
@@ -323,7 +324,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             TemperatureSubject temperatureSubject,
             IDialogService service,
             ILogger<LiveShellDataViewModel> logger,
-            OutlierDetector outlierDetector)
+            OutlierDetector outlierDetector,
+            ClearList clear)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
@@ -333,6 +335,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             _service = service;
             _logger = logger;
             _outlierDetector = outlierDetector;
+            _clear = clear;
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration
@@ -386,6 +389,18 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             try
             {
+                // made 5000 recordings, to prevent overflow exception clear the lists
+                if (_clear.Clear && currentDevice.AllTemperatureReadings.Count % _clear.ClearValue == 0)
+                {
+                    Process process = Process.GetCurrentProcess();
+                    _logger.LogDebug("Used - " + process.PrivateMemorySize64);
+                    _logger.LogDebug("Recorded 5000 recordings clearing the data to prevent overflow");
+
+                    currentDevice.AllTemperatureReadings.Clear();
+                    currentDevice.DataPoints.Clear();
+                    currentDevice.Temp.Clear();
+                }
+
                 DeviceReading receivedData = currentDevice.BluetoothService.ReadData(currentDevice.BluetoothDevice);
 
                 if (receivedData == null)
