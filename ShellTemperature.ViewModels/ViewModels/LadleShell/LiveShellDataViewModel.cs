@@ -406,16 +406,20 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 if (receivedData == null)
                     throw new NullReferenceException("The sensor returned a null response");
 
+                if (!receivedData.Temperature.HasValue)
+                    throw new NullReferenceException("The temperature was invalid");
+
                 // is the date and time recorded valid?
                 if (!IsDateTimeValid(receivedData.RecordedDateTime))
                     throw new InvalidOperationException("Invalid Date & Time, Try and Reset the DateTime Module - " +
                                                         currentDevice.DeviceName);
 
-                currentDevice.AllTemperatureReadings.Add(receivedData.Temperature);
+                double temperature = (double)receivedData.Temperature;
+                currentDevice.AllTemperatureReadings.Add(temperature);
 
                 // check if outlier
                 bool isOutlier =
-                    _outlierDetector.IsOutlier(currentDevice.AllTemperatureReadings, receivedData.Temperature);
+                    _outlierDetector.IsOutlier(currentDevice.AllTemperatureReadings, temperature);
 
                 if (isOutlier) // value is outlier cannot be added
                     return;
@@ -423,21 +427,24 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 // format the datetime, so if its invalid it is corrected
                 // FormatDateTime(currentDevice, receivedData);
 
-                currentDevice.CurrentData = receivedData.Temperature;
+                currentDevice.CurrentData = temperature;
 
                 // get the device from the datastore collection
                 DeviceInfo device = _datastoreDevices.FirstOrDefault(x =>
                     x.DeviceAddress.Equals(currentDevice.BluetoothDevice.Device.DeviceAddress.ToString()));
 
                 // create new shell obj for database submission
-                ShellTemp shellTemp = new ShellTemp(receivedData.Temperature, receivedData.RecordedDateTime,
+                ShellTemp shellTemp = new ShellTemp(temperature, receivedData.RecordedDateTime,
                     receivedData.Latitude, receivedData.Longitude, device);
 
                 if (receivedData.HasSdCardData)
                 {
-                    ShellTemp sdShellTemp = new ShellTemp(receivedData.SdTemperature, receivedData.SdRecordedDateTime,
+                    if (receivedData.SdTemperature.HasValue)
+                    {
+                        ShellTemp sdShellTemp = new ShellTemp((double)receivedData.SdTemperature, receivedData.SdRecordedDateTime,
                         receivedData.SdLatitude, receivedData.SdLongitude, device);
-                    _shellRepo.Create(sdShellTemp);
+                        _shellRepo.Create(sdShellTemp);
+                    }
                 }
 
                 if (SelectedDevice == currentDevice)
@@ -524,11 +531,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
             catch (SleepException ex)
             {
-                if(currentDevice != null && SelectedDevice == currentDevice)
+                if (currentDevice != null && SelectedDevice == currentDevice)
                 {
                     currentDevice.State.Message = "The Device Is Sleeping - " + currentDevice.DeviceName;
                     SetConnectionStatus(currentDevice, DeviceConnectionStatus.SLEEP);
-                    //StopCommand.Execute(null);
                 }
             }
         }

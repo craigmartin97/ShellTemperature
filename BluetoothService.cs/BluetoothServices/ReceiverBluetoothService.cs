@@ -124,11 +124,13 @@ namespace BluetoothService.BluetoothServices
                     {
                         // loop through elements after sd card data element
                         DeviceReading sdCardData = ExtractBluetoothData(latestData, sdCardIndex + 1);
-                        deviceReading.SdTemperature = sdCardData.Temperature;
+
+                        if(sdCardData.Temperature.HasValue)
+                            deviceReading.SdTemperature = (double)sdCardData.Temperature;
+
                         deviceReading.SdRecordedDateTime = sdCardData.RecordedDateTime;
                         deviceReading.SdLatitude = sdCardData.Latitude;
                         deviceReading.SdLongitude = sdCardData.Longitude;
-
                         deviceReading.HasSdCardData = true;
                     }
 

@@ -4,7 +4,7 @@ namespace BluetoothService.Models
 {
     public class DeviceReading
     {
-        public double Temperature { get; set; }
+        public double? Temperature { get; set; }
 
         public DateTime RecordedDateTime { get; set; }
 
@@ -14,7 +14,7 @@ namespace BluetoothService.Models
 
         ///////////////////////////////////////
 
-        public double SdTemperature { get; set; }
+        public double? SdTemperature { get; set; }
         public DateTime SdRecordedDateTime { get; set; }
         public float? SdLatitude { get; set; }
         public float? SdLongitude { get; set; }
