@@ -49,6 +49,11 @@
                 <dialogViews:ConfirmationUserControl DataContext="{Binding}"/>
             </DataTemplate>
 
+            <!--  Comment Dialog -->
+            <DataTemplate DataType="{x:Type dialogsVM:CommentDialogViewModel}" >
+                <dialogViews:CommentUserControl DataContext="{Binding}"/>
+            </DataTemplate>
+
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
             <ResourceDictionary.MergedDictionaries>

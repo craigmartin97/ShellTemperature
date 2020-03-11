@@ -3,11 +3,11 @@
 namespace CustomDialog.Views
 {
     /// <summary>
-    /// Interaction logic for AlertUserControl.xaml
+    /// Interaction logic for CommentUserControl.xaml
     /// </summary>
-    public partial class AlertUserControl : UserControl
+    public partial class CommentUserControl : UserControl
     {
-        public AlertUserControl()
+        public CommentUserControl()
         {
             InitializeComponent();
         }

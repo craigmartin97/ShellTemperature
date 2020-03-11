@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShellTemperature.Models;
 
 namespace ShellTemperature.Models.Migrations
 {
     [DbContext(typeof(ShellDb))]
-    partial class ShellDbModelSnapshot : ModelSnapshot
+    [Migration("20200311111431_AddedCommentsTable")]
+    partial class AddedCommentsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

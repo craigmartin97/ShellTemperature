@@ -19,19 +19,16 @@ namespace ShellTemperature.Models
         }
         #endregion
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-            //optionsBuilder.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True");
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    base.OnConfiguring(optionsBuilder);
+        //    optionsBuilder.UseSqlServer(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=ShellDb;Integrated Security=True");
+        //}
 
         public DbSet<ShellTemp> ShellTemperatures { get; set; }
 
         public DbSet<DeviceInfo> Devices { get; set; }
+
+        public DbSet<ShellTemperatureComment> ShellTemperatureComments { get; set; }
     }
 }

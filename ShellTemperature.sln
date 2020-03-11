@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluetoothService", "Bluetoo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomDialog", "CustomDialog\CustomDialog.csproj", "{B4724970-A0A6-4151-A8D6-A041F992C091}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelDataWriter", "ExcelDataWriter\ExcelDataWriter.csproj", "{D2F583A3-2599-4210-98B7-32DA0246BEFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExcelDataWriter", "ExcelDataWriter\ExcelDataWriter.csproj", "{D2F583A3-2599-4210-98B7-32DA0246BEFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

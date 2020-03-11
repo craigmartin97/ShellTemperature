@@ -2,7 +2,7 @@
   "profiles": {
     "ShellTemperature": {
       "commandName": "Project",
-      "commandLineArgs": "-config Development -clear 1000"
+      "commandLineArgs": "-config Development -clear 5000"
     }
   }
 }

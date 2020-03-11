@@ -89,6 +89,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Logger to record system messages
         /// </summary>
         private readonly ILogger<LiveShellDataViewModel> _logger;
+
+        private readonly IRepository<ShellTemperatureComment> _commentRepository;
         #endregion
 
         #region Properties
@@ -218,6 +220,25 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             SetConnectionStatus(SelectedDevice, DeviceConnectionStatus.PAUSED);
         });
 
+        public RelayCommand AddCommentCommand
+        => new RelayCommand(param =>
+        {
+            Debug.WriteLine("Add comment to the reading");
+
+            if (param is ShellTemp shellTemp)
+            {
+                IDialogService service = new DialogService();
+                CommentDialogViewModel vm = new CommentDialogViewModel("Add comment to data reading");
+                string res = service.OpenDialogService(vm);
+
+                if (string.IsNullOrEmpty(res))
+                    return;
+
+                ShellTemperatureComment comment = new ShellTemperatureComment(res, shellTemp);
+                _commentRepository.Create(comment);
+            }
+        });
+
         public RelayCommand SearchForDevices
         => new RelayCommand(param =>
         {
@@ -325,7 +346,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             IDialogService service,
             ILogger<LiveShellDataViewModel> logger,
             OutlierDetector outlierDetector,
-            ClearList clear)
+            ClearList clear,
+            IRepository<ShellTemperatureComment> commentRepository)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
@@ -336,6 +358,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             _logger = logger;
             _outlierDetector = outlierDetector;
             _clear = clear;
+            _commentRepository = commentRepository;
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration

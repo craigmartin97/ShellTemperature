@@ -8,7 +8,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2.8*"/>
+            <ColumnDefinition Width="2.2*"/>
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -129,9 +129,11 @@
                       CellStyle="{StaticResource BaseDataGridCellStyle}">
                 <DataGrid.Columns>
                     <DataGridTemplateColumn Header="Temperature" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
-                                            Width="*" CellTemplate="{StaticResource TemperatureTemplate}" />
+                                            Width="0.8*" CellTemplate="{StaticResource TemperatureTemplate}" />
                     <DataGridTemplateColumn Header="DateTime" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
                                             Width="*" CellTemplate="{StaticResource RecordedDateTimeTemplate}" />
+                    <DataGridTemplateColumn Header="Comment" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                                            Width="0.8*" CellTemplate="{StaticResource CommentTemplate}"/>
                 </DataGrid.Columns>
             </DataGrid>
 

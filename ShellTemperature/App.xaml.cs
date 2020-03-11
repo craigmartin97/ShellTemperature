@@ -147,6 +147,7 @@ namespace ShellTemperature
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IDeviceRepository<DeviceInfo>, DevicesRepository>();
+            services.AddScoped<IRepository<ShellTemperatureComment>, ShellTemperatureCommentRepository>();
 
             // add the outlier detector
             services.AddSingleton<OutlierDetector>();
