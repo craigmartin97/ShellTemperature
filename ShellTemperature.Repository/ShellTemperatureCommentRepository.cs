@@ -1,6 +1,8 @@
-﻿using System;
+﻿using ShellTemperature.Data;
+using ShellTemperature.Repository.Interfaces;
+using System;
 using System.Collections.Generic;
-using ShellTemperature.Models;
+using System.Linq;
 
 namespace ShellTemperature.Repository
 {
@@ -19,16 +21,27 @@ namespace ShellTemperature.Repository
                 throw new ArgumentNullException(nameof(model), "The comment object was null");
 
             // get data from database
-            DeviceInfo device = _context.Devices.Find(model.ShellTemp.Device.Id);
+            DeviceInfo device = _context.DevicesInfo.Find(model.ShellTemp.Device.Id);
             ShellTemp temp = _context.ShellTemperatures.Find(model.ShellTemp.Id);
+            ReadingComment readingComment = _context.ReadingComments.Find(model.Comment.Id);
 
-            if(temp == null || device == null)
-                throw new NullReferenceException("The temperature or device is null");
+            if (temp == null || device == null || readingComment == null)
+                throw new NullReferenceException("The temperature, device or comment is null");
 
-            model.ShellTemp = temp;
-            model.ShellTemp.Device = device;
+            // see if the temperature already has a comment
+            ShellTemperatureComment exists = _context.ShellTemperatureComments.FirstOrDefault(x => x.ShellTemp.Id == temp.Id);
+            if (exists != null) // already exists
+            {
+                exists.Comment = readingComment; // Update the record
+            }
+            else
+            {
+                model.ShellTemp = temp;
+                model.ShellTemp.Device = device;
+                model.Comment = readingComment;
+                _context.ShellTemperatureComments.Add(model);
+            }
 
-            _context.ShellTemperatureComments.Add(model);
             _context.SaveChanges();
             return true;
         }
@@ -39,13 +52,18 @@ namespace ShellTemperature.Repository
         }
 
         public ShellTemperatureComment GetItem(Guid id)
-        {
-            throw new NotImplementedException();
-        }
+            => _context.ShellTemperatureComments.Find(id);
+
 
         public bool Delete(Guid id)
         {
-            throw new NotImplementedException();
+            ShellTemperatureComment comment = _context.ShellTemperatureComments.Find(id);
+            if (comment == null)
+                return false;
+
+            _context.ShellTemperatureComments.Remove(comment);
+            _context.SaveChanges();
+            return true;
         }
 
         public bool DeleteRange(IEnumerable<ShellTemperatureComment> items)

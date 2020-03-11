@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ShellTemperature.Repository
+namespace ShellTemperature.Repository.Interfaces
 {
     public interface IRepository<T>
     {

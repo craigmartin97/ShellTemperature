@@ -21,9 +21,10 @@ namespace CustomDialog.Dialogs
             }
         }
 
-        public CommentDialogViewModel(string title) : base(title)
+        public CommentDialogViewModel(string title, string comment) : base(title)
         {
             OKCommand = new GenericRelayCommand<IDialogWindow>(OK);
+            Comment = comment;
         }
 
         //Window must be passed in param to close.

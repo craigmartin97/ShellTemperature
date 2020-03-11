@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using BluetoothService.Models;
-using ShellTemperature.Models;
+﻿using ShellTemperature.Data;
 using ShellTemperature.ViewModels.ViewModels.TemperatureNotifier;
+using System.Collections.Generic;
 
 namespace ShellTemperature.ViewModels.TemperatureObserver
 {

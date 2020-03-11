@@ -1,5 +1,5 @@
-﻿using ShellTemperature.Models;
-using ShellTemperature.Repository;
+﻿using ShellTemperature.Data;
+using ShellTemperature.Repository.Interfaces;
 using ShellTemperature.ViewModels.Interfaces;
 using System;
 using System.Linq;

@@ -12,8 +12,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using OxyPlot.Axes;
+using ShellTemperature.Data;
 using ShellTemperature.Models;
-using ShellTemperature.Repository;
+using ShellTemperature.Repository.Interfaces;
 using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.Outliers;
@@ -91,6 +92,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private readonly ILogger<LiveShellDataViewModel> _logger;
 
         private readonly IRepository<ShellTemperatureComment> _commentRepository;
+
+        private readonly IReadingCommentRepository<ReadingComment> _readingCommentRepository;
         #endregion
 
         #region Properties
@@ -225,17 +228,40 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             Debug.WriteLine("Add comment to the reading");
 
-            if (param is ShellTemp shellTemp)
+            if (param is ShellTemperatureRecord shellTempRecord)
             {
+                // Show the dialog and ask the user for a comment for the temperature
                 IDialogService service = new DialogService();
-                CommentDialogViewModel vm = new CommentDialogViewModel("Add comment to data reading");
+                CommentDialogViewModel vm =
+                    new CommentDialogViewModel("Add comment to data reading", shellTempRecord.Comment);
                 string res = service.OpenDialogService(vm);
 
+                // Validate the users response
                 if (string.IsNullOrEmpty(res))
                     return;
 
-                ShellTemperatureComment comment = new ShellTemperatureComment(res, shellTemp);
+                if (res.Equals(shellTempRecord.Comment)) // there the same thing dont do anything else
+                    return;
+
+                res = res.Trim(); // Format the users response and remove invalid chars
+
+                // Create a ShellTemp object with the passed data from the view
+                ShellTemp temp = new ShellTemp(shellTempRecord.Id, shellTempRecord.Temperature,
+                shellTempRecord.RecordedDateTime, shellTempRecord.Latitude, shellTempRecord.Longitude, shellTempRecord.Device);
+
+                // Create a new comment if it a new comment
+                ReadingComment readingComment = _readingCommentRepository.GetItem(res);
+                if (readingComment == null)
+                {
+                    readingComment = new ReadingComment(res);
+                    _readingCommentRepository.Create(readingComment);
+                }
+
+                // Save the comment against the temperature recording
+                ShellTemperatureComment comment = new ShellTemperatureComment(readingComment, temp);
                 _commentRepository.Create(comment);
+
+                shellTempRecord.Comment = res;
             }
         });
 
@@ -347,7 +373,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             ILogger<LiveShellDataViewModel> logger,
             OutlierDetector outlierDetector,
             ClearList clear,
-            IRepository<ShellTemperatureComment> commentRepository)
+            IRepository<ShellTemperatureComment> commentRepository,
+            IReadingCommentRepository<ReadingComment> readingCommentRepository)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
@@ -359,6 +386,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             _outlierDetector = outlierDetector;
             _clear = clear;
             _commentRepository = commentRepository;
+            _readingCommentRepository = readingCommentRepository;
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration
@@ -476,15 +504,20 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     LatestLongitude = receivedData.Longitude == null ? "N/A" : receivedData.Longitude.ToString();
                 }
 
-                currentDevice.Temp.Add(shellTemp);
-                IEnumerable<ShellTemp> shellTemps = currentDevice.Temp.OrderBy(x => x.RecordedDateTime);
-                currentDevice.Temp = new ObservableCollection<ShellTemp>(shellTemps);
+                ShellTemperatureRecord record = new ShellTemperatureRecord
+                (shellTemp.Id, shellTemp.Temperature, shellTemp.RecordedDateTime, shellTemp.Latitude, shellTemp.Longitude,
+                 shellTemp.Device);
+
+                currentDevice.Temp.Add(record);
+                IEnumerable<ShellTemperatureRecord> shellTemps = currentDevice.Temp.OrderBy(x => x.RecordedDateTime);
+                currentDevice.Temp = new ObservableCollection<ShellTemperatureRecord>(shellTemps);
 
                 currentDevice.DataPoints.Add((new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime),
                     shellTemp.Temperature)));
 
                 _shellRepo.Create(shellTemp); // create a new record in the database.
                 _temperatureSubject.SetState(shellTemp);
+                record.Id = shellTemp.Id;
 
                 currentDevice.State.Message = BLTError.connected + currentDevice.DeviceName;
                 SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTED);
@@ -674,7 +707,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             // format the datetime if incorrect
             // sometimes the datetime is to far in advance compared to the previous
-            ShellTemp prev = currentDevice.Temp.LastOrDefault();
+            ShellTemperatureRecord prev = currentDevice.Temp.LastOrDefault();
             if (prev != null)
             {
                 DateTime min = prev.RecordedDateTime;

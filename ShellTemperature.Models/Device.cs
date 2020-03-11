@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using BluetoothService;
 using BluetoothService.BluetoothServices;
 using BluetoothService.cs.BluetoothServices;
+using BluetoothService.Enums;
 using OxyPlot;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Threading;
-using BluetoothService;
-using BluetoothService.Enums;
+using ShellTemperature.Data;
 
 namespace ShellTemperature.Models
 {
@@ -16,12 +17,12 @@ namespace ShellTemperature.Models
 
         public double CurrentData { get; set; }
 
-        private ObservableCollection<ShellTemp> _temp;
+        private ObservableCollection<ShellTemperatureRecord> _temp;
 
         /// <summary>
         /// Stores all the shell readings, but excludes outliers
         /// </summary>
-        public ObservableCollection<ShellTemp> Temp
+        public ObservableCollection<ShellTemperatureRecord> Temp
         {
             get => _temp;
             set
@@ -92,7 +93,7 @@ namespace ShellTemperature.Models
             Timer = new DispatcherTimer();
             CurrentData = 0;
             DataPoints = new ObservableCollection<DataPoint>();
-            Temp = new ObservableCollection<ShellTemp>();
+            Temp = new ObservableCollection<ShellTemperatureRecord>();
             BluetoothService = new ReceiverBluetoothService();
             BluetoothDevice = device;
             IsTimerEnabled = false;

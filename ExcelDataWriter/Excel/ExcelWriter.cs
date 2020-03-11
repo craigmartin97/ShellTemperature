@@ -1,6 +1,5 @@
-﻿using System.Diagnostics;
-using ExcelDataWriter.Interfaces;
-using ShellTemperature.Models;
+﻿using ExcelDataWriter.Interfaces;
+using ShellTemperature.Data;
 
 namespace ExcelDataWriter.Excel
 {

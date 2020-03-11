@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ShellTemperature.Models
+namespace ShellTemperature.Data
 {
     public class DeviceInfo
     {

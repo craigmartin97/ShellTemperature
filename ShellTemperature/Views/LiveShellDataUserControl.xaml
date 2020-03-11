@@ -133,7 +133,7 @@
                     <DataGridTemplateColumn Header="DateTime" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
                                             Width="*" CellTemplate="{StaticResource RecordedDateTimeTemplate}" />
                     <DataGridTemplateColumn Header="Comment" HeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
-                                            Width="0.8*" CellTemplate="{StaticResource CommentTemplate}"/>
+                                            Width="0.5*" CellTemplate="{StaticResource CommentTemplate}"/>
                 </DataGrid.Columns>
             </DataGrid>
 

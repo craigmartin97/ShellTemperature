@@ -1,7 +1,8 @@
-﻿using System;
+﻿using ShellTemperature.Data;
+using ShellTemperature.Repository.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShellTemperature.Models;
 
 namespace ShellTemperature.Repository
 {
@@ -21,7 +22,7 @@ namespace ShellTemperature.Repository
 
         public bool Create(DeviceInfo model)
         {
-            DeviceInfo alreadyExists = _context.Devices.FirstOrDefault(x => x.DeviceAddress.Equals(model.DeviceAddress));
+            DeviceInfo alreadyExists = _context.DevicesInfo.FirstOrDefault(x => x.DeviceAddress.Equals(model.DeviceAddress));
 
             if (alreadyExists != null)
                 throw new ArgumentException("The device " + model.DeviceAddress + " already exists in the data store");
@@ -32,15 +33,15 @@ namespace ShellTemperature.Repository
         }
 
         public IEnumerable<DeviceInfo> GetAll()
-            => _context.Devices;
+            => _context.DevicesInfo;
 
         public bool Delete(Guid id)
         {
-            DeviceInfo dev = _context.Devices.FirstOrDefault(x => x.Id.Equals(id));
+            DeviceInfo dev = _context.DevicesInfo.FirstOrDefault(x => x.Id.Equals(id));
             if (dev == null)
                 return false;
 
-            _context.Devices.Remove(dev);
+            _context.DevicesInfo.Remove(dev);
             return true;
         }
 
@@ -49,7 +50,7 @@ namespace ShellTemperature.Repository
             if (items == null)
                 return false;
 
-            _context.Devices.RemoveRange(items);
+            _context.DevicesInfo.RemoveRange(items);
             _context.SaveChanges();
             return true;
         }
@@ -60,7 +61,7 @@ namespace ShellTemperature.Repository
         /// <param name="deviceAddress">The device address</param>
         /// <returns>Returns a device object if found, else returns null</returns>
         public DeviceInfo GetDevice(string deviceAddress)
-            => _context.Devices.FirstOrDefault(x => x.DeviceAddress.Equals(deviceAddress));
+            => _context.DevicesInfo.FirstOrDefault(x => x.DeviceAddress.Equals(deviceAddress));
 
         /// <summary>
         /// Get a single device from the database
@@ -68,6 +69,6 @@ namespace ShellTemperature.Repository
         /// <param name="id"></param>
         /// <returns></returns>
         public DeviceInfo GetItem(Guid id)
-            => _context.Devices.FirstOrDefault(x => x.Id.Equals(id));
+            => _context.DevicesInfo.FirstOrDefault(x => x.Id.Equals(id));
     }
 }

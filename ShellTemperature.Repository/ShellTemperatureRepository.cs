@@ -1,8 +1,9 @@
-﻿using ShellTemperature.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using ShellTemperature.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using ShellTemperature.Repository.Interfaces;
 
 namespace ShellTemperature.Repository
 {
@@ -19,7 +20,7 @@ namespace ShellTemperature.Repository
         {
             if (model?.Device == null) return false;
 
-            DeviceInfo dbDevice = _context.Devices.Find(model.Device.Id);
+            DeviceInfo dbDevice = _context.DevicesInfo.Find(model.Device.Id);
             DeviceInfo device = dbDevice ?? model.Device;
             model.Device = device;
 

@@ -6,23 +6,24 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
-using ShellTemperature.Models;
+using ShellTemperature.Data;
 using ShellTemperature.Repository;
+using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.ViewModels;
 using ShellTemperature.ViewModels.ConnectionObserver;
+using ShellTemperature.ViewModels.Interfaces;
+using ShellTemperature.ViewModels.Outliers;
+using ShellTemperature.ViewModels.Statistics;
 using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
+using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 using ShellTemperature.Views;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
-using ShellTemperature.ViewModels.Interfaces;
-using ShellTemperature.ViewModels.Outliers;
-using ShellTemperature.ViewModels.Statistics;
-using ShellTemperature.ViewModels.ViewModels.Maps;
-using ShellTemperature.ViewModels;
 
 namespace ShellTemperature
 {
@@ -148,6 +149,7 @@ namespace ShellTemperature
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IDeviceRepository<DeviceInfo>, DevicesRepository>();
             services.AddScoped<IRepository<ShellTemperatureComment>, ShellTemperatureCommentRepository>();
+            services.AddScoped<IReadingCommentRepository<ReadingComment>, ReadingCommentRepository>();
 
             // add the outlier detector
             services.AddSingleton<OutlierDetector>();

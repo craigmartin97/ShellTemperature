@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using ShellTemperature.Models;
+using ShellTemperature.Data;
 using ShellTemperature.Repository;
 using System;
 using System.Collections.Generic;

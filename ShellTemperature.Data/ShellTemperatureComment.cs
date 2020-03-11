@@ -1,9 +1,8 @@
 ﻿using System;
-using System.CodeDom;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ShellTemperature.Models
+namespace ShellTemperature.Data
 {
     /// <summary>
     /// Shell temperature comment allows users to add comments
@@ -15,7 +14,7 @@ namespace ShellTemperature.Models
         public Guid Id { get; set; }
 
         [Required]
-        public string Comment { get; set; }
+        public ReadingComment Comment { get; set; }
 
         [Required]
         public ShellTemp ShellTemp { get; set; }
@@ -25,7 +24,7 @@ namespace ShellTemperature.Models
 
         }
 
-        public ShellTemperatureComment(string comment, ShellTemp shellTemp)
+        public ShellTemperatureComment(ReadingComment comment, ShellTemp shellTemp)
         {
             Comment = comment;
             ShellTemp = shellTemp;

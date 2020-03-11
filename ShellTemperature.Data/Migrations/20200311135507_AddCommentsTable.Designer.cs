@@ -5,23 +5,23 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ShellTemperature.Models;
+using ShellTemperature.Data;
 
-namespace ShellTemperature.Models.Migrations
+namespace ShellTemperature.Data.Migrations
 {
     [DbContext(typeof(ShellDb))]
-    [Migration("20200311111431_AddedCommentsTable")]
-    partial class AddedCommentsTable
+    [Migration("20200311135507_AddCommentsTable")]
+    partial class AddCommentsTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.1")
+                .HasAnnotation("ProductVersion", "3.1.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("ShellTemperature.Models.DeviceInfo", b =>
+            modelBuilder.Entity("ShellTemperature.Data.DeviceInfo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -37,10 +37,25 @@ namespace ShellTemperature.Models.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Devices");
+                    b.ToTable("DevicesInfo");
                 });
 
-            modelBuilder.Entity("ShellTemperature.Models.ShellTemp", b =>
+            modelBuilder.Entity("ShellTemperature.Data.ReadingComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReadingComments");
+                });
+
+            modelBuilder.Entity("ShellTemperature.Data.ShellTemp", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -68,36 +83,43 @@ namespace ShellTemperature.Models.Migrations
                     b.ToTable("ShellTemperatures");
                 });
 
-            modelBuilder.Entity("ShellTemperature.Models.ShellTemperatureComment", b =>
+            modelBuilder.Entity("ShellTemperature.Data.ShellTemperatureComment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("CommentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ShellTempId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CommentId");
+
                     b.HasIndex("ShellTempId");
 
                     b.ToTable("ShellTemperatureComments");
                 });
 
-            modelBuilder.Entity("ShellTemperature.Models.ShellTemp", b =>
+            modelBuilder.Entity("ShellTemperature.Data.ShellTemp", b =>
                 {
-                    b.HasOne("ShellTemperature.Models.DeviceInfo", "Device")
+                    b.HasOne("ShellTemperature.Data.DeviceInfo", "Device")
                         .WithMany()
                         .HasForeignKey("DeviceId");
                 });
 
-            modelBuilder.Entity("ShellTemperature.Models.ShellTemperatureComment", b =>
+            modelBuilder.Entity("ShellTemperature.Data.ShellTemperatureComment", b =>
                 {
-                    b.HasOne("ShellTemperature.Models.ShellTemp", "ShellTemp")
+                    b.HasOne("ShellTemperature.Data.ReadingComment", "Comment")
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ShellTemperature.Data.ShellTemp", "ShellTemp")
                         .WithMany()
                         .HasForeignKey("ShellTempId")
                         .OnDelete(DeleteBehavior.Cascade)

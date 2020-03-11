@@ -71,13 +71,23 @@
     <!-- Add comment -->
     <DataTemplate x:Key="CommentTemplate">
         <Border>
-            <Button Style="{StaticResource BaseButtonStyle}"
+            <Button 
                     Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor},
                     Path=DataContext.AddCommentCommand}" 
-                    CommandParameter="{Binding}"
-                    MaxWidth="100"
-                    >
-                <Label Content="+" FontSize="{StaticResource FontSize20}" Foreground="{StaticResource OffsetWhiteBrush}" />
+                    CommandParameter="{Binding}">
+                <Label Content="+" FontSize="{StaticResource FontSize20}" Foreground="{StaticResource OffsetWhiteBrush}">
+                </Label>
+
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+                        <Setter Property="Background" Value="Green" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=Comment}" Value="{x:Null}">
+                                <Setter Property="Background" Value="{StaticResource NavyBlueBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
             </Button>
         </Border>
     </DataTemplate>

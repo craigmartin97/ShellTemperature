@@ -2,7 +2,7 @@
 using ExcelDataWriter.Interfaces;
 using OxyPlot;
 using OxyPlot.Axes;
-using ShellTemperature.Models;
+using ShellTemperature.Data;
 using ShellTemperature.Repository;
 using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.TemperatureObserver;
@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using ShellTemperature.Repository.Interfaces;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {

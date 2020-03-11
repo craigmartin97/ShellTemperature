@@ -21,6 +21,7 @@
 
                 <!--  Close / OK btn to close dialog -->
                 <Button HorizontalAlignment="Right"
+                            IsDefault="True"
                             Grid.Row="1"
                             Content="{StaticResource Ok}" 
                             Style="{StaticResource DialogButtonsStyle}"

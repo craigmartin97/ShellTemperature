@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ShellTemperature.Models
+namespace ShellTemperature.Data
 {
     /// <summary>
     /// Ladle shell recordings
@@ -48,10 +48,10 @@ namespace ShellTemperature.Models
 
         public ShellTemp()
         {
-            
+
         }
 
-        public ShellTemp(double temperature, DateTime dateTime, float? latitude, float? 
+        public ShellTemp(double temperature, DateTime dateTime, float? latitude, float?
             longitude, DeviceInfo deviceInfo)
         {
             Temperature = temperature;
@@ -59,6 +59,13 @@ namespace ShellTemperature.Models
             Latitude = latitude;
             Longitude = longitude;
             Device = deviceInfo;
+        }
+
+        public ShellTemp(Guid id, double temperature, DateTime dateTime, float? latitude, float?
+            longitude, DeviceInfo deviceInfo)
+        : this(temperature, dateTime, latitude, longitude, deviceInfo)
+        {
+            Id = id;
         }
         #endregion
     }
