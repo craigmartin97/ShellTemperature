@@ -3,6 +3,7 @@ using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace ShellTemperature.Repository
 {
@@ -47,9 +48,8 @@ namespace ShellTemperature.Repository
         }
 
         public IEnumerable<ShellTemperatureComment> GetAll()
-        {
-            throw new NotImplementedException();
-        }
+            => _context.ShellTemperatureComments.Include(x => x.ShellTemp)
+                .Include(x => x.Comment);
 
         public ShellTemperatureComment GetItem(Guid id)
             => _context.ShellTemperatureComments.Find(id);

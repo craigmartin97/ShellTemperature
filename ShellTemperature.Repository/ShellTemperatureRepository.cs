@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShellTemperature.Data;
+using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShellTemperature.Repository.Interfaces;
 
 namespace ShellTemperature.Repository
 {
@@ -52,7 +52,13 @@ namespace ShellTemperature.Repository
             if (items == null)
                 return false;
 
-            _context.ShellTemperatures.RemoveRange(items);
+            foreach (var shellTemp in items)
+            {
+                ShellTemp dbTemp = _context.ShellTemperatures.Find(shellTemp.Id);
+                _context.ShellTemperatures.Remove(dbTemp);
+            }
+
+            //_context.ShellTemperatures.RemoveRange(items);
             _context.SaveChanges();
             return true;
         }

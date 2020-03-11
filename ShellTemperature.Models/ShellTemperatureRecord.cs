@@ -3,7 +3,7 @@ using ShellTemperature.Data;
 
 namespace ShellTemperature.Models
 {
-    public class ShellTemperatureRecord
+    public class ShellTemperatureRecord : ModelBase
     {
         public Guid Id { get; set; }
         public double Temperature { get; set; }
@@ -19,7 +19,17 @@ namespace ShellTemperature.Models
         /// </summary>
         public DeviceInfo Device { get; set; }
 
-        public string Comment { get; set; }
+        private string _comment;
+
+        public string Comment
+        {
+            get => _comment;
+            set
+            {
+                _comment = value;
+                OnPropertyChanged(nameof(Comment));
+            }
+        }
 
         public ShellTemperatureRecord()
         {

@@ -33,15 +33,12 @@ namespace ShellTemperature.Repository
         }
 
         #region Get
+
         public IEnumerable<ReadingComment> GetAll()
-        {
-            throw new NotImplementedException();
-        }
+            => _context.ReadingComments;
 
         public ReadingComment GetItem(Guid id)
-        {
-            throw new NotImplementedException();
-        }
+            => _context.ReadingComments.Find(id);
 
         /// <summary>
         /// Find the comment by the comment string itself

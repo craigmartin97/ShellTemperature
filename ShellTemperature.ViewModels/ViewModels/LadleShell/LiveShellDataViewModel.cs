@@ -36,7 +36,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
     /// Live shell data view model is responsible for retrieving the live
     /// temperature data and displaying the results to the user
     /// </summary>
-    public class LiveShellDataViewModel : ViewModelBase
+    public class LiveShellDataViewModel : BaseLadleShellDataViewModel
     {
         #region Private fields
 
@@ -90,10 +90,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Logger to record system messages
         /// </summary>
         private readonly ILogger<LiveShellDataViewModel> _logger;
-
-        private readonly IRepository<ShellTemperatureComment> _commentRepository;
-
-        private readonly IReadingCommentRepository<ReadingComment> _readingCommentRepository;
         #endregion
 
         #region Properties
@@ -223,48 +219,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             SetConnectionStatus(SelectedDevice, DeviceConnectionStatus.PAUSED);
         });
 
-        public RelayCommand AddCommentCommand
-        => new RelayCommand(param =>
-        {
-            Debug.WriteLine("Add comment to the reading");
-
-            if (param is ShellTemperatureRecord shellTempRecord)
-            {
-                // Show the dialog and ask the user for a comment for the temperature
-                IDialogService service = new DialogService();
-                CommentDialogViewModel vm =
-                    new CommentDialogViewModel("Add comment to data reading", shellTempRecord.Comment);
-                string res = service.OpenDialogService(vm);
-
-                // Validate the users response
-                if (string.IsNullOrEmpty(res))
-                    return;
-
-                if (res.Equals(shellTempRecord.Comment)) // there the same thing dont do anything else
-                    return;
-
-                res = res.Trim(); // Format the users response and remove invalid chars
-
-                // Create a ShellTemp object with the passed data from the view
-                ShellTemp temp = new ShellTemp(shellTempRecord.Id, shellTempRecord.Temperature,
-                shellTempRecord.RecordedDateTime, shellTempRecord.Latitude, shellTempRecord.Longitude, shellTempRecord.Device);
-
-                // Create a new comment if it a new comment
-                ReadingComment readingComment = _readingCommentRepository.GetItem(res);
-                if (readingComment == null)
-                {
-                    readingComment = new ReadingComment(res);
-                    _readingCommentRepository.Create(readingComment);
-                }
-
-                // Save the comment against the temperature recording
-                ShellTemperatureComment comment = new ShellTemperatureComment(readingComment, temp);
-                _commentRepository.Create(comment);
-
-                shellTempRecord.Comment = res;
-            }
-        });
-
         public RelayCommand SearchForDevices
         => new RelayCommand(param =>
         {
@@ -290,9 +244,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     }
 
                     if (allDevicesFound.Count == 0)
-                    {
                         return;
-                    }
 
                     DialogResult result = DialogResult.Undefined;
                     // ask user if they want to start recording data from new devices
@@ -374,7 +326,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             OutlierDetector outlierDetector,
             ClearList clear,
             IRepository<ShellTemperatureComment> commentRepository,
-            IReadingCommentRepository<ReadingComment> readingCommentRepository)
+            IReadingCommentRepository<ReadingComment> readingCommentRepository) : base(readingCommentRepository, commentRepository)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
@@ -385,8 +337,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             _logger = logger;
             _outlierDetector = outlierDetector;
             _clear = clear;
-            _commentRepository = commentRepository;
-            _readingCommentRepository = readingCommentRepository;
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration
@@ -703,20 +653,20 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         /// <param name="currentDevice"></param>
         /// <param name="receivedData"></param>
-        private void FormatDateTime(Device currentDevice, DeviceReading receivedData)
-        {
-            // format the datetime if incorrect
-            // sometimes the datetime is to far in advance compared to the previous
-            ShellTemperatureRecord prev = currentDevice.Temp.LastOrDefault();
-            if (prev != null)
-            {
-                DateTime min = prev.RecordedDateTime;
-                if (receivedData.RecordedDateTime < min) // || receivedData.RecordedDateTime > max
-                {
-                    receivedData.RecordedDateTime = prev.RecordedDateTime.AddSeconds(1);
-                }
-            }
-        }
+        //private void FormatDateTime(Device currentDevice, DeviceReading receivedData)
+        //{
+        //    // format the datetime if incorrect
+        //    // sometimes the datetime is to far in advance compared to the previous
+        //    ShellTemperatureRecord prev = currentDevice.Temp.LastOrDefault();
+        //    if (prev != null)
+        //    {
+        //        DateTime min = prev.RecordedDateTime;
+        //        if (receivedData.RecordedDateTime < min) // || receivedData.RecordedDateTime > max
+        //        {
+        //            receivedData.RecordedDateTime = prev.RecordedDateTime.AddSeconds(1);
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Order the devices in alphabetical order

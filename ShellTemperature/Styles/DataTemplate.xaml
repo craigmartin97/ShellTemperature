@@ -73,13 +73,13 @@
         <Border>
             <Button 
                     Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor},
-                    Path=DataContext.AddCommentCommand}" 
+                    Path=DataContext.CommentCommand}" 
                     CommandParameter="{Binding}">
                 <Label Content="+" FontSize="{StaticResource FontSize20}" Foreground="{StaticResource OffsetWhiteBrush}">
                 </Label>
 
                 <Button.Style>
-                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource DefaultButton}">
                         <Setter Property="Background" Value="Green" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=Comment}" Value="{x:Null}">

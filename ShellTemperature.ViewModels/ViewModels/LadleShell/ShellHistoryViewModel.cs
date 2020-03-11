@@ -3,7 +3,8 @@ using ExcelDataWriter.Interfaces;
 using OxyPlot;
 using OxyPlot.Axes;
 using ShellTemperature.Data;
-using ShellTemperature.Repository;
+using ShellTemperature.Models;
+using ShellTemperature.Repository.Interfaces;
 using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels.TemperatureNotifier;
@@ -13,7 +14,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using ShellTemperature.Repository.Interfaces;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -37,11 +37,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #endregion
 
         #region Properties
-        private ObservableCollection<ShellTemp> _bluetoothData = new ObservableCollection<ShellTemp>();
+        private ObservableCollection<ShellTemperatureRecord> _bluetoothData =
+            new ObservableCollection<ShellTemperatureRecord>();
         /// <summary>
         /// A list collection of the live data being sent via bluetooth
         /// </summary>
-        public ObservableCollection<ShellTemp> BluetoothData
+        public ObservableCollection<ShellTemperatureRecord> BluetoothData
         {
             get => _bluetoothData;
             set
@@ -161,8 +162,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 if (param == null)
                     return;
 
-                var items = (IList)param;
-                var selectedShellTemps = items.Cast<ShellTemp>();
+                IEnumerable<ShellTemperatureRecord> selectedItems = ((IList)param).Cast<ShellTemperatureRecord>();
+
+                IEnumerable<ShellTemp> selectedShellTemps = selectedItems.Select(x
+                    => new ShellTemp(x.Id, x.Temperature, x.RecordedDateTime, x.Latitude, x.Longitude, x.Device));
+
                 _shellTempRepo.DeleteRange(selectedShellTemps);
 
                 SetBluetoothData();
@@ -213,7 +217,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
         #region Constructors
         public ShellHistoryViewModel(IShellTemperatureRepository<ShellTemp> shellTemperature,
-            IDeviceRepository<DeviceInfo> deviceRepository, TemperatureSubject subject)
+             IDeviceRepository<DeviceInfo> deviceRepository,
+             TemperatureSubject subject,
+             IReadingCommentRepository<ReadingComment> readingCommentRepository,
+             IRepository<ShellTemperatureComment> commentRepository)
+            : base(readingCommentRepository, commentRepository)
         {
             _shellTempRepo = shellTemperature;
             _deviceRepository = deviceRepository;
@@ -241,11 +249,43 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             IEnumerable<ShellTemp> tempData = _shellTempRepo.GetShellTemperatureData(Start, End,
                 CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress);
 
-            if (tempData == null) return;
+            IEnumerable<ShellTemperatureComment> dataComments =
+                CommentRepository.GetAll();
 
-            tempData = tempData.OrderBy(time => time.RecordedDateTime);
+            // Create new temp list of records
+            List<ShellTemperatureRecord> records = new List<ShellTemperatureRecord>();
 
-            BluetoothData = new ObservableCollection<ShellTemp>(tempData);
+            if (dataComments != null && dataComments.Count() >= 0) // has comments?
+            {
+                // For ever item in ShellTemps, find and match the comment that may have been made
+                foreach (ShellTemp shellTemp in tempData)
+                {
+                    ShellTemperatureRecord shellTemperatureRecord =
+                        new ShellTemperatureRecord(shellTemp.Id, shellTemp.Temperature, shellTemp.RecordedDateTime,
+                            shellTemp.Latitude, shellTemp.Longitude, shellTemp.Device);
+
+                    // Find the comment for the shell temperature
+                    ShellTemperatureComment temp =
+                        dataComments.FirstOrDefault(x => x.ShellTemp.Id == shellTemperatureRecord.Id);
+
+                    if (temp?.Comment != null)
+                        shellTemperatureRecord.Comment = temp.Comment.Comment;
+
+                    records.Add(shellTemperatureRecord);
+                }
+            }
+            else // no comments so skip additional checks / joins
+            {
+                records.AddRange(tempData.Select(x =>
+                    new ShellTemperatureRecord(x.Id, x.Temperature, x.RecordedDateTime, x.Latitude, x.Longitude,
+                        x.Device)));
+            }
+
+            if (records.Count == 0) return;
+
+            records = records.OrderBy(time => time.RecordedDateTime).ToList();
+
+            BluetoothData = new ObservableCollection<ShellTemperatureRecord>(records);
         }
 
         /// <summary>
@@ -262,7 +302,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
 
             DataPoints = new ObservableCollection<DataPoint>(); // reset collection
-            foreach (ShellTemp temp in BluetoothData) // plot points
+            foreach (ShellTemperatureRecord temp in BluetoothData) // plot points
             {
                 DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(temp.RecordedDateTime), temp.Temperature));
             }
@@ -292,7 +332,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             if (latestReading.Device.DeviceAddress.Equals(CurrentDeviceInfo.DeviceAddress)
             && End.Date.Equals(DateTime.Today))
             {
-                BluetoothData.Add(latestReading);
+                ShellTemperatureRecord shellTempReading = new ShellTemperatureRecord(latestReading.Id, latestReading.Temperature, latestReading.RecordedDateTime
+                , latestReading.Latitude, latestReading.Longitude, latestReading.Device);
+
+                BluetoothData.Add(shellTempReading);
                 DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(latestReading.RecordedDateTime),
                     latestReading.Temperature));
             }

@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:CustomDialog.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Background="{StaticResource LightWhiteBrush}">
@@ -14,10 +13,40 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
 
-                <TextBox Text="{Binding Path=Comment, FallbackValue=Error}"
-                         FontFamily="{StaticResource LatoRegular}"
-                         FontSize="{StaticResource FontSize28}"
-                         Padding="20"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="0.44*"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <TextBox Text="{Binding Path=Comment, FallbackValue=Error}"
+                             FontFamily="{StaticResource LatoRegular}"
+                             FontSize="{StaticResource FontSize22}"
+                             Padding="20"/>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2.5*"/>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="2.5*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Separator Background="Black" Margin="30,0,30,0"/>
+                        <Label Grid.Column="1" Content="OR SELECT" HorizontalContentAlignment="Center"
+                               FontSize="{StaticResource FontSize18}"></Label>
+                        <Separator Grid.Column="2" Background="Black" Margin="30,0,30,0"/>
+                    </Grid>
+
+                    <!--  Combo box select existing item -->
+                    <ComboBox Grid.Row="2" Background="Pink"
+                              ItemsSource="{Binding Path=CommentItems}"
+                              SelectedItem="{Binding Path=SelectedComment}"
+                              Style="{StaticResource ComboBoxStyle}"
+                              Margin="40,5,40,15" >
+                    </ComboBox>
+                </Grid>
+
 
                 <!--  Close / OK btn to close dialog -->
                 <Button HorizontalAlignment="Right"

@@ -1,11 +1,16 @@
-﻿using ShellTemperature.ViewModels.Interfaces;
-using ShellTemperature.ViewModels.TemperatureObserver;
+﻿using ShellTemperature.Data;
+using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.ViewModels.Interfaces;
+using ShellTemperature.ViewModels.ViewModels.LadleShell;
 
 namespace ShellTemperature.ViewModels.ViewModels.TemperatureNotifier
 {
-    public abstract class TemperatureNotifierViewModel : ViewModelBase, IUpdate
+    public abstract class TemperatureNotifierViewModel : BaseLadleShellDataViewModel, IUpdate
     {
-        protected TemperatureSubject _temperatureSubject;
+        protected TemperatureNotifierViewModel(IReadingCommentRepository<ReadingComment> readingCommentRepository,
+            IRepository<ShellTemperatureComment> commentRepository)
+            : base(readingCommentRepository, commentRepository) { }
+
         public abstract void Update();
     }
 }
