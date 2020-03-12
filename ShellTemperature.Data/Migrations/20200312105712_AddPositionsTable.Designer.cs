@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShellTemperature.Data;
 
 namespace ShellTemperature.Data.Migrations
 {
     [DbContext(typeof(ShellDb))]
-    partial class ShellDbModelSnapshot : ModelSnapshot
+    [Migration("20200312105712_AddPositionsTable")]
+    partial class AddPositionsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,27 +119,6 @@ namespace ShellTemperature.Data.Migrations
                     b.ToTable("ShellTemperatureComments");
                 });
 
-            modelBuilder.Entity("ShellTemperature.Data.ShellTemperaturePosition", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PositionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ShellTempId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PositionId");
-
-                    b.HasIndex("ShellTempId");
-
-                    b.ToTable("ShellTemperaturePositions");
-                });
-
             modelBuilder.Entity("ShellTemperature.Data.ShellTemp", b =>
                 {
                     b.HasOne("ShellTemperature.Data.DeviceInfo", "Device")
@@ -150,21 +131,6 @@ namespace ShellTemperature.Data.Migrations
                     b.HasOne("ShellTemperature.Data.ReadingComment", "Comment")
                         .WithMany()
                         .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ShellTemperature.Data.ShellTemp", "ShellTemp")
-                        .WithMany()
-                        .HasForeignKey("ShellTempId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ShellTemperature.Data.ShellTemperaturePosition", b =>
-                {
-                    b.HasOne("ShellTemperature.Data.DevicePosition", "Position")
-                        .WithMany()
-                        .HasForeignKey("PositionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

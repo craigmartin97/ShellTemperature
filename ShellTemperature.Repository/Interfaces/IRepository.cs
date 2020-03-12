@@ -37,5 +37,12 @@ namespace ShellTemperature.Repository.Interfaces
         /// <param name="items">Items to remove</param>
         /// <returns>Returns true if the items where deleted</returns>
         bool DeleteRange(IEnumerable<T> items);
+
+        /// <summary>
+        /// Update the model item
+        /// </summary>
+        /// <param name="model">Model to update</param>
+        /// <returns></returns>
+        bool Update(T model);
     }
 }

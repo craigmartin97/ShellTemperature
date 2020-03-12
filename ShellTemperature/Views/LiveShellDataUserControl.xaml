@@ -23,10 +23,9 @@
             <!-- Bottom bar operation buttons -->
             <Grid Grid.Row="1" VerticalAlignment="Top">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.7*"/>
+                    <ColumnDefinition Width="0.7*"/>
                     <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="0.5*"/>
                 </Grid.ColumnDefinitions>
 
                 <Button Content="{StaticResource SearchForDevice}"
@@ -64,6 +63,23 @@
                         </Style>
                     </Button.Style>
                 </Button>
+
+                <Grid Grid.Column="2" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox Style="{StaticResource ComboBoxStyle}" Margin="10" 
+                              ItemsSource="{Binding Path=Positions}"
+                              SelectedItem="{Binding Path=SelectedPosition}"
+                              Text="{Binding Path=NewPosition, UpdateSourceTrigger=PropertyChanged}"
+                              DisplayMemberPath="Position"
+                              IsReadOnly="False"
+                              IsEditable="True" />
+                    <Button Grid.Column="1" Style="{StaticResource BaseButtonStyle}" Content="Submit"
+                            Margin="10" Command="{Binding Path=SubmitPosition}"/>
+                </Grid>
             </Grid>
         </Grid>
 

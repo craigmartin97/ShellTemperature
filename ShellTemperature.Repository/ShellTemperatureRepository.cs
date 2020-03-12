@@ -63,6 +63,11 @@ namespace ShellTemperature.Repository
             return true;
         }
 
+        public bool Update(ShellTemp model)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Get all the shell temperature data between a date range.
         /// </summary>

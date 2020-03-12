@@ -55,6 +55,11 @@ namespace ShellTemperature.Repository
             return true;
         }
 
+        public bool Update(DeviceInfo model)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Find the device by the device address.
         /// </summary>

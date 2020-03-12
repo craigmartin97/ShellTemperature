@@ -30,6 +30,8 @@ namespace ShellTemperature.Data
         public DbSet<DeviceInfo> DevicesInfo { get; set; }
         public DbSet<ShellTemperatureComment> ShellTemperatureComments { get; set; }
         public DbSet<ReadingComment> ReadingComments { get; set; }
+        public DbSet<DevicePosition> Positions { get; set; }
+        public DbSet<ShellTemperaturePosition> ShellTemperaturePositions { get; set; }
         #endregion
     }
 }

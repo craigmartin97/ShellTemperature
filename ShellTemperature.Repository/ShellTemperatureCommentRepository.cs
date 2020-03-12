@@ -70,5 +70,10 @@ namespace ShellTemperature.Repository
         {
             throw new NotImplementedException();
         }
+
+        public bool Update(ShellTemperatureComment model)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

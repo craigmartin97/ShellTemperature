@@ -107,6 +107,7 @@ namespace ShellTemperature
             Services = serviceCollection;
 
             MigrateDatabase();
+            SeedDatabase();
 
             MainWindow mainWindow = _serviceProvider.GetService<MainWindow>();
             mainWindow.Show();
@@ -150,6 +151,7 @@ namespace ShellTemperature
             services.AddScoped<IDeviceRepository<DeviceInfo>, DevicesRepository>();
             services.AddScoped<IRepository<ShellTemperatureComment>, ShellTemperatureCommentRepository>();
             services.AddScoped<IReadingCommentRepository<ReadingComment>, ReadingCommentRepository>();
+            services.AddScoped<IRepository<DevicePosition>, DevicePositionsRepository>();
 
             // add the outlier detector
             services.AddSingleton<OutlierDetector>();
@@ -210,6 +212,25 @@ namespace ShellTemperature
         {
             var context = _serviceProvider.GetRequiredService<ShellDb>();
             context.Database.Migrate(); // ensure fully migrated
+        }
+
+        private void SeedDatabase()
+        {
+            var context = _serviceProvider.GetRequiredService<ShellDb>();
+            int positionsCount = context.Positions.Count();
+
+            if (positionsCount == 0) // no positions
+            {
+                DevicePosition[] positions = new DevicePosition[]
+                {
+                    new DevicePosition("Top"),
+                    new DevicePosition("Bottom"),
+                    new DevicePosition("Side"),
+                };
+
+                context.Positions.AddRange(positions);
+                context.SaveChanges();
+            }
         }
         #endregion
     }

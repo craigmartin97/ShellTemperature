@@ -66,11 +66,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private readonly IBluetoothFinder _bluetoothFinder;
 
         /// <summary>
-        /// Dialog service to display info boxes to the user
-        /// </summary>
-        private readonly IDialogService _service;
-
-        /// <summary>
         /// Dictionary of all the devices and there recognizable names
         /// </summary>
         private readonly Dictionary<string, string> _deviceDictionary;
@@ -90,6 +85,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Logger to record system messages
         /// </summary>
         private readonly ILogger<LiveShellDataViewModel> _logger;
+
+        /// <summary>
+        /// Position repository is responsible for storing positions
+        /// that a device is recording from on the ladle
+        /// </summary>
+        private readonly IRepository<DevicePosition> _positionRepository;
+
+        private DevicePosition _currentDevicePosition;
         #endregion
 
         #region Properties
@@ -124,6 +127,74 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 }
 
                 _subject.SetState(value.State);
+            }
+        }
+
+        private ObservableCollection<DevicePosition> _positions;
+        /// <summary>
+        /// Collection of positions that the selected device is reading from.
+        /// i.e. the top of the ladle, side of the ladle, bottom of the ladle
+        /// </summary>
+        public ObservableCollection<DevicePosition> Positions
+        {
+            get => _positions;
+            set
+            {
+                _positions = value;
+                OnPropertyChanged(nameof(Positions));
+            }
+        }
+
+        private DevicePosition _selectedPosition;
+        /// <summary>
+        /// The selected position is the position that has been chosen by
+        /// the user to identify what position the current SelectedDevice is
+        /// reading from
+        /// </summary>
+        public DevicePosition SelectedPosition
+        {
+            get => _selectedPosition;
+            set
+            {
+                _selectedPosition = value;
+                OnPropertyChanged(nameof(SelectedPosition));
+            }
+        }
+
+        private string _newPosition;
+        /// <summary>
+        /// New position that has been entered by the user
+        /// in the editable text box
+        /// </summary>
+        public string NewPosition
+        {
+            get => _newPosition;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return;
+                if (SelectedPosition != null && SelectedPosition.Position.Equals(value))
+                {
+                    _newPosition = SelectedPosition.Position;
+                    OnPropertyChanged(nameof(NewPosition));
+                    return; // this item was selected
+                }
+                if(Positions.Any(x => x.Position.Equals(value))) // this text already exists in the coll
+                {
+                    DevicePosition pos = Positions.FirstOrDefault(x => x.Position.Equals(value));
+                    if (pos != null)
+                        SelectedPosition = pos;
+
+                    if (SelectedPosition != null) 
+                        _newPosition = SelectedPosition.Position;
+
+                    OnPropertyChanged(nameof(NewPosition));
+                    return;
+                }
+
+                _newPosition = value;
+                SelectedPosition = new DevicePosition(value);
+                OnPropertyChanged(nameof(NewPosition));
             }
         }
 
@@ -190,7 +261,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Start reading the bluetooth service
         /// </summary>
         public RelayCommand StartCommand
-        => new RelayCommand(param =>
+        => new RelayCommand(delegate
         {
             if (SelectedDevice == null)
                 return;
@@ -204,7 +275,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// of reading data from the bluetooth foundDevices.
         /// </summary>
         public RelayCommand StopCommand
-        => new RelayCommand(param =>
+        => new RelayCommand(delegate
         {
             if (SelectedDevice == null)
                 return;
@@ -219,8 +290,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             SetConnectionStatus(SelectedDevice, DeviceConnectionStatus.PAUSED);
         });
 
+        /// <summary>
+        /// Search for any new bluetooth devices that do not currently exist
+        /// </summary>
         public RelayCommand SearchForDevices
-        => new RelayCommand(param =>
+        => new RelayCommand(delegate
         {
             Thread thread = new Thread(() =>
             {
@@ -294,8 +368,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             thread.Start();
         });
 
+        /// <summary>
+        /// Command to remove the selected device from the display
+        /// </summary>
         public RelayCommand RemoveSelectedDevice =>
-        new RelayCommand(param =>
+        new RelayCommand(delegate
         {
             if (SelectedDevice == null || Devices.Count == 0) return;
 
@@ -312,6 +389,22 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
             SetCanRemoveDevices();
         });
+
+        /// <summary>
+        /// Submit the position for the selected device
+        /// </summary>
+        public RelayCommand SubmitPosition
+        => new RelayCommand(delegate
+        {
+            if(SelectedPosition == null) // nothing has been entered or selected
+                return;
+
+            if (SelectedPosition.Id.Equals(default)) // the Guid is a new entry
+                _positionRepository.Create(SelectedPosition);
+
+            _currentDevicePosition = SelectedPosition;
+
+        });
         #endregion
 
         #region Constructors
@@ -326,17 +419,21 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             OutlierDetector outlierDetector,
             ClearList clear,
             IRepository<ShellTemperatureComment> commentRepository,
-            IReadingCommentRepository<ReadingComment> readingCommentRepository) : base(readingCommentRepository, commentRepository)
+            IReadingCommentRepository<ReadingComment> readingCommentRepository,
+            IRepository<DevicePosition> positionRepository) : base(readingCommentRepository, commentRepository)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
             _deviceRepository = deviceRepository;
             _subject = subject;
             _temperatureSubject = temperatureSubject;
-            _service = service;
             _logger = logger;
             _outlierDetector = outlierDetector;
             _clear = clear;
+            _positionRepository = positionRepository;
+
+            // Assign positions
+            Positions = new ObservableCollection<DevicePosition>(_positionRepository.GetAll());
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration
