@@ -90,9 +90,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Position repository is responsible for storing positions
         /// that a device is recording from on the ladle
         /// </summary>
-        private readonly IRepository<DevicePosition> _positionRepository;
+        private readonly IRepository<Positions> _positionRepository;
 
-        private DevicePosition _currentDevicePosition;
+        /// <summary>
+        /// Shell temperature repository to store the position of each shell temperature
+        /// </summary>
+        private readonly IRepository<ShellTemperaturePosition> _shellTempPositionRepository;
         #endregion
 
         #region Properties
@@ -130,12 +133,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
-        private ObservableCollection<DevicePosition> _positions;
+        private ObservableCollection<Positions> _positions;
         /// <summary>
         /// Collection of positions that the selected device is reading from.
         /// i.e. the top of the ladle, side of the ladle, bottom of the ladle
         /// </summary>
-        public ObservableCollection<DevicePosition> Positions
+        public ObservableCollection<Positions> Positions
         {
             get => _positions;
             set
@@ -145,13 +148,13 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
-        private DevicePosition _selectedPosition;
+        private Positions _selectedPosition;
         /// <summary>
         /// The selected position is the position that has been chosen by
         /// the user to identify what position the current SelectedDevice is
         /// reading from
         /// </summary>
-        public DevicePosition SelectedPosition
+        public Positions SelectedPosition
         {
             get => _selectedPosition;
             set
@@ -179,13 +182,13 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     OnPropertyChanged(nameof(NewPosition));
                     return; // this item was selected
                 }
-                if(Positions.Any(x => x.Position.Equals(value))) // this text already exists in the coll
+                if (Positions.Any(x => x.Position.Equals(value))) // this text already exists in the coll
                 {
-                    DevicePosition pos = Positions.FirstOrDefault(x => x.Position.Equals(value));
+                    Positions pos = Positions.FirstOrDefault(x => x.Position.Equals(value));
                     if (pos != null)
                         SelectedPosition = pos;
 
-                    if (SelectedPosition != null) 
+                    if (SelectedPosition != null)
                         _newPosition = SelectedPosition.Position;
 
                     OnPropertyChanged(nameof(NewPosition));
@@ -193,7 +196,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 }
 
                 _newPosition = value;
-                SelectedPosition = new DevicePosition(value);
+                SelectedPosition = new Positions(value);
                 OnPropertyChanged(nameof(NewPosition));
             }
         }
@@ -396,14 +399,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         public RelayCommand SubmitPosition
         => new RelayCommand(delegate
         {
-            if(SelectedPosition == null) // nothing has been entered or selected
+            if (SelectedPosition == null || SelectedDevice == null) // nothing has been entered or selected
                 return;
 
             if (SelectedPosition.Id.Equals(default)) // the Guid is a new entry
                 _positionRepository.Create(SelectedPosition);
 
-            _currentDevicePosition = SelectedPosition;
-
+            // Set the selected devices current position to the selected position
+            SelectedDevice.CurrentDevicePosition = SelectedPosition;
         });
         #endregion
 
@@ -414,13 +417,13 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             IConfiguration configuration,
             BluetoothConnectionSubject subject,
             TemperatureSubject temperatureSubject,
-            IDialogService service,
             ILogger<LiveShellDataViewModel> logger,
             OutlierDetector outlierDetector,
             ClearList clear,
             IRepository<ShellTemperatureComment> commentRepository,
             IReadingCommentRepository<ReadingComment> readingCommentRepository,
-            IRepository<DevicePosition> positionRepository) : base(readingCommentRepository, commentRepository)
+            IRepository<Positions> positionRepository,
+            IRepository<ShellTemperaturePosition> shellTempPositionRepository) : base(readingCommentRepository, commentRepository)
         {
             _bluetoothFinder = bluetoothFinder;
             _shellRepo = repository;
@@ -431,9 +434,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             _outlierDetector = outlierDetector;
             _clear = clear;
             _positionRepository = positionRepository;
+            _shellTempPositionRepository = shellTempPositionRepository;
 
             // Assign positions
-            Positions = new ObservableCollection<DevicePosition>(_positionRepository.GetAll());
+            Positions = new ObservableCollection<Positions>(_positionRepository.GetAll());
 
             //get the devices section from the config settings
             IEnumerable<IConfigurationSection> configDevices = configuration
@@ -565,6 +569,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 _shellRepo.Create(shellTemp); // create a new record in the database.
                 _temperatureSubject.SetState(shellTemp);
                 record.Id = shellTemp.Id;
+
+                // Create a new shell temperature position
+                StoreShellTempPosition(currentDevice, shellTemp);
 
                 currentDevice.State.Message = BLTError.connected + currentDevice.DeviceName;
                 SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTED);
@@ -792,6 +799,19 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             if (SelectedDevice == null && Devices.Count > 0)
                 SelectedDevice = Devices[0];
+        }
+
+        private void StoreShellTempPosition(Device currentDevice, ShellTemp shellTemp)
+        {
+            if (currentDevice.CurrentDevicePosition != null)
+            {
+                ShellTemperaturePosition shellTemperaturePosition = new ShellTemperaturePosition
+                {
+                    ShellTemp = shellTemp,
+                    Position = currentDevice.CurrentDevicePosition
+                };
+                _shellTempPositionRepository.Create(shellTemperaturePosition);
+            }
         }
         #endregion
     }

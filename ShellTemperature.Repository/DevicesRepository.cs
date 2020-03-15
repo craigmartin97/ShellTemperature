@@ -6,58 +6,90 @@ using System.Linq;
 
 namespace ShellTemperature.Repository
 {
-    public class DevicesRepository : IDeviceRepository<DeviceInfo>
+    public class DevicesRepository : BaseRepository, IDeviceRepository<DeviceInfo>
     {
-        #region Fields
-
-        private ShellDb _context;
-        #endregion
-
         #region Constructors
-        public DevicesRepository(ShellDb context)
-        {
-            _context = context;
-        }
+        public DevicesRepository(ShellDb context) : base(context) { }
         #endregion
 
+        /// <summary>
+        /// Create a new device item in the database
+        /// </summary>
+        /// <param name="model">The device to create</param>
+        /// <returns></returns>
         public bool Create(DeviceInfo model)
         {
-            DeviceInfo alreadyExists = _context.DevicesInfo.FirstOrDefault(x => x.DeviceAddress.Equals(model.DeviceAddress));
+            DeviceInfo alreadyExists = Context.DevicesInfo.FirstOrDefault(x => x.DeviceAddress.Equals(model.DeviceAddress));
 
             if (alreadyExists != null)
                 throw new ArgumentException("The device " + model.DeviceAddress + " already exists in the data store");
 
-            _context.Add(model);
-            _context.SaveChanges();
+            Context.Add(model);
+            Context.SaveChanges();
             return true;
         }
 
         public IEnumerable<DeviceInfo> GetAll()
-            => _context.DevicesInfo;
+            => Context.DevicesInfo;
 
         public bool Delete(Guid id)
         {
-            DeviceInfo dev = _context.DevicesInfo.FirstOrDefault(x => x.Id.Equals(id));
+            DeviceInfo dev = Context.DevicesInfo.FirstOrDefault(x => x.Id.Equals(id));
             if (dev == null)
                 return false;
 
-            _context.DevicesInfo.Remove(dev);
+            ShellTemp shellTemp = Context.ShellTemperatures.FirstOrDefault(x => x.Device.Id == id);
+            if (shellTemp != null)
+                return false; // can't delete as this device is linked to a temp
+
+            Context.DevicesInfo.Remove(dev);
             return true;
         }
 
+        /// <summary>
+        /// Delete a collection of devices
+        /// </summary>
+        /// <param name="items">The devices to remove</param>
+        /// <returns></returns>
         public bool DeleteRange(IEnumerable<DeviceInfo> items)
         {
             if (items == null)
-                return false;
+                throw new ArgumentNullException(nameof(items), "The collection supplied was null");
 
-            _context.DevicesInfo.RemoveRange(items);
-            _context.SaveChanges();
+            Context.DevicesInfo.RemoveRange(items);
+            Context.SaveChanges();
             return true;
         }
 
+        /// <summary>
+        /// Update an existing record
+        /// </summary>
+        /// <param name="model">The device object to update</param>
+        /// <returns></returns>
         public bool Update(DeviceInfo model)
         {
-            throw new NotImplementedException();
+            if (model == null)
+                throw new ArgumentNullException(nameof(model), "The model supplied is null");
+
+            DeviceInfo dbDeviceInfo = GetItem(model.Id);
+            if (dbDeviceInfo == null)
+                throw new NullReferenceException("Could not find the device to update");
+
+            IEnumerable<DeviceInfo> allDeviceInfos = GetAll();
+            bool alreadyExists = allDeviceInfos.Where(device => device.Id != model.Id)
+                .Select(device => device.DeviceAddress.Equals(model.DeviceAddress)
+                || device.DeviceName.Equals(model.DeviceName))
+                .Any(x => x);
+
+            if (alreadyExists)
+                return false;
+
+            // Update each attribute
+            dbDeviceInfo.DeviceAddress = model.DeviceAddress;
+            dbDeviceInfo.DeviceName = model.DeviceName;
+
+            Context.SaveChanges();
+            return true;
         }
 
         /// <summary>
@@ -66,7 +98,7 @@ namespace ShellTemperature.Repository
         /// <param name="deviceAddress">The device address</param>
         /// <returns>Returns a device object if found, else returns null</returns>
         public DeviceInfo GetDevice(string deviceAddress)
-            => _context.DevicesInfo.FirstOrDefault(x => x.DeviceAddress.Equals(deviceAddress));
+            => Context.DevicesInfo.FirstOrDefault(x => x.DeviceAddress.Equals(deviceAddress));
 
         /// <summary>
         /// Get a single device from the database
@@ -74,6 +106,6 @@ namespace ShellTemperature.Repository
         /// <param name="id"></param>
         /// <returns></returns>
         public DeviceInfo GetItem(Guid id)
-            => _context.DevicesInfo.FirstOrDefault(x => x.Id.Equals(id));
+            => Context.DevicesInfo.FirstOrDefault(x => x.Id.Equals(id));
     }
 }

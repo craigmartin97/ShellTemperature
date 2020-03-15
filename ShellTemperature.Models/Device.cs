@@ -5,7 +5,6 @@ using BluetoothService.Enums;
 using OxyPlot;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Windows.Threading;
 using ShellTemperature.Data;
 
@@ -79,7 +78,11 @@ namespace ShellTemperature.Models
             }
         }
 
-        public int ReadingsCounter { get; set; }
+        /// <summary>
+        /// The current device position related to the
+        /// the area the device is recording
+        /// </summary>
+        public Positions CurrentDevicePosition { get; set; }
 
         #region Constructors
 

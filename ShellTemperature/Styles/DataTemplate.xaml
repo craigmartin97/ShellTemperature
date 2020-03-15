@@ -9,8 +9,8 @@
                 <Label.ToolTip>
                     <Border x:Name="Border"
                             BorderThickness="1"
-                            Width="250"
-                            Height="170"
+                            Width="350"
+                            Height="240"
                             Background="{StaticResource OffsetWhiteBrush}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -41,13 +41,52 @@
                                 <!-- Latitude -->
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="Latitude: " FontSize="{StaticResource FontSize16}"/>
-                                    <Label Content="{Binding Path=Latitude}" FontSize="{StaticResource FontSize16}" />
+                                    <Label FontSize="{StaticResource FontSize16}">
+                                        <Label.Style>
+                                            <Style TargetType="{x:Type Label}">
+                                                <Setter Property="Content" Value="{Binding Path=Latitude}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=Latitude}" Value="{x:Null}">
+                                                        <Setter Property="Content" Value="N/A" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
                                 </StackPanel>
 
                                 <!-- Longitude -->
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="Longitude: " FontSize="{StaticResource FontSize16}"/>
-                                    <Label Content="{Binding Path=Longitude}" FontSize="{StaticResource FontSize16}"/>
+                                    <Label FontSize="{StaticResource FontSize16}">
+                                        <Label.Style>
+                                            <Style TargetType="{x:Type Label}">
+                                                <Setter Property="Content" Value="{Binding Path=Longitude}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=Longitude}" Value="{x:Null}">
+                                                        <Setter Property="Content" Value="N/A" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
+                                </StackPanel>
+
+                                <!-- Comment -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Comment: " FontSize="{StaticResource FontSize16}"/>
+                                    <Label FontSize="{StaticResource FontSize16}">
+                                        <Label.Style>
+                                            <Style TargetType="{x:Type Label}">
+                                                <Setter Property="Content" Value="{Binding Path=Comment}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=Comment}" Value="{x:Null}">
+                                                        <Setter Property="Content" Value="N/A" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>

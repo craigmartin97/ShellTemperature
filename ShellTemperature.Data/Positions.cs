@@ -8,7 +8,7 @@ namespace ShellTemperature.Data
     /// The device position relates to the position the device
     /// was reading in
     /// </summary>
-    public class DevicePosition
+    public class Positions
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), Required]
         public Guid Id { get; set; }
@@ -18,12 +18,12 @@ namespace ShellTemperature.Data
 
         #region Constructors
 
-        public DevicePosition()
+        public Positions()
         {
 
         }
 
-        public DevicePosition(string position)
+        public Positions(string position)
         {
             Position = position;
         }

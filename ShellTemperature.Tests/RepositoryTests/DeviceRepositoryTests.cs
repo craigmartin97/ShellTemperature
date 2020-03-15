@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Moq;
+﻿using Moq;
 using NUnit.Framework;
 using ShellTemperature.Data;
 using ShellTemperature.Repository;
@@ -9,7 +8,7 @@ using System.Linq;
 
 namespace ShellTemperature.Tests.RepositoryTests
 {
-    public class DeviceRepositoryTests
+    public class DeviceRepositoryTests : BaseRepositoryTest
     {
         private DevicesRepository deviceRepository;
         private IList<DeviceInfo> devices = new List<DeviceInfo>
@@ -31,18 +30,12 @@ namespace ShellTemperature.Tests.RepositoryTests
         [SetUp]
         public void Setup()
         {
-            deviceRepository = new DevicesRepository(GetShellDb());
+            Context = GetShellDb();
+            deviceRepository = new DevicesRepository(Context);
             foreach (DeviceInfo temp in devices)
             {
                 deviceRepository.Create(temp);
             }
-        }
-        private ShellDb GetShellDb()
-        {
-            var options = new DbContextOptionsBuilder<ShellDb>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-            return new ShellDb(options);
         }
 
         /// <summary>
@@ -153,17 +146,28 @@ namespace ShellTemperature.Tests.RepositoryTests
         [Test, Order(7)]
         public void DeleteRange_Fail_Test()
         {
-            // Act
-            bool deleted = deviceRepository.DeleteRange(null);
+            Assert.Throws<ArgumentNullException>(delegate { deviceRepository.DeleteRange(null); });
+        }
 
-            // Assert
+        [Test, Order(8)]
+        public void Delete_InUse()
+        {
+            DeviceInfo deviceInfo = devices.FirstOrDefault();
+            Assert.IsNotNull(deviceInfo);
+
+            // Add in a new shell temp to the db for testing
+            ShellTemp shellTemp = new ShellTemp(Guid.NewGuid(), 22.2, DateTime.Now, 54, 1, deviceInfo);
+            Context.ShellTemperatures.Add(shellTemp);
+            Context.SaveChanges();
+
+            bool deleted = deviceRepository.Delete(deviceInfo.Id);
             Assert.IsFalse(deleted);
         }
 
         /// <summary>
         /// Get a single device from the database based on the device address
         /// </summary>
-        [Test, Order(8)]
+        [Test, Order(9)]
         public void GetSingleDeviceByAddress_Test()
         {
             // Act & Assert
@@ -177,7 +181,7 @@ namespace ShellTemperature.Tests.RepositoryTests
         /// <summary>
         /// Supply a bad address will retur a ull object
         /// </summary>
-        [Test, Order(8)]
+        [Test, Order(10)]
         public void GetSingleDeviceByAddressWillFail_Test()
         {
             // Act & Assert
@@ -188,7 +192,7 @@ namespace ShellTemperature.Tests.RepositoryTests
         /// <summary>
         /// Get a single device from the database based upon the id value
         /// </summary>
-        [Test, Order(9)]
+        [Test, Order(11)]
         public void GetSingleDeviceFromId()
         {
             foreach (DeviceInfo dev in devices)
@@ -199,11 +203,53 @@ namespace ShellTemperature.Tests.RepositoryTests
             }
         }
 
-        [Test, Order(10)]
+        [Test, Order(12)]
         public void GetSingleDeviceById_BadId()
         {
             DeviceInfo deviceInfo = deviceRepository.GetItem(Guid.NewGuid());
             Assert.IsNull(deviceInfo);
         }
+
+        #region Update
+        [Test, Order(13)]
+        public void Update_Test()
+        {
+            foreach (var device in devices)
+            {
+                // Arrange
+                device.DeviceAddress += "123";
+
+                // Act
+                bool updated = deviceRepository.Update(device);
+
+                // Assert
+                Assert.IsTrue(updated);
+
+                DeviceInfo updateDevice = deviceRepository.GetItem(device.Id);
+                Assert.AreEqual(device, updateDevice);
+            }
+        }
+
+        [Test, Order(14)]
+        public void Update_NullObject_Test()
+        {
+            Assert.Throws<ArgumentNullException>(delegate { deviceRepository.Update(null); });
+        }
+
+        [Test, Order(15)]
+        public void Update_NoneExistsObject_Test()
+        {
+            // Arrange
+            DeviceInfo deviceInfo = new DeviceInfo()
+            {
+                DeviceName = "NULL",
+                DeviceAddress = "NULL"
+            };
+
+            // ACt & Assert
+            // Should throw as none exists
+            Assert.Throws<NullReferenceException>(delegate { deviceRepository.Update(deviceInfo); });
+        }
+        #endregion
     }
 }

@@ -76,9 +76,28 @@
                               Text="{Binding Path=NewPosition, UpdateSourceTrigger=PropertyChanged}"
                               DisplayMemberPath="Position"
                               IsReadOnly="False"
-                              IsEditable="True" />
-                    <Button Grid.Column="1" Style="{StaticResource BaseButtonStyle}" Content="Submit"
-                            Margin="10" Command="{Binding Path=SubmitPosition}"/>
+                              IsEditable="True"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center" />
+                    <Button Grid.Column="1" Content="Submit"
+                            Margin="10" Command="{Binding Path=SubmitPosition}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+                                <Setter Property="IsEnabled" Value="True" />
+                                <Setter Property="Opacity" Value="1" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=SelectedDevice}" Value="{x:Null}">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                        <Setter Property="Opacity" Value="0.5" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=SelectedPosition}" Value="{x:Null}">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                        <Setter Property="Opacity" Value="0.5" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </Grid>
             </Grid>
         </Grid>

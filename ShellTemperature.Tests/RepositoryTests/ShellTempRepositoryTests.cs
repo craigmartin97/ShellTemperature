@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace ShellTemperature.Tests.RepositoryTests
 {
-    public class ShellTempRepositoryTests
+    public class ShellTempRepositoryTests : BaseRepositoryTest
     {
         private ShellTemperatureRepository temperatureRepository;
         private IList<ShellTemp> temps = new List<ShellTemp>
@@ -65,14 +65,6 @@ namespace ShellTemperature.Tests.RepositoryTests
             {
                 temperatureRepository.Create(temp);
             }
-        }
-
-        private ShellDb GetShellDb()
-        {
-            var options = new DbContextOptionsBuilder<ShellDb>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-            return new ShellDb(options);
         }
 
         [Test, Order(1)]
@@ -171,6 +163,16 @@ namespace ShellTemperature.Tests.RepositoryTests
             Assert.AreNotEqual(temps.Count, shellTemps.Count);
         }
 
+        [Test]
+        public void GetSingle()
+        {
+            foreach (var shellTemp in temps)
+            {
+                ShellTemp dbShellTemp = temperatureRepository.GetItem(shellTemp.Id);
+                Assert.IsNotNull(dbShellTemp);
+            }
+        }
+
         /// <summary>
         /// Delete all the items from the database
         /// </summary>
@@ -219,6 +221,18 @@ namespace ShellTemperature.Tests.RepositoryTests
         {
             bool deleted = temperatureRepository.DeleteRange(null);
             Assert.IsFalse(deleted);
+        }
+
+        [Test]
+        public void Update()
+        {
+            Random random = new Random();
+            foreach (var shellTemp in temps)
+            {
+                shellTemp.Temperature = random.Next(20, 30); // EDit temp
+                bool updated = temperatureRepository.Update(shellTemp);
+                Assert.IsTrue(updated);
+            }
         }
     }
 }

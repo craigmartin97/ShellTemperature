@@ -1,6 +1,8 @@
-﻿using BluetoothService.BluetoothServices;
-using CustomDialog.Interfaces;
-using CustomDialog.Services;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows;
+using BluetoothService.BluetoothServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,10 +22,6 @@ using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 using ShellTemperature.Views;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Windows;
 
 namespace ShellTemperature
 {
@@ -91,7 +89,7 @@ namespace ShellTemperature
             {
                 // configure Logging with NLog
                 loggingProvider.ClearProviders();
-                loggingProvider.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
+                loggingProvider.SetMinimumLevel(LogLevel.Debug);
                 loggingProvider.AddConfiguration(_configuration.GetSection("Logging"));
                 loggingProvider.AddNLog(_configuration);
             });
@@ -144,14 +142,13 @@ namespace ShellTemperature
                 return new BluetoothFinder(devicesToSearchFor);
             });
 
-            services.AddSingleton<IDialogService, DialogService>();
-
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IDeviceRepository<DeviceInfo>, DevicesRepository>();
             services.AddScoped<IRepository<ShellTemperatureComment>, ShellTemperatureCommentRepository>();
             services.AddScoped<IReadingCommentRepository<ReadingComment>, ReadingCommentRepository>();
-            services.AddScoped<IRepository<DevicePosition>, DevicePositionsRepository>();
+            services.AddScoped<IRepository<Positions>, PositionsRepository>();
+            services.AddScoped<IRepository<ShellTemperaturePosition>, ShellTemperaturePositionRepository>();
 
             // add the outlier detector
             services.AddSingleton<OutlierDetector>();
@@ -216,16 +213,15 @@ namespace ShellTemperature
 
         private void SeedDatabase()
         {
-            var context = _serviceProvider.GetRequiredService<ShellDb>();
+            ShellDb context = _serviceProvider.GetRequiredService<ShellDb>();
             int positionsCount = context.Positions.Count();
 
             if (positionsCount == 0) // no positions
             {
-                DevicePosition[] positions = new DevicePosition[]
-                {
-                    new DevicePosition("Top"),
-                    new DevicePosition("Bottom"),
-                    new DevicePosition("Side"),
+                Positions[] positions = {
+                    new Positions("Top"),
+                    new Positions("Bottom"),
+                    new Positions("Side")
                 };
 
                 context.Positions.AddRange(positions);

@@ -7,25 +7,20 @@ using System.Linq;
 
 namespace ShellTemperature.Repository
 {
-    public class ShellTemperatureRepository : IShellTemperatureRepository<ShellTemp>
+    public class ShellTemperatureRepository : BaseRepository, IShellTemperatureRepository<ShellTemp>
     {
-        private readonly ShellDb _context;
-
-        public ShellTemperatureRepository(ShellDb context)
-        {
-            _context = context;
-        }
+        public ShellTemperatureRepository(ShellDb context) : base(context) { }
 
         public bool Create(ShellTemp model)
         {
             if (model?.Device == null) return false;
 
-            DeviceInfo dbDevice = _context.DevicesInfo.Find(model.Device.Id);
+            DeviceInfo dbDevice = Context.DevicesInfo.Find(model.Device.Id);
             DeviceInfo device = dbDevice ?? model.Device;
             model.Device = device;
 
-            _context.Add(model);
-            _context.SaveChanges();
+            Context.Add(model);
+            Context.SaveChanges();
             return true;
         }
 
@@ -34,16 +29,16 @@ namespace ShellTemperature.Repository
         /// </summary>
         /// <returns>Returns an enumerable collection of all the temperature data</returns>
         public IEnumerable<ShellTemp> GetAll()
-        => _context.ShellTemperatures.Include(dev => dev.Device);
+        => Context.ShellTemperatures.Include(dev => dev.Device);
 
         public bool Delete(Guid id)
         {
-            ShellTemp shellTemp = _context.ShellTemperatures.Find(id);
+            ShellTemp shellTemp = Context.ShellTemperatures.Find(id);
             if (shellTemp == null)
                 return false;
 
-            _context.ShellTemperatures.Remove(shellTemp);
-            _context.SaveChanges();
+            Context.ShellTemperatures.Remove(shellTemp);
+            Context.SaveChanges();
             return true;
         }
 
@@ -52,20 +47,38 @@ namespace ShellTemperature.Repository
             if (items == null)
                 return false;
 
-            foreach (var shellTemp in items)
-            {
-                ShellTemp dbTemp = _context.ShellTemperatures.Find(shellTemp.Id);
-                _context.ShellTemperatures.Remove(dbTemp);
-            }
+            //foreach (var shellTemp in items)
+            //{
+            //    ShellTemp dbTemp = _context.ShellTemperatures.Find(shellTemp.Id);
+            //    _context.ShellTemperatures.Remove(dbTemp);
+            //}
 
-            //_context.ShellTemperatures.RemoveRange(items);
-            _context.SaveChanges();
+            Context.ShellTemperatures.RemoveRange(items);
+            Context.SaveChanges();
             return true;
         }
 
         public bool Update(ShellTemp model)
         {
-            throw new NotImplementedException();
+            if (model == null)
+                throw new ArgumentNullException(nameof(model), "The shell temperature was invalid");
+
+            ShellTemp dbShellTemp = GetItem(model.Id);
+            if (dbShellTemp == null)
+                throw new NullReferenceException("Could not find the shell temperature in the database");
+
+            DeviceInfo dbDeviceInfo = Context.DevicesInfo.Find(model.Device.Id);
+            if (dbDeviceInfo == null)
+                throw new NullReferenceException("Could not find the device in the database");
+
+            dbShellTemp.Temperature = model.Temperature;
+            dbShellTemp.RecordedDateTime = model.RecordedDateTime;
+            dbShellTemp.Latitude = model.Latitude;
+            dbShellTemp.Longitude = model.Longitude;
+            dbShellTemp.Device = dbDeviceInfo;
+
+            Context.SaveChanges();
+            return true;
         }
 
         /// <summary>
@@ -76,7 +89,7 @@ namespace ShellTemperature.Repository
         /// <returns>Returns an enumerable of shell temperatures</returns>
         public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end)
         {
-            return _context.ShellTemperatures
+            return Context.ShellTemperatures
                 .Include(dev => dev.Device)
                 .Where(dateTime => dateTime.RecordedDateTime >= start && dateTime.RecordedDateTime <= end);
         }
@@ -92,7 +105,7 @@ namespace ShellTemperature.Repository
         /// <returns></returns>
         public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end, string deviceName = null, string deviceAddress = null)
         {
-            return _context.ShellTemperatures
+            return Context.ShellTemperatures
                 .Include(dev => dev.Device)
                 .Where(device =>
                     string.IsNullOrWhiteSpace(deviceName) || device.Device.DeviceName.Equals(deviceName) &&
@@ -106,6 +119,6 @@ namespace ShellTemperature.Repository
         /// <param name="id">Id of the item to retrieve</param>
         /// <returns>Returns the item from database matching the id value</returns>
         public ShellTemp GetItem(Guid id)
-            => _context.ShellTemperatures.Find(id);
+            => Context.ShellTemperatures.Find(id);
     }
 }

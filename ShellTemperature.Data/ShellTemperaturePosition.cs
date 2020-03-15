@@ -16,6 +16,6 @@ namespace ShellTemperature.Data
         public ShellTemp ShellTemp { get; set; }
 
         [Required]
-        public DevicePosition Position { get; set; }
+        public Positions Position { get; set; }
     }
 }
