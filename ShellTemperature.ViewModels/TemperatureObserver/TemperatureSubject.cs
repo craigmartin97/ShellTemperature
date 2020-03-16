@@ -1,18 +1,19 @@
 ﻿using ShellTemperature.Data;
 using ShellTemperature.ViewModels.ViewModels.TemperatureNotifier;
 using System.Collections.Generic;
+using ShellTemperature.Models;
 
 namespace ShellTemperature.ViewModels.TemperatureObserver
 {
     public class TemperatureSubject : Interfaces.ISubject<TemperatureNotifierViewModel>
     {
         private readonly IList<TemperatureNotifierViewModel> _observer = new List<TemperatureNotifierViewModel>();
-        private ShellTemp _shellTemp;
+        private ShellTemperatureRecord _shellTemp;
 
-        public ShellTemp GetState()
+        public ShellTemperatureRecord GetState()
             => _shellTemp;
 
-        public void SetState(ShellTemp shellTemp)
+        public void SetState(ShellTemperatureRecord shellTemp)
         {
             _shellTemp = shellTemp;
             NotifyAllObservers();

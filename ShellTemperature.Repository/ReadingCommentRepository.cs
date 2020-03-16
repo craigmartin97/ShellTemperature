@@ -81,9 +81,9 @@ namespace ShellTemperature.Repository
             if(readingComment == null)
                 throw new NullReferenceException("Could not find the comment");
 
-            bool inUse = Context.ShellTemperatureComments.Any(x => x.Comment.Id.Equals(id));
-            if (inUse)
-                return false; // It is in use can't delete!
+            //bool inUse = Context.ShellTemperatureComments.Any(x => x.Comment.Id.Equals(id));
+            //if (inUse)
+            //    return false; // It is in use can't delete!
 
             Context.ReadingComments.Remove(readingComment);
             Context.SaveChanges();

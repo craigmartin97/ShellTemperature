@@ -41,9 +41,9 @@ namespace ShellTemperature.Repository
                 throw new NullReferenceException("Unable to find the position to delete");
 
             // Check if any items have this position
-            bool inUse = Context.ShellTemperaturePositions.Any(x => x.Position == dbDevicePosition);
-            if (inUse)
-                return false; // Can't delete as the item is in use
+            //bool inUse = Context.ShellTemperaturePositions.Any(x => x.Position == dbDevicePosition);
+            //if (inUse)
+            //    return false; // Can't delete as the item is in use
 
             Context.Positions.Remove(dbDevicePosition);
             Context.SaveChanges();

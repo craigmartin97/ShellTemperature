@@ -49,7 +49,6 @@ namespace ShellTemperature.Repository
         public ShellTemperatureComment GetItem(Guid id)
             => Context.ShellTemperatureComments.Find(id);
 
-
         public bool Delete(Guid id)
         {
             ShellTemperatureComment comment = Context.ShellTemperatureComments.Find(id);

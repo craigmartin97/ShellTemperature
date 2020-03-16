@@ -145,26 +145,26 @@ namespace ShellTemperature.Tests.RepositoryTests
             }
         }
 
-        [Test, Order(11)]
-        public void Delete_InUse_Test()
-        {
-            // Add comment to to shell temp comments table
-            ReadingComment readingComment = readingComments.FirstOrDefault();
-            ShellTemp shellTemp = new ShellTemp(Guid.NewGuid(), 22.2, DateTime.Now, 54, 1, new DeviceInfo()
-            {
-                DeviceName = "Test",
-                DeviceAddress = "Test"
-            });
+        //[Test, Order(11)]
+        //public void Delete_InUse_Test()
+        //{
+        //    // Add comment to to shell temp comments table
+        //    ReadingComment readingComment = readingComments.FirstOrDefault();
+        //    ShellTemp shellTemp = new ShellTemp(Guid.NewGuid(), 22.2, DateTime.Now, 54, 1, new DeviceInfo()
+        //    {
+        //        DeviceName = "Test",
+        //        DeviceAddress = "Test"
+        //    });
 
-            ShellTemperatureComment comment = new ShellTemperatureComment(readingComment, shellTemp);
-            Context.ShellTemperatureComments.Add(comment);
-            Context.SaveChanges();
+        //    ShellTemperatureComment comment = new ShellTemperatureComment(readingComment, shellTemp);
+        //    Context.ShellTemperatureComments.Add(comment);
+        //    Context.SaveChanges();
 
-            // Delete comment that is in use
-            bool deleted = readingCommentRepository.Delete(readingComment.Id);
+        //    // Delete comment that is in use
+        //    bool deleted = readingCommentRepository.Delete(readingComment.Id);
 
-            Assert.IsFalse(deleted); // Cant delete as in use
-        }
+        //    Assert.IsFalse(deleted); // Cant delete as in use
+        //}
 
         [Test, Order(12)]
         public void DeleteRange_Test()

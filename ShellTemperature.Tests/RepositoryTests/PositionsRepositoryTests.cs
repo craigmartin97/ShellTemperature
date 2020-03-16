@@ -171,19 +171,19 @@ namespace ShellTemperature.Tests.RepositoryTests
 
         #region Delete
 
-        [Test, Order(8)]
-        public void Delete_InUsePositions_Test()
-        {
-            // First three elements will return false as they are in use by 3 shell temps
-            for (int i = 0; i < devPos.Count - 1; i++)
-            {
-                // Act
-                bool cannotDelete = positionsRepository.Delete(devPos[i].Id);
+        //[Test, Order(8)]
+        //public void Delete_InUsePositions_Test()
+        //{
+        //    // First three elements will return false as they are in use by 3 shell temps
+        //    for (int i = 0; i < devPos.Count - 1; i++)
+        //    {
+        //        // Act
+        //        bool cannotDelete = positionsRepository.Delete(devPos[i].Id);
 
-                // Assert
-                Assert.IsFalse(cannotDelete); // unable to delete as in use
-            }
-        }
+        //        // Assert
+        //        Assert.IsFalse(cannotDelete); // unable to delete as in use
+        //    }
+        //}
 
         [Test, Order(9)]
         public void Delete_NotInUsePositions_Test()

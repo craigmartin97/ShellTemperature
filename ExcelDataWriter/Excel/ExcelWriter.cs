@@ -1,17 +1,18 @@
 ﻿using ExcelDataWriter.Interfaces;
 using ShellTemperature.Data;
+using ShellTemperature.Models;
 
 namespace ExcelDataWriter.Excel
 {
     /// <summary>
     /// 
     /// </summary>
-    public class ExcelWriter : BaseExcelWriter, IExcelWriter<ShellTemp[]>
+    public class ExcelWriter : BaseExcelWriter, IExcelWriter<ShellTemperatureRecord[]>
     {
         public ExcelWriter(IExcelData excelData, IExcelStyler excelStyler) : base(excelData, excelStyler)
         { }
 
-        public void WriteToExcelFile(ShellTemp[] temps)
+        public void WriteToExcelFile(ShellTemperatureRecord[] temps)
         {
             if (_excelData.Worksheet.Dimension == null)
             {
@@ -20,14 +21,16 @@ namespace ExcelDataWriter.Excel
 
             int row = _excelData.Worksheet.Dimension.Start.Row + 1;
 
-            int id = GetIndexOfColumnHeader(nameof(ShellTemp.Id));
-            int temp = GetIndexOfColumnHeader(nameof(ShellTemp.Temperature));
-            int dateTime = GetIndexOfColumnHeader(nameof(ShellTemp.RecordedDateTime));
-            int latitude = GetIndexOfColumnHeader(nameof(ShellTemp.Latitude));
-            int longitude = GetIndexOfColumnHeader(nameof(ShellTemp.Longitude));
-            int device = GetIndexOfColumnHeader(nameof(ShellTemp.Device));
+            int id = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Id));
+            int temp = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Temperature));
+            int dateTime = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.RecordedDateTime));
+            int latitude = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Latitude));
+            int longitude = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Longitude));
+            int device = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Device));
+            int comment = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Comment));
+            int position = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Position));
 
-            foreach (ShellTemp reading in temps)
+            foreach (ShellTemperatureRecord reading in temps)
             {
                 _excelData.Worksheet.Cells[row, id].Value = reading.Id;
                 _excelData.Worksheet.Cells[row, temp].Value = reading.Temperature;
@@ -41,6 +44,12 @@ namespace ExcelDataWriter.Excel
 
                 if (reading.Device != null)
                     _excelData.Worksheet.Cells[row, device].Value = reading.Device.DeviceName;
+
+                if (reading.Comment != null)
+                    _excelData.Worksheet.Cells[row, comment].Value = reading.Comment;
+
+                if (reading.Position != null)
+                    _excelData.Worksheet.Cells[row, position].Value = reading.Position;
 
                 row++;
             }

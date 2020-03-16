@@ -88,6 +88,23 @@
                                         </Label.Style>
                                     </Label>
                                 </StackPanel>
+
+                                <!-- Position -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Position: " FontSize="{StaticResource FontSize16}"/>
+                                    <Label FontSize="{StaticResource FontSize16}">
+                                        <Label.Style>
+                                            <Style TargetType="{x:Type Label}">
+                                                <Setter Property="Content" Value="{Binding Path=Position}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=Position}" Value="{x:Null}">
+                                                        <Setter Property="Content" Value="N/A" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
+                                </StackPanel>
                             </StackPanel>
                         </Grid>
 

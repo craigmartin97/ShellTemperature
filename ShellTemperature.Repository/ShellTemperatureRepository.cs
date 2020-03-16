@@ -47,13 +47,12 @@ namespace ShellTemperature.Repository
             if (items == null)
                 return false;
 
-            //foreach (var shellTemp in items)
-            //{
-            //    ShellTemp dbTemp = _context.ShellTemperatures.Find(shellTemp.Id);
-            //    _context.ShellTemperatures.Remove(dbTemp);
-            //}
+            foreach (var shellTemp in items)
+            {
+                ShellTemp dbTemp = Context.ShellTemperatures.Find(shellTemp.Id);
+                Context.ShellTemperatures.Remove(dbTemp);
+            }
 
-            Context.ShellTemperatures.RemoveRange(items);
             Context.SaveChanges();
             return true;
         }

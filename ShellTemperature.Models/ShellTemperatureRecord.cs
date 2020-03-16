@@ -1,26 +1,30 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using ShellTemperature.Data;
 
 namespace ShellTemperature.Models
 {
     public class ShellTemperatureRecord : ModelBase
     {
+        [Display(Order = 0)]
         public Guid Id { get; set; }
+        [Display(Order = 1)]
         public double Temperature { get; set; }
-
+        [Display(Order = 2)]
         public DateTime RecordedDateTime { get; set; }
-
+        [Display(Order = 3)]
         public float? Latitude { get; set; }
-
+        [Display(Order = 4)]
         public float? Longitude { get; set; }
 
         /// <summary>
         /// The device the temperature was recorded on
         /// </summary>
+        [Display(Order = 5)]
         public DeviceInfo Device { get; set; }
 
         private string _comment;
-
+        [Display(Order = 6)]
         public string Comment
         {
             get => _comment;
@@ -28,6 +32,18 @@ namespace ShellTemperature.Models
             {
                 _comment = value;
                 OnPropertyChanged(nameof(Comment));
+            }
+        }
+
+        private string _position;
+        [Display(Order = 7)]
+        public string Position
+        {
+            get => _position;
+            set
+            {
+                _position = value;
+                OnPropertyChanged(nameof(Position));
             }
         }
 

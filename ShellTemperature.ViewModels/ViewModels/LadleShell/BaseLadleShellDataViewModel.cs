@@ -65,6 +65,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 // Create a new comment if it a new comment
                 ReadingComment readingComment = ReadingCommentRepository.GetItem(res);
+
                 if (readingComment == null)
                 {
                     readingComment = new ReadingComment(res);

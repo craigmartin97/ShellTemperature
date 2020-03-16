@@ -5,7 +5,6 @@ using BluetoothService.Enums;
 using BluetoothService.Models;
 using CustomDialog.Dialogs;
 using CustomDialog.Enums;
-using CustomDialog.Interfaces;
 using CustomDialog.Services;
 using InTheHand.Net.Sockets;
 using Microsoft.Extensions.Configuration;
@@ -402,8 +401,41 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             if (SelectedPosition == null || SelectedDevice == null) // nothing has been entered or selected
                 return;
 
+            if (string.IsNullOrWhiteSpace(SelectedPosition.Position))
+                return;
+
             if (SelectedPosition.Id.Equals(default)) // the Guid is a new entry
                 _positionRepository.Create(SelectedPosition);
+
+            bool foundNull = false;
+            for (int i = SelectedDevice.Temp.Count - 1; i >= 0; i--)
+            {
+                ShellTemperatureRecord record = SelectedDevice.Temp[i];
+                // Has a position
+                if (!string.IsNullOrWhiteSpace(record.Position))
+                {
+                    // If already found a null, then we must have found them all so stop.
+                    if (foundNull)
+                        break;
+
+                    continue;
+                }
+
+                foundNull = true;
+                // Doesn't have a position
+                record.Position = SelectedPosition.Position;
+                ShellTemp shellTemp = new ShellTemp(record.Id, record.Temperature, record.RecordedDateTime,
+                    record.Latitude, record.Longitude, record.Device);
+
+                ShellTemperaturePosition position = new ShellTemperaturePosition
+                {
+                    ShellTemp = shellTemp,
+                    Position = SelectedPosition
+                };
+
+                // Create a new shell temp position for the record
+                _shellTempPositionRepository.Create(position);
+            }
 
             // Set the selected devices current position to the selected position
             SelectedDevice.CurrentDevicePosition = SelectedPosition;
@@ -567,11 +599,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     shellTemp.Temperature)));
 
                 _shellRepo.Create(shellTemp); // create a new record in the database.
-                _temperatureSubject.SetState(shellTemp);
-                record.Id = shellTemp.Id;
 
                 // Create a new shell temperature position
-                StoreShellTempPosition(currentDevice, shellTemp);
+                StoreShellTempPosition(currentDevice, shellTemp, record);
+
+                _temperatureSubject.SetState(record);
+                record.Id = shellTemp.Id;
 
                 currentDevice.State.Message = BLTError.connected + currentDevice.DeviceName;
                 SetConnectionStatus(currentDevice, DeviceConnectionStatus.CONNECTED);
@@ -801,10 +834,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 SelectedDevice = Devices[0];
         }
 
-        private void StoreShellTempPosition(Device currentDevice, ShellTemp shellTemp)
+        private void StoreShellTempPosition(Device currentDevice, ShellTemp shellTemp, ShellTemperatureRecord record)
         {
             if (currentDevice.CurrentDevicePosition != null)
             {
+                record.Position = currentDevice.CurrentDevicePosition.Position;
                 ShellTemperaturePosition shellTemperaturePosition = new ShellTemperaturePosition
                 {
                     ShellTemp = shellTemp,
