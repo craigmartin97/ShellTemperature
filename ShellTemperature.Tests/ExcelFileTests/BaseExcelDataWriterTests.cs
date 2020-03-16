@@ -71,7 +71,7 @@ namespace ShellTemperature.Tests.ExcelFileTests
 
             Random random = new Random();
 
-            ShellTemp[] temps = new ShellTemp[1000];
+            ShellTemperatureRecord[] temps = new ShellTemperatureRecord[1000];
             for (int i = 0; i < temps.Length; i++)
             {
                 float? lat = null;
@@ -88,14 +88,15 @@ namespace ShellTemperature.Tests.ExcelFileTests
                     lat = random.Next(0, 1000);
                     lon = random.Next(0, 4000);
                 }
-                ShellTemp temp = new ShellTemp
+                ShellTemperatureRecord temp = new ShellTemperatureRecord
                 {
                     Id = Guid.NewGuid(),
                     Latitude = lat,
                     Longitude = lon,
                     Temperature = random.Next(20, 80),
                     RecordedDateTime = DateTime.Now,
-                    Device = device
+                    Device = device,
+                    Comment = i.ToString()
                 };
 
                 temps[i] = temp;
@@ -106,7 +107,7 @@ namespace ShellTemperature.Tests.ExcelFileTests
             excelWriter.WriteHeaders(headers);
             excelWriter.WriteToExcelFile(temps);
 
-            Assert.AreEqual(temps.Length, excelData.Worksheet.Dimension.End.Row-1);
+            Assert.AreEqual(temps.Length, excelData.Worksheet.Dimension.End.Row - 1);
 
             excelData.DeleteExcelFile();
             Assert.IsFalse(File.Exists(path));
