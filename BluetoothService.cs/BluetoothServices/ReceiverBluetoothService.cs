@@ -110,7 +110,7 @@ namespace BluetoothService.BluetoothServices
                         .Where(x => !string.IsNullOrWhiteSpace(x))
                         .ToArray();
 
-                    
+
                     if (latestData.Length == 1) // only one value in the array suspect stoppage
                     {
                         if (latestData[0].Equals("-sleep", StringComparison.CurrentCultureIgnoreCase))
@@ -125,7 +125,7 @@ namespace BluetoothService.BluetoothServices
                         // loop through elements after sd card data element
                         DeviceReading sdCardData = ExtractBluetoothData(latestData, sdCardIndex + 1);
 
-                        if(sdCardData.Temperature.HasValue)
+                        if (sdCardData.Temperature.HasValue)
                             deviceReading.SdTemperature = (double)sdCardData.Temperature;
 
                         deviceReading.SdRecordedDateTime = sdCardData.RecordedDateTime;
@@ -152,6 +152,7 @@ namespace BluetoothService.BluetoothServices
 
         public DeviceReading ConnectToDevice(BluetoothDevice device)
         {
+            device.Client.SetPin(device.Configuration.Pin); // Set the pin access for the device to auto connect
             device.Client.Connect(device.Device.DeviceAddress,
                 InTheHand.Net.Bluetooth.BluetoothService.SerialPort);
 

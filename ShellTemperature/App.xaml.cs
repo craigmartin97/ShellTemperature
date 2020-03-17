@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using BluetoothService;
 using BluetoothService.BluetoothServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -137,9 +139,31 @@ namespace ShellTemperature
             services.AddSingleton<IBluetoothFinder, BluetoothFinder>(x =>
             {
                 // get a string array of the devices to search for
-                var devicesToSearchFor = _configuration.GetSection("DevicesToSearchFor")
-                    .GetChildren().Select(dev => dev.Value).ToArray();
-                return new BluetoothFinder(devicesToSearchFor);
+                string[] devicesToSearchFor = _configuration.GetSection("DevicesToSearchFor")
+                    .GetChildren()
+                    .Select(configurationSection => configurationSection.Value)
+                    .ToArray();
+
+                IList<BluetoothConfiguration> bluetoothConfigurations = new List<BluetoothConfiguration>();
+
+                IConfigurationSection[] devicePins = _configuration.GetSection("DevicePins")
+                    .GetChildren().ToArray();
+
+                foreach (var deviceName in devicesToSearchFor)
+                {
+                    IConfigurationSection pin = devicePins.FirstOrDefault(x => x.Key.Equals(deviceName));
+                    if(pin == null)
+                        continue;
+
+                    BluetoothConfiguration config = new BluetoothConfiguration
+                    {
+                        Name = deviceName,
+                        Pin = pin.Value
+                    };
+                    bluetoothConfigurations.Add(config);
+                }
+
+                return new BluetoothFinder(bluetoothConfigurations.ToArray());
             });
 
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();

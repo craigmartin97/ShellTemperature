@@ -7,13 +7,13 @@ namespace BluetoothService.BluetoothServices
 {
     public class BluetoothFinder : IBluetoothFinder
     {
-        private readonly string[] _temperatureDevices;
+        private readonly BluetoothConfiguration[] _temperatureDevices;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="temperatureDevices"></param>
-        public BluetoothFinder(string[] temperatureDevices)
+        public BluetoothFinder(BluetoothConfiguration[] temperatureDevices)
         {
             _temperatureDevices = temperatureDevices;
         }
@@ -25,19 +25,20 @@ namespace BluetoothService.BluetoothServices
         /// <returns></returns>
         public List<BluetoothDevice> GetBluetoothDevices()
         {
-            BluetoothDeviceInfo[] foundDevices = new BluetoothClient().DiscoverDevices(1000, true, true, false, true);
+            BluetoothDeviceInfo[] foundDevices = new BluetoothClient().DiscoverDevices(); //1000, true, true, false, true
             List<BluetoothDevice> devices = new List<BluetoothDevice>();
 
-            foreach (string s in _temperatureDevices)
+            foreach (BluetoothConfiguration s in _temperatureDevices)
             {
-                List<BluetoothDeviceInfo> matches = foundDevices.Where(x => x.DeviceName.ToLower().Equals(s.ToLower())).ToList();
+                List<BluetoothDeviceInfo> matches = foundDevices.Where(x => x.DeviceName.ToLower().Equals(s.Name.ToLower())).ToList();
 
                 foreach (BluetoothDeviceInfo bluetoothDevice in matches)
                 {
                     devices.Add(new BluetoothDevice
                     {
                         Device = bluetoothDevice,
-                        Client = new BluetoothClient()
+                        Client = new BluetoothClient(),
+                        Configuration = s
                     });
                 }
             }
