@@ -2,6 +2,7 @@
 using InTheHand.Net.Sockets;
 using System.Collections.Generic;
 using System.Linq;
+using BluetoothService.Models;
 
 namespace BluetoothService.BluetoothServices
 {

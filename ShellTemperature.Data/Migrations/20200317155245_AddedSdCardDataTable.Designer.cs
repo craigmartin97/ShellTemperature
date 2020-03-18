@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShellTemperature.Data;
 
 namespace ShellTemperature.Data.Migrations
 {
     [DbContext(typeof(ShellDb))]
-    partial class ShellDbModelSnapshot : ModelSnapshot
+    [Migration("20200317155245_AddedSdCardDataTable")]
+    partial class AddedSdCardDataTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,6 +86,7 @@ namespace ShellTemperature.Data.Migrations
                         .HasColumnType("real");
 
                     b.Property<DateTime?>("RecordedDateTime")
+                        .IsRequired()
                         .HasColumnType("datetime2");
 
                     b.Property<double>("Temperature")
@@ -94,27 +97,6 @@ namespace ShellTemperature.Data.Migrations
                     b.HasIndex("DeviceId");
 
                     b.ToTable("SdCardShellTemperatures");
-                });
-
-            modelBuilder.Entity("ShellTemperature.Data.SdCardShellTemperatureComment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CommentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SdCardShellTempId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommentId");
-
-                    b.HasIndex("SdCardShellTempId");
-
-                    b.ToTable("SdCardShellTemperatureComments");
                 });
 
             modelBuilder.Entity("ShellTemperature.Data.ShellTemp", b =>
@@ -192,21 +174,6 @@ namespace ShellTemperature.Data.Migrations
                     b.HasOne("ShellTemperature.Data.DeviceInfo", "Device")
                         .WithMany()
                         .HasForeignKey("DeviceId");
-                });
-
-            modelBuilder.Entity("ShellTemperature.Data.SdCardShellTemperatureComment", b =>
-                {
-                    b.HasOne("ShellTemperature.Data.ReadingComment", "Comment")
-                        .WithMany()
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ShellTemperature.Data.SdCardShellTemp", "SdCardShellTemp")
-                        .WithMany()
-                        .HasForeignKey("SdCardShellTempId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ShellTemperature.Data.ShellTemp", b =>

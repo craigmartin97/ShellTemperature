@@ -28,6 +28,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -38,12 +39,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
     public class LiveShellDataViewModel : BaseLadleShellDataViewModel
     {
         #region Private fields
-
-        /// <summary>
-        /// Repository implementation of the ShellTemperature that allows to Create, Read, Update and Delete.
-        /// </summary>
-        private readonly IRepository<ShellTemp> _shellRepo;
-
         /// <summary>
         /// The device repository to interact with the data store
         /// </summary>
@@ -444,7 +439,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
         #region Constructors
         public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder,
-            IRepository<ShellTemp> repository,
+            IShellTemperatureRepository<ShellTemp> shellTemperatureRepository,
+            IShellTemperatureRepository<SdCardShellTemp> sdCardShellTemperatureRepository,
             IDeviceRepository<DeviceInfo> deviceRepository,
             IConfiguration configuration,
             BluetoothConnectionSubject subject,
@@ -455,10 +451,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             IRepository<ShellTemperatureComment> commentRepository,
             IReadingCommentRepository<ReadingComment> readingCommentRepository,
             IRepository<Positions> positionRepository,
-            IRepository<ShellTemperaturePosition> shellTempPositionRepository) : base(readingCommentRepository, commentRepository)
+            IRepository<ShellTemperaturePosition> shellTempPositionRepository,
+            IRepository<SdCardShellTemperatureComment> sdCardCommentRepository)
+            : base(readingCommentRepository, commentRepository, shellTemperatureRepository,
+                sdCardShellTemperatureRepository, sdCardCommentRepository)
         {
             _bluetoothFinder = bluetoothFinder;
-            _shellRepo = repository;
             _deviceRepository = deviceRepository;
             _subject = subject;
             _temperatureSubject = temperatureSubject;
@@ -528,7 +526,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 {
                     Process process = Process.GetCurrentProcess();
                     _logger.LogDebug("Used - " + process.PrivateMemorySize64);
-                    _logger.LogDebug("Recorded 5000 recordings clearing the data to prevent overflow");
+                    _logger.LogDebug("Recorded X recordings clearing the data to prevent overflow");
 
                     currentDevice.AllTemperatureReadings.Clear();
                     currentDevice.DataPoints.Clear();
@@ -537,18 +535,21 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 DeviceReading receivedData = currentDevice.BluetoothService.ReadData(currentDevice.BluetoothDevice);
 
-                if (receivedData == null)
+                if (receivedData?.LiveDeviceReading == null)
                     throw new NullReferenceException("The sensor returned a null response");
 
-                if (!receivedData.Temperature.HasValue)
+                if (!receivedData.LiveDeviceReading.Temperature.HasValue)
                     throw new NullReferenceException("The temperature was invalid");
 
                 // is the date and time recorded valid?
-                if (!IsDateTimeValid(receivedData.RecordedDateTime))
-                    throw new InvalidOperationException("Invalid Date & Time, Try and Reset the DateTime Module - " +
-                                                        currentDevice.DeviceName);
+                if (receivedData.LiveDeviceReading.RecordedDateTime == null ||
+                    !IsDateTimeValid(receivedData.LiveDeviceReading.RecordedDateTime))
+                {
+                    throw new InvalidOperationException("Invalid Date & Time, Try and Reset " +
+                                                        "the DateTime Module - " + currentDevice.DeviceName);
+                }
 
-                double temperature = (double)receivedData.Temperature;
+                double temperature = (double)receivedData.LiveDeviceReading.Temperature;
                 currentDevice.AllTemperatureReadings.Add(temperature);
 
                 // check if outlier
@@ -558,33 +559,27 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 if (isOutlier) // value is outlier cannot be added
                     return;
 
-                // format the datetime, so if its invalid it is corrected
-                // FormatDateTime(currentDevice, receivedData);
-
-                currentDevice.CurrentData = temperature;
-
                 // get the device from the datastore collection
                 DeviceInfo device = _datastoreDevices.FirstOrDefault(x =>
                     x.DeviceAddress.Equals(currentDevice.BluetoothDevice.Device.DeviceAddress.ToString()));
 
                 // create new shell obj for database submission
-                ShellTemp shellTemp = new ShellTemp(temperature, receivedData.RecordedDateTime,
-                    receivedData.Latitude, receivedData.Longitude, device);
+                ShellTemp shellTemp = new ShellTemp(temperature, (DateTime)receivedData.LiveDeviceReading.RecordedDateTime,
+                    receivedData.LiveDeviceReading.Latitude, receivedData.LiveDeviceReading.Longitude, device);
 
-                if (receivedData.HasSdCardData)
+                // Has SD card data
+                if (receivedData.SdCardDeviceReading?.Temperature != null)
                 {
-                    if (receivedData.SdTemperature.HasValue)
-                    {
-                        ShellTemp sdShellTemp = new ShellTemp((double)receivedData.SdTemperature, receivedData.SdRecordedDateTime,
-                        receivedData.SdLatitude, receivedData.SdLongitude, device);
-                        _shellRepo.Create(sdShellTemp);
-                    }
+                    SdCardShellTemp sdShellTemp = new SdCardShellTemp((double)receivedData.SdCardDeviceReading.Temperature,
+                        receivedData.SdCardDeviceReading.RecordedDateTime,
+                        receivedData.SdCardDeviceReading.Latitude, receivedData.SdCardDeviceReading.Longitude, device);
+                    SdCardShellTemperatureRepository.Create(sdShellTemp);
                 }
 
                 if (SelectedDevice == currentDevice)
                 {
-                    LatestLatitude = receivedData.Latitude == null ? "N/A" : receivedData.Latitude.ToString();
-                    LatestLongitude = receivedData.Longitude == null ? "N/A" : receivedData.Longitude.ToString();
+                    LatestLatitude = receivedData.LiveDeviceReading.Latitude == null ? "N/A" : receivedData.LiveDeviceReading.Latitude.ToString();
+                    LatestLongitude = receivedData.LiveDeviceReading.Longitude == null ? "N/A" : receivedData.LiveDeviceReading.Longitude.ToString();
                 }
 
                 ShellTemperatureRecord record = new ShellTemperatureRecord
@@ -598,7 +593,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 currentDevice.DataPoints.Add((new DataPoint(DateTimeAxis.ToDouble(shellTemp.RecordedDateTime),
                     shellTemp.Temperature)));
 
-                _shellRepo.Create(shellTemp); // create a new record in the database.
+                ShellTemperatureRepository.Create(shellTemp); // create a new record in the database.
 
                 // Create a new shell temperature position
                 StoreShellTempPosition(currentDevice, shellTemp, record);
@@ -772,7 +767,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         /// <param name="currentDateTime">The date and time to validate</param>
         /// <returns>Returns true if the datetime is valid</returns>
-        private bool IsDateTimeValid(DateTime currentDateTime)
+        private bool IsDateTimeValid(DateTime? currentDateTime)
         {
             // problem with setting time with DS3231 module as gets time at compile 
             DateTime minDateTimeRange = DateTime.Now.AddMinutes(-5);

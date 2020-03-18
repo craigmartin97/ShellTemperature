@@ -14,8 +14,6 @@ namespace ShellTemperature.Models
     {
         public DispatcherTimer Timer { get; set; }
 
-        public double CurrentData { get; set; }
-
         private ObservableCollection<ShellTemperatureRecord> _temp;
 
         /// <summary>
@@ -94,7 +92,6 @@ namespace ShellTemperature.Models
         public Device(BluetoothDevice device, string deviceName)
         {
             Timer = new DispatcherTimer();
-            CurrentData = 0;
             DataPoints = new ObservableCollection<DataPoint>();
             Temp = new ObservableCollection<ShellTemperatureRecord>();
             BluetoothService = new ReceiverBluetoothService();

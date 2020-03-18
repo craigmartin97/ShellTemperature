@@ -1,4 +1,4 @@
-﻿namespace BluetoothService
+﻿namespace BluetoothService.Models
 {
     public class BluetoothConfiguration
     {

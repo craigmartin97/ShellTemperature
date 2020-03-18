@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Windows;
-using BluetoothService;
-using BluetoothService.BluetoothServices;
+﻿using BluetoothService.BluetoothServices;
+using BluetoothService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +19,11 @@ using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 using ShellTemperature.Views;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows;
 
 namespace ShellTemperature
 {
@@ -173,6 +173,8 @@ namespace ShellTemperature
             services.AddScoped<IReadingCommentRepository<ReadingComment>, ReadingCommentRepository>();
             services.AddScoped<IRepository<Positions>, PositionsRepository>();
             services.AddScoped<IRepository<ShellTemperaturePosition>, ShellTemperaturePositionRepository>();
+            services.AddScoped<IShellTemperatureRepository<SdCardShellTemp>, SdCardShellTemperatureRepository>();
+            services.AddScoped<IRepository<SdCardShellTemperatureComment>, SdCardShellTemperatureCommentRepository>();
 
             // add the outlier detector
             services.AddSingleton<OutlierDetector>();

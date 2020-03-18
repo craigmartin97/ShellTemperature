@@ -116,11 +116,10 @@ namespace ShellTemperature.Tests.RepositoryTests
                     Device = null
                 };
 
-                // Act
-                bool created = temperatureRepository.Create(temp);
-
-                // Assert
-                Assert.IsFalse(created);
+                Assert.Throws<ArgumentNullException>(delegate
+                {
+                    temperatureRepository.Create(temp);
+                });
             }
         }
 

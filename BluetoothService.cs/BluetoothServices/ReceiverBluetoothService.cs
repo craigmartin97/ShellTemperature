@@ -110,7 +110,6 @@ namespace BluetoothService.BluetoothServices
                         .Where(x => !string.IsNullOrWhiteSpace(x))
                         .ToArray();
 
-
                     if (latestData.Length == 1) // only one value in the array suspect stoppage
                     {
                         if (latestData[0].Equals("-sleep", StringComparison.CurrentCultureIgnoreCase))
@@ -123,22 +122,12 @@ namespace BluetoothService.BluetoothServices
                     if (sdCardIndex > -1) // has sd card data
                     {
                         // loop through elements after sd card data element
-                        DeviceReading sdCardData = ExtractBluetoothData(latestData, sdCardIndex + 1);
-
-                        if (sdCardData.Temperature.HasValue)
-                            deviceReading.SdTemperature = (double)sdCardData.Temperature;
-
-                        deviceReading.SdRecordedDateTime = sdCardData.RecordedDateTime;
-                        deviceReading.SdLatitude = sdCardData.Latitude;
-                        deviceReading.SdLongitude = sdCardData.Longitude;
-                        deviceReading.HasSdCardData = true;
+                        SdCardDeviceReading sdCardData = ExtractBluetoothData(latestData, sdCardIndex + 1);
+                        deviceReading.SdCardDeviceReading = sdCardData;
                     }
 
-                    DeviceReading liveDeviceReading = ExtractBluetoothData(latestData, 0);
-                    deviceReading.Temperature = liveDeviceReading.Temperature;
-                    deviceReading.RecordedDateTime = liveDeviceReading.RecordedDateTime;
-                    deviceReading.Latitude = liveDeviceReading.Latitude;
-                    deviceReading.Longitude = liveDeviceReading.Longitude;
+                    LiveDeviceReading liveDeviceReading = ExtractBluetoothData(latestData);
+                    deviceReading.LiveDeviceReading = liveDeviceReading;
 
                     return deviceReading;
                 }
@@ -186,10 +175,61 @@ namespace BluetoothService.BluetoothServices
 
         #region Extract Data
 
-        private DeviceReading ExtractBluetoothData(string[] latestData, int index)
+        private LiveDeviceReading ExtractBluetoothData(string[] latestData)
         {
-            DeviceReading deviceReading = new DeviceReading();
-            bool hasDateTime = false;
+            LiveDeviceReading liveDeviceReading = new LiveDeviceReading();
+
+            for (int i = 0; i < latestData.Length - 1; i++)
+            {
+                // has next element
+                if (i + 1 > latestData.Length)
+                    break;
+
+                string data = latestData[i].Trim();
+                // sometimes its stupid and trims the leading T off :/
+                if (data.Equals("-temp", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    bool isDouble = double.TryParse(latestData[i + 1], out double temp);
+                    if (isDouble)
+                        liveDeviceReading.Temperature = temp;
+                }
+                else if (data.Equals("-datetime", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    if (i + 2 > latestData.Length)
+                        break;
+
+                    string stringDateTime = latestData[i + 1] + " " + latestData[i + 2];
+                    bool isDateTime = DateTime.TryParse(stringDateTime, out DateTime dateTime);
+                    if (isDateTime)
+                        liveDeviceReading.RecordedDateTime = dateTime;
+                }
+                else if (data.Equals("-lat", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    bool isFloat = float.TryParse(latestData[i + 1], out float latitude);
+                    if (isFloat)
+                        liveDeviceReading.Latitude = latitude;
+                }
+                else if (data.Equals("-long", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    bool isFloat = float.TryParse(latestData[i + 1], out float longitude);
+                    if (isFloat)
+                        liveDeviceReading.Longitude = longitude;
+                }
+                // Hit the sd card tag so stop as anything after is o valid
+                else if (data.Equals("-sdCardData", StringComparison.CurrentCultureIgnoreCase))
+                    break;
+            }
+
+            // no date time then set to current
+            if (liveDeviceReading.RecordedDateTime == null)
+                liveDeviceReading.RecordedDateTime = DateTime.Now;
+
+            return liveDeviceReading;
+        }
+
+        private SdCardDeviceReading ExtractBluetoothData(string[] latestData, int index)
+        {
+            SdCardDeviceReading liveDeviceReading = new SdCardDeviceReading();
 
             for (int i = index; i < latestData.Length - 1; i++)
             {
@@ -203,7 +243,7 @@ namespace BluetoothService.BluetoothServices
                 {
                     bool isDouble = double.TryParse(latestData[i + 1], out double temp);
                     if (isDouble)
-                        deviceReading.Temperature = temp;
+                        liveDeviceReading.Temperature = temp;
                 }
                 else if (data.Equals("-datetime", StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -213,32 +253,23 @@ namespace BluetoothService.BluetoothServices
                     string stringDateTime = latestData[i + 1] + " " + latestData[i + 2];
                     bool isDateTime = DateTime.TryParse(stringDateTime, out DateTime dateTime);
                     if (isDateTime)
-                    {
-                        deviceReading.RecordedDateTime = dateTime;
-                        hasDateTime = true;
-                    }
+                        liveDeviceReading.RecordedDateTime = dateTime;
                 }
                 else if (data.Equals("-lat", StringComparison.CurrentCultureIgnoreCase))
                 {
                     bool isFloat = float.TryParse(latestData[i + 1], out float latitude);
                     if (isFloat)
-                        deviceReading.Latitude = latitude;
+                        liveDeviceReading.Latitude = latitude;
                 }
                 else if (data.Equals("-long", StringComparison.CurrentCultureIgnoreCase))
                 {
                     bool isFloat = float.TryParse(latestData[i + 1], out float longitude);
                     if (isFloat)
-                        deviceReading.Longitude = longitude;
+                        liveDeviceReading.Longitude = longitude;
                 }
-                else if (data.Equals("-sdCardData", StringComparison.CurrentCultureIgnoreCase))
-                    break;
             }
 
-            // no date time then set to current
-            if (!hasDateTime)
-                deviceReading.RecordedDateTime = DateTime.Now;
-
-            return deviceReading;
+            return liveDeviceReading;
         }
         #endregion
     }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShellTemperature.Data;
 
 namespace ShellTemperature.Data.Migrations
 {
     [DbContext(typeof(ShellDb))]
-    partial class ShellDbModelSnapshot : ModelSnapshot
+    [Migration("20200317165203_AddedSdCardShellTempsCommentsTable")]
+    partial class AddedSdCardShellTempsCommentsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,14 +107,14 @@ namespace ShellTemperature.Data.Migrations
                     b.Property<Guid>("CommentId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("SdCardShellTempId")
+                    b.Property<Guid>("ShellTempId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CommentId");
 
-                    b.HasIndex("SdCardShellTempId");
+                    b.HasIndex("ShellTempId");
 
                     b.ToTable("SdCardShellTemperatureComments");
                 });
@@ -202,9 +204,9 @@ namespace ShellTemperature.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShellTemperature.Data.SdCardShellTemp", "SdCardShellTemp")
+                    b.HasOne("ShellTemperature.Data.SdCardShellTemp", "ShellTemp")
                         .WithMany()
-                        .HasForeignKey("SdCardShellTempId")
+                        .HasForeignKey("ShellTempId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

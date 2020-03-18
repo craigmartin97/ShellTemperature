@@ -1,4 +1,5 @@
-﻿using InTheHand.Net.Sockets;
+﻿using BluetoothService.Models;
+using InTheHand.Net.Sockets;
 
 namespace BluetoothService.cs.BluetoothServices
 {

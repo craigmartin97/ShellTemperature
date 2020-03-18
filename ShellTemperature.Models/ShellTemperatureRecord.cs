@@ -47,6 +47,12 @@ namespace ShellTemperature.Models
             }
         }
 
+        /// <summary>
+        /// Property indicating if the record has come from the sd card or live data
+        /// </summary>
+        [Display(Order = 8)]
+        public bool IsFromSdCard { get; set; }
+
         public ShellTemperatureRecord()
         {
 
@@ -68,6 +74,20 @@ namespace ShellTemperature.Models
         : this(id, temperature, recordedDateTime, latitude, longitude, deviceInfo)
         {
             Comment = comment;
+        }
+
+        public ShellTemperatureRecord(Guid id, double temperature, DateTime recordedDateTime, float?
+            latitude, float? longitude, DeviceInfo deviceInfo, bool isFromSdCard)
+            : this(id, temperature, recordedDateTime, latitude, longitude, deviceInfo)
+        {
+            IsFromSdCard = isFromSdCard;
+        }
+
+        public ShellTemperatureRecord(Guid id, double temperature, DateTime recordedDateTime, float?
+            latitude, float? longitude, DeviceInfo deviceInfo, string comment, bool isFromSdCard)
+            : this(id, temperature, recordedDateTime, latitude, longitude, deviceInfo, comment)
+        {
+            IsFromSdCard = isFromSdCard;
         }
     }
 }

@@ -29,6 +29,7 @@ namespace ExcelDataWriter.Excel
             int device = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Device));
             int comment = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Comment));
             int position = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.Position));
+            int isFromSdCard = GetIndexOfColumnHeader(nameof(ShellTemperatureRecord.IsFromSdCard));
 
             foreach (ShellTemperatureRecord reading in temps)
             {
@@ -50,6 +51,9 @@ namespace ExcelDataWriter.Excel
 
                 if (reading.Position != null)
                     _excelData.Worksheet.Cells[row, position].Value = reading.Position;
+
+                _excelData.Worksheet.Cells[row, isFromSdCard].Value = 
+                    reading.IsFromSdCard ? "True" : "False";
 
                 row++;
             }

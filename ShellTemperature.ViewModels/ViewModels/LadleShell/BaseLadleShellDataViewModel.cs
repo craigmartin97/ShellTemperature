@@ -20,14 +20,27 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         protected readonly IReadingCommentRepository<ReadingComment> ReadingCommentRepository;
 
         protected readonly IRepository<ShellTemperatureComment> CommentRepository;
+
+        protected readonly IShellTemperatureRepository<ShellTemp> ShellTemperatureRepository;
+
+        protected readonly IShellTemperatureRepository<SdCardShellTemp> SdCardShellTemperatureRepository;
+
+        protected readonly IRepository<SdCardShellTemperatureComment> SdCardCommentRepository;
         #endregion
 
         #region Constructors
-        protected BaseLadleShellDataViewModel(IReadingCommentRepository<ReadingComment> readingCommentRepository,
-            IRepository<ShellTemperatureComment> commentRepository)
+        protected BaseLadleShellDataViewModel(
+            IReadingCommentRepository<ReadingComment> readingCommentRepository,
+            IRepository<ShellTemperatureComment> commentRepository,
+            IShellTemperatureRepository<ShellTemp> shellTemperatureRepository,
+            IShellTemperatureRepository<SdCardShellTemp> sdCardShellTemperatureRepository,
+            IRepository<SdCardShellTemperatureComment> sdCardCommentRepository)
         {
             ReadingCommentRepository = readingCommentRepository;
             CommentRepository = commentRepository;
+            ShellTemperatureRepository = shellTemperatureRepository;
+            SdCardShellTemperatureRepository = sdCardShellTemperatureRepository;
+            SdCardCommentRepository = sdCardCommentRepository;
         }
         #endregion
 
@@ -59,10 +72,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 res = res.Trim(); // Format the users response and remove invalid chars
 
-                // Create a ShellTemp object with the passed data from the view
-                ShellTemp temp = new ShellTemp(shellTempRecord.Id, shellTempRecord.Temperature,
-                shellTempRecord.RecordedDateTime, shellTempRecord.Latitude, shellTempRecord.Longitude, shellTempRecord.Device);
-
                 // Create a new comment if it a new comment
                 ReadingComment readingComment = ReadingCommentRepository.GetItem(res);
 
@@ -72,9 +81,28 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     ReadingCommentRepository.Create(readingComment);
                 }
 
-                // Save the comment against the temperature recording
-                ShellTemperatureComment comment = new ShellTemperatureComment(readingComment, temp);
-                CommentRepository.Create(comment);
+                // Is live data
+                if (!shellTempRecord.IsFromSdCard)
+                {
+                    // Create a ShellTemp object with the passed data from the view
+                    ShellTemp temp = new ShellTemp(shellTempRecord.Id, shellTempRecord.Temperature,
+                        shellTempRecord.RecordedDateTime, shellTempRecord.Latitude, shellTempRecord.Longitude, shellTempRecord.Device);
+
+                    // Save the comment against the temperature recording
+                    ShellTemperatureComment comment = new ShellTemperatureComment(readingComment, temp);
+                    CommentRepository.Create(comment);
+                }
+                // Is from the Sd card
+                else
+                {
+                    // Create a ShellTemp object with the passed data from the view
+                    SdCardShellTemp temp = new SdCardShellTemp(shellTempRecord.Id, shellTempRecord.Temperature,
+                        shellTempRecord.RecordedDateTime, shellTempRecord.Latitude, shellTempRecord.Longitude, shellTempRecord.Device);
+
+                    // Save the comment against the temperature recording
+                    SdCardShellTemperatureComment comment = new SdCardShellTemperatureComment(readingComment, temp);
+                    SdCardCommentRepository.Create(comment);
+                }
 
                 shellTempRecord.Comment = res;
             }

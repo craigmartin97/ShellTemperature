@@ -25,8 +25,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
     public class ShellHistoryViewModel : TemperatureNotifierViewModel
     {
         #region Fields
-        private readonly IShellTemperatureRepository<ShellTemp> _shellTempRepo;
-
         /// <summary>
         /// Device repository to get information about past used devices
         /// </summary>
@@ -37,7 +35,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         private readonly TemperatureSubject _temperatureSubject;
 
-        private readonly IRepository<ShellTemperaturePosition> _shellTemperaturePositionnRepository;
+        /// <summary>
+        /// Shell Temperature repository position
+        /// </summary>
+        private readonly IRepository<ShellTemperaturePosition> _shellTemperaturePositionRepository;
         #endregion
 
         #region Properties
@@ -170,10 +171,24 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 ShellTemperatureRecord[] shellTemperatureRecords = selectedItems as ShellTemperatureRecord[]
                                                                    ?? selectedItems.ToArray();
 
-                IEnumerable<ShellTemp> selectedShellTemps = shellTemperatureRecords.Select(x
-                    => new ShellTemp(x.Id, x.Temperature, x.RecordedDateTime, x.Latitude, x.Longitude, x.Device));
+                // Get the selected live shell temps
+                ShellTemp[] selectedShellTemps = shellTemperatureRecords
+                    .Where(sdCardData => !sdCardData.IsFromSdCard)
+                    .Select(x
+                    => new ShellTemp(x.Id, x.Temperature, x.RecordedDateTime, x.Latitude, x.Longitude, x.Device))
+                    .ToArray();
 
-                _shellTempRepo.DeleteRange(selectedShellTemps);
+                // Get the selected sd card temps
+                SdCardShellTemp[] selectedSdCardShellTemps = shellTemperatureRecords
+                    .Where(sdCardData => sdCardData.IsFromSdCard)
+                    .Select(x
+                        => new SdCardShellTemp(x.Id, x.Temperature, x.RecordedDateTime, x.Latitude, x.Longitude, x.Device))
+                    .ToArray();
+
+                if (selectedShellTemps.Length > 0)
+                    ShellTemperatureRepository.DeleteRange(selectedShellTemps);
+                if (selectedSdCardShellTemps.Length > 0)
+                    SdCardShellTemperatureRepository.DeleteRange(selectedSdCardShellTemps);
 
                 SetBluetoothData();
                 SetDataPoints();
@@ -186,67 +201,12 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// to an excel spreadsheet for further analysis.
         /// </summary>
         public RelayCommand SendToExcelCommand =>
-        new RelayCommand(param =>
+        new RelayCommand(delegate
         {
-            // get all the temperatures between the two dates for all devices
-            ShellTemp[] tempData = _shellTempRepo.GetShellTemperatureData(Start, End).ToArray();
+            ShellTemperatureRecord[] shellTemperatureRecords = GetShellTemperatureRecords();
 
-            if (!tempData.Any())
+            if(shellTemperatureRecords == null || !shellTemperatureRecords.Any())
                 return;
-
-            // Valid temperature comments
-            ShellTemperatureComment[] temperatureComments = CommentRepository.GetAll()
-                .Where(x => x.ShellTemp.RecordedDateTime >= Start
-                            && x.ShellTemp.RecordedDateTime <= End)
-                .ToArray();
-
-            // Valid positions 
-            ShellTemperaturePosition[] positions = _shellTemperaturePositionnRepository.GetAll()
-                .Where(x => x.ShellTemp.RecordedDateTime >= Start
-                            && x.ShellTemp.RecordedDateTime <= End)
-                .ToArray();
-
-            ShellTemperatureRecord[] shellTemperatureRecords = new ShellTemperatureRecord[tempData.Length];
-            for (int i = 0; i < tempData.Length; i++)
-            {
-                ShellTemp shellTemp = tempData[i];
-                ShellTemperatureRecord record = new ShellTemperatureRecord
-                (
-                    shellTemp.Id, shellTemp.Temperature, shellTemp.RecordedDateTime, shellTemp.Latitude, shellTemp.Longitude, shellTemp.Device
-                );
-
-                ShellTemperatureComment comment = temperatureComments.FirstOrDefault(x => x.ShellTemp.Id == shellTemp.Id);
-                ShellTemperaturePosition position = positions.FirstOrDefault(x => x.ShellTemp.Id == shellTemp.Id);
-
-                if (comment?.Comment != null)
-                    record.Comment = comment.Comment.Comment;
-
-                if (position?.Position != null)
-                    record.Position = position.Position.Position;
-
-
-                shellTemperatureRecords[i] = record;
-            }
-
-            shellTemperatureRecords = shellTemperatureRecords.OrderBy(x => x.RecordedDateTime).ToArray();
-
-            // get the properties to be able to write the header information into the excel file
-            ShellTemperatureRecord temp = shellTemperatureRecords[0];
-
-            // Get the properties for the type
-            PropertyInfo[] properties = temp.GetType().GetProperties().ToArray();
-            string[] headers = new string[properties.Length];
-
-            // Extract the order and name and insert into array at correct position
-            foreach (var property in properties)
-            {
-                Attribute[] t = property.GetCustomAttributes(typeof(DisplayAttribute)).ToArray();
-                if (t.Length != 1) continue;
-
-                // Get the order for the property
-                int order = ((DisplayAttribute)t[0]).Order;
-                headers[order] = property.Name;
-            }
 
             // path and sheet info for the excel file
             string path = Path.GetTempPath() + "ShellTemperatures.xlsx";
@@ -256,31 +216,36 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             excelData.CreateExcelWorkSheet(path, worksheetName);
             excelData.OpenExcelFile(path, worksheetName);
 
-            IExcelStyler excelStyler = new ExcelStyler(excelData);
+            IExcelStyler excelStyle = new ExcelStyler(excelData);
 
-            ExcelWriter excelWriter = new ExcelWriter(excelData, excelStyler);
+            ExcelWriter excelWriter = new ExcelWriter(excelData, excelStyle);
+
+            // Get the properties for the type
+            string[] headers = GetHeaders(shellTemperatureRecords[0]);
 
             excelWriter.WriteHeaders(headers);
             excelWriter.WriteToExcelFile(shellTemperatureRecords);
 
             excelWriter.OpenFile(path);
-
         });
         #endregion
 
         #region Constructors
-        public ShellHistoryViewModel(IShellTemperatureRepository<ShellTemp> shellTemperature,
+        public ShellHistoryViewModel(
+             IShellTemperatureRepository<ShellTemp> shellTemperature,
+             IShellTemperatureRepository<SdCardShellTemp> sdCardShellTemperatureRepository,
              IDeviceRepository<DeviceInfo> deviceRepository,
              TemperatureSubject subject,
              IRepository<ShellTemperaturePosition> shellTemperaturePositionRepository,
              IReadingCommentRepository<ReadingComment> readingCommentRepository,
-             IRepository<ShellTemperatureComment> commentRepository)
-            : base(readingCommentRepository, commentRepository)
+             IRepository<ShellTemperatureComment> commentRepository,
+             IRepository<SdCardShellTemperatureComment> sdCardCommentRepository)
+            : base(readingCommentRepository, commentRepository, shellTemperature, sdCardShellTemperatureRepository,
+                sdCardCommentRepository)
         {
-            _shellTempRepo = shellTemperature;
             _deviceRepository = deviceRepository;
             _temperatureSubject = subject;
-            _shellTemperaturePositionnRepository = shellTemperaturePositionRepository;
+            _shellTemperaturePositionRepository = shellTemperaturePositionRepository;
 
             _temperatureSubject.Attach(this);
 
@@ -299,52 +264,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private void SetBluetoothData()
         {
             BluetoothData.Clear();
+
             if (CurrentDeviceInfo == null) return;
 
-            IEnumerable<ShellTemp> tempData = _shellTempRepo.GetShellTemperatureData(Start, End,
-                CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress);
+            ShellTemperatureRecord[] records = GetShellTemperatureRecords();
 
-            ShellTemperatureComment[] dataComments = CommentRepository.GetAll().ToArray();
+            if (records == null || !records.Any()) return;
 
-            ShellTemperaturePosition[] positions = _shellTemperaturePositionnRepository.GetAll().ToArray();
-
-            // Create new temp list of records
-            List<ShellTemperatureRecord> records = new List<ShellTemperatureRecord>();
-
-            if (dataComments.Count() >= 0) // has comments?
-            {
-                // For ever item in ShellTemps, find and match the comment that may have been made
-                foreach (ShellTemp shellTemp in tempData)
-                {
-                    ShellTemperatureRecord shellTemperatureRecord =
-                        new ShellTemperatureRecord(shellTemp.Id, shellTemp.Temperature, shellTemp.RecordedDateTime,
-                            shellTemp.Latitude, shellTemp.Longitude, shellTemp.Device);
-
-                    // Find the comment for the shell temperature
-                    ShellTemperatureComment temp =
-                        dataComments.FirstOrDefault(x => x.ShellTemp.Id == shellTemperatureRecord.Id);
-
-                    ShellTemperaturePosition position =
-                        positions.FirstOrDefault(x => x.ShellTemp.Id == shellTemperatureRecord.Id);
-
-                    if (temp?.Comment != null)
-                        shellTemperatureRecord.Comment = temp.Comment.Comment;
-                    if (position?.Position != null)
-                        shellTemperatureRecord.Position = position.Position.Position;
-
-                    records.Add(shellTemperatureRecord);
-                }
-            }
-            else // no comments so skip additional checks / joins
-            {
-                records.AddRange(tempData.Select(x =>
-                    new ShellTemperatureRecord(x.Id, x.Temperature, x.RecordedDateTime, x.Latitude, x.Longitude,
-                        x.Device)));
-            }
-
-            if (records.Count == 0) return;
-
-            records = records.OrderBy(time => time.RecordedDateTime).ToList();
+            records = records.OrderBy(time => time.RecordedDateTime).ToArray();
 
             BluetoothData = new ObservableCollection<ShellTemperatureRecord>(records);
         }
@@ -377,6 +304,105 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             Devices = new ObservableCollection<DeviceInfo>(_deviceRepository.GetAll());
             if (Devices.Count > 0)
                 CurrentDeviceInfo = Devices[0];
+        }
+
+        /// <summary>
+        /// For a given shell temperature record property
+        /// extract the name of the property in a correctly
+        /// formatted order
+        /// </summary>
+        /// <param name="record">Shell temperature record</param>
+        /// <returns>Return string array of column headers in formatted order</returns>
+        private string[] GetHeaders(ShellTemperatureRecord record)
+        {
+            // Get the properties for the type
+            PropertyInfo[] properties = record.GetType().GetProperties().ToArray();
+            string[] headers = new string[properties.Length];
+
+            // Extract the order and name and insert into array at correct position
+            foreach (var property in properties)
+            {
+                Attribute[] t = property.GetCustomAttributes(typeof(DisplayAttribute)).ToArray();
+                if (t.Length != 1) continue;
+
+                // Get the order for the property
+                int order = ((DisplayAttribute)t[0]).Order;
+                headers[order] = property.Name;
+            }
+
+            return headers;
+        }
+
+        /// <summary>
+        /// Get all the live and sd card shell temperatures along with
+        /// the comments and positions
+        /// </summary>
+        /// <returns></returns>
+        private ShellTemperatureRecord[] GetShellTemperatureRecords()
+        {
+            // Get live data and live data comments and positions
+            ShellTemp[] tempData = ShellTemperatureRepository.GetShellTemperatureData(Start, End,
+                CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress).ToArray();
+
+            ShellTemperatureComment[] liveDataComments = CommentRepository.GetAll()
+                .Where(x => x.ShellTemp.RecordedDateTime >= Start
+                            && x.ShellTemp.RecordedDateTime <= End)
+                .ToArray();
+
+            ShellTemperaturePosition[] positions = _shellTemperaturePositionRepository.GetAll().ToArray();
+
+            // Get SD Card data and SD card data comments
+            SdCardShellTemp[] sdCardShellTemps = SdCardShellTemperatureRepository.GetShellTemperatureData(Start, End,
+                CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress).ToArray();
+
+            SdCardShellTemperatureComment[] sdCardComments = SdCardCommentRepository.GetAll().ToArray();
+
+            // Create new temp list of records
+            List<ShellTemperatureRecord> records = new List<ShellTemperatureRecord>();
+
+            // For ever item in ShellTemps, find and match the comment that may have been made
+            foreach (ShellTemp shellTemp in tempData)
+            {
+                ShellTemperatureRecord shellTemperatureRecord =
+                    new ShellTemperatureRecord(shellTemp.Id, shellTemp.Temperature, shellTemp.RecordedDateTime,
+                        shellTemp.Latitude, shellTemp.Longitude, shellTemp.Device, false); // Not from SD
+
+                // Find the comment for the shell temperature
+                ShellTemperatureComment comment =
+                    liveDataComments.FirstOrDefault(x => x.ShellTemp.Id == shellTemperatureRecord.Id);
+
+                ShellTemperaturePosition position =
+                    positions.FirstOrDefault(x => x.ShellTemp.Id == shellTemperatureRecord.Id);
+
+                if (comment?.Comment != null)
+                    shellTemperatureRecord.Comment = comment.Comment.Comment;
+                if (position?.Position != null)
+                    shellTemperatureRecord.Position = position.Position.Position;
+
+                records.Add(shellTemperatureRecord);
+            }
+
+            // Find the sd card data shell temps
+            foreach (SdCardShellTemp shellTemp in sdCardShellTemps)
+            {
+                if (!shellTemp.RecordedDateTime.HasValue) // Doesn't have DateTime, skip
+                    continue;
+
+                ShellTemperatureRecord shellTemperatureRecord =
+                    new ShellTemperatureRecord(shellTemp.Id, shellTemp.Temperature, (DateTime)shellTemp.RecordedDateTime,
+                        shellTemp.Latitude, shellTemp.Longitude, shellTemp.Device, true); // This is from SD
+
+                // Find the comment for the sd card shell temperature
+                SdCardShellTemperatureComment temp =
+                    sdCardComments.FirstOrDefault(x => x.SdCardShellTemp.Id == shellTemperatureRecord.Id);
+
+                if (temp?.Comment != null)
+                    shellTemperatureRecord.Comment = temp.Comment.Comment;
+
+                records.Add(shellTemperatureRecord);
+            }
+
+            return records.ToArray();
         }
         #endregion
 

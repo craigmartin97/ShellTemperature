@@ -6,12 +6,26 @@
              xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    
-    <oxy:Plot Title="Ladle Shell Temperature">
+
+    <oxy:Plot Title="Live Ladle Shell Temperature">
+        <oxy:Plot.Axes>
+            <oxy:DateTimeAxis 
+                Title="Recorded Date Time"
+                Position="Bottom"
+                MajorGridlineStyle="Solid"
+                FontSize="{StaticResource FontSize14}" />
+
+            <oxy:LinearAxis 
+                Title="Temperature (°C)"
+                Position="Left"
+                MajorGridlineStyle="Solid"
+                FontSize="{StaticResource FontSize14}"
+                TicklineColor="{StaticResource NavyBlue}"
+                TickStyle="Outside" />
+        </oxy:Plot.Axes>
         <oxy:Plot.Series>
-            <oxy:LineSeries ItemsSource="{Binding SelectedDevice.DataPoints}">
-            </oxy:LineSeries>
+            <oxy:LineSeries ItemsSource="{Binding SelectedDevice.DataPoints}" Color="{StaticResource NavyBlue}" />
         </oxy:Plot.Series>
     </oxy:Plot>
-    
+
 </UserControl>

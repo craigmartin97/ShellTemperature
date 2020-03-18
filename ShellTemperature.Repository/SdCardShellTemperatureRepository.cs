@@ -7,11 +7,11 @@ using System.Linq;
 
 namespace ShellTemperature.Repository
 {
-    public class ShellTemperatureRepository : BaseRepository, IShellTemperatureRepository<ShellTemp>
+    public class SdCardShellTemperatureRepository : BaseRepository, IShellTemperatureRepository<SdCardShellTemp>
     {
-        public ShellTemperatureRepository(ShellDb context) : base(context) { }
+        public SdCardShellTemperatureRepository(ShellDb context) : base(context) { }
 
-        public bool Create(ShellTemp model)
+        public bool Create(SdCardShellTemp model)
         {
             if (model?.Device == null)
                 throw new ArgumentNullException(nameof(model), "The model supplied was invalid");
@@ -25,45 +25,41 @@ namespace ShellTemperature.Repository
             return true;
         }
 
-        /// <summary>
-        /// Get all the shell temperature data
-        /// </summary>
-        /// <returns>Returns an enumerable collection of all the temperature data</returns>
-        public IEnumerable<ShellTemp> GetAll()
-        => Context.ShellTemperatures.Include(dev => dev.Device);
+        public IEnumerable<SdCardShellTemp> GetAll()
+            => Context.SdCardShellTemperatures.Include(x => x.Device);
 
         public bool Delete(Guid id)
         {
-            ShellTemp shellTemp = Context.ShellTemperatures.Find(id);
+            SdCardShellTemp shellTemp = Context.SdCardShellTemperatures.Find(id);
             if (shellTemp == null)
                 return false;
 
-            Context.ShellTemperatures.Remove(shellTemp);
+            Context.SdCardShellTemperatures.Remove(shellTemp);
             Context.SaveChanges();
             return true;
         }
 
-        public bool DeleteRange(IEnumerable<ShellTemp> items)
+        public bool DeleteRange(IEnumerable<SdCardShellTemp> items)
         {
             if (items == null)
                 return false;
 
             foreach (var shellTemp in items)
             {
-                ShellTemp dbTemp = Context.ShellTemperatures.Find(shellTemp.Id);
-                Context.ShellTemperatures.Remove(dbTemp);
+                SdCardShellTemp dbTemp = Context.SdCardShellTemperatures.Find(shellTemp.Id);
+                Context.SdCardShellTemperatures.Remove(dbTemp);
             }
 
             Context.SaveChanges();
             return true;
         }
 
-        public bool Update(ShellTemp model)
+        public bool Update(SdCardShellTemp model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The shell temperature was invalid");
 
-            ShellTemp dbShellTemp = GetItem(model.Id);
+            SdCardShellTemp dbShellTemp = GetItem(model.Id);
             if (dbShellTemp == null)
                 throw new NullReferenceException("Could not find the shell temperature in the database");
 
@@ -87,11 +83,11 @@ namespace ShellTemperature.Repository
         /// <param name="start">The start of the range to search for</param>
         /// <param name="end">The end of the range to search for</param>
         /// <returns>Returns an enumerable of shell temperatures</returns>
-        public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end)
+        public IEnumerable<SdCardShellTemp> GetShellTemperatureData(DateTime start, DateTime end)
         {
-            return Context.ShellTemperatures
+            return Context.SdCardShellTemperatures
                 .Include(dev => dev.Device)
-                .Where(dateTime => dateTime.RecordedDateTime >= start && dateTime.RecordedDateTime <= end);
+                .Where(dateTime => (dateTime != null) && dateTime.RecordedDateTime >= start && dateTime.RecordedDateTime <= end);
         }
 
         /// <summary>
@@ -103,13 +99,14 @@ namespace ShellTemperature.Repository
         /// <param name="deviceName"></param>
         /// <param name="deviceAddress"></param>
         /// <returns></returns>
-        public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end, string deviceName = null, string deviceAddress = null)
+        public IEnumerable<SdCardShellTemp> GetShellTemperatureData(DateTime start, DateTime end, string deviceName = null, string deviceAddress = null)
         {
-            return Context.ShellTemperatures
+            return Context.SdCardShellTemperatures
                 .Include(dev => dev.Device)
                 .Where(device =>
                     string.IsNullOrWhiteSpace(deviceName) || device.Device.DeviceName.Equals(deviceName) &&
                     string.IsNullOrWhiteSpace(deviceAddress) || device.Device.DeviceAddress.Equals(deviceAddress) &&
+                    (device.RecordedDateTime != null) &&
                     device.RecordedDateTime >= start && device.RecordedDateTime <= end);
         }
 
@@ -118,7 +115,7 @@ namespace ShellTemperature.Repository
         /// </summary>
         /// <param name="id">Id of the item to retrieve</param>
         /// <returns>Returns the item from database matching the id value</returns>
-        public ShellTemp GetItem(Guid id)
-            => Context.ShellTemperatures.Find(id);
+        public SdCardShellTemp GetItem(Guid id)
+            => Context.SdCardShellTemperatures.Find(id);
     }
 }
