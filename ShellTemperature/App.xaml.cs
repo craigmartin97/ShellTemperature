@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using ShellTemperature.ViewModels.ViewModels.Management;
 
 namespace ShellTemperature
 {
@@ -152,7 +153,7 @@ namespace ShellTemperature
                 foreach (var deviceName in devicesToSearchFor)
                 {
                     IConfigurationSection pin = devicePins.FirstOrDefault(x => x.Key.Equals(deviceName));
-                    if(pin == null)
+                    if (pin == null)
                         continue;
 
                     BluetoothConfiguration config = new BluetoothConfiguration
@@ -210,6 +211,7 @@ namespace ShellTemperature
             services.AddScoped<ShellHistoryViewModel>();
             services.AddSingleton<ReportViewModel>();
             services.AddSingleton<GoogleMapViewModel>();
+            services.AddSingleton<ManagementViewModel>();
 
         }
         #endregion

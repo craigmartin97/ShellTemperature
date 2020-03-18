@@ -124,6 +124,9 @@
 
                         <!-- Btn for showing google map -->
                         <Button Content="Map" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=MapViewCommand}" />
+                        
+                        <!-- Manage comments and positions -->
+                        <Button Content="Management" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ManagementViewCommand}"/>
                     </StackPanel>
                 </Grid>
             </Grid>

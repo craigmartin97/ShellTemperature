@@ -1,10 +1,10 @@
 ﻿using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.ViewModels.ConnectionStatus;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
-using System.Reflection;
-using OxyPlot.Reporting;
+using ShellTemperature.ViewModels.ViewModels.Management;
 using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
+using System.Reflection;
 
 namespace ShellTemperature.ViewModels.ViewModels
 {
@@ -13,9 +13,9 @@ namespace ShellTemperature.ViewModels.ViewModels
         #region Injected Objects
         private readonly LiveShellDataViewModel _liveShellDataViewModel;
         private readonly ShellHistoryViewModel _shellHistoryViewModel;
-        private readonly TopBarViewModel _topBarViewModel;
         private readonly ReportViewModel _reportViewModel;
         private readonly GoogleMapViewModel _googleMapViewModel;
+        private readonly ManagementViewModel _managementViewModel;
         #endregion
 
         #region Public Properties
@@ -67,34 +67,39 @@ namespace ShellTemperature.ViewModels.ViewModels
         /// Display the live shell data view to the user
         /// </summary>
         public RelayCommand LiveShellDataViewCommand =>
-            new RelayCommand(param => CurrentView = _liveShellDataViewModel);
+            new RelayCommand(delegate { CurrentView = _liveShellDataViewModel; });
 
         /// <summary>
         /// Command to show the Shell history view to the user.
         /// </summary>
         public RelayCommand ShellHistoryViewCommand =>
-            new RelayCommand(param => CurrentView = _shellHistoryViewModel);
+            new RelayCommand(delegate { CurrentView = _shellHistoryViewModel; });
 
         public RelayCommand ReportHistoryViewCommand =>
-            new RelayCommand(param => CurrentView = _reportViewModel);
+            new RelayCommand(delegate { CurrentView = _reportViewModel; });
 
         public RelayCommand MapViewCommand =>
-        new RelayCommand(param => CurrentView = _googleMapViewModel);
+            new RelayCommand(delegate { CurrentView = _googleMapViewModel; });
+
+        public RelayCommand ManagementViewCommand =>
+            new RelayCommand(delegate { CurrentView = _managementViewModel; });
         #endregion
 
         #region Constructor
         public MainWindowViewModel(TopBarViewModel topBarViewModel, LiveShellDataViewModel liveShellDataViewModel,
             ShellHistoryViewModel shellHistoryViewModel, ReportViewModel reportViewModel,
-            GoogleMapViewModel map)
+            GoogleMapViewModel map, ManagementViewModel managementViewModel)
         {
-            _topBarViewModel = topBarViewModel;
             _liveShellDataViewModel = liveShellDataViewModel;
             _shellHistoryViewModel = shellHistoryViewModel;
             _reportViewModel = reportViewModel;
             _googleMapViewModel = map;
+            _managementViewModel = managementViewModel;
 
-            CurrentView = _liveShellDataViewModel;
-            ConnectionStatusViewModel = _topBarViewModel;
+            // Change view to the Live Shell Data View
+            LiveShellDataViewCommand.Execute(null);
+            // Set the connection status view model
+            ConnectionStatusViewModel = topBarViewModel;
         }
         #endregion
     }

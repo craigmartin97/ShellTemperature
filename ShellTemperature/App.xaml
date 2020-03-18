@@ -8,6 +8,8 @@
              xmlns:dialogsVM="clr-namespace:CustomDialog.Dialogs;assembly=CustomDialog"
              xmlns:reportsVM="clr-namespace:ShellTemperature.ViewModels.ViewModels.Reports;assembly=ShellTemperature.ViewModels"
              xmlns:mapVM="clr-namespace:ShellTemperature.ViewModels.ViewModels.Maps;assembly=ShellTemperature.ViewModels"
+             xmlns:managementVM="clr-namespace:ShellTemperature.ViewModels.ViewModels.Management;assembly=ShellTemperature.ViewModels"
+             xmlns:managementView="clr-namespace:ShellTemperature.Views.Management"
              xmlns:reportsView="clr-namespace:ShellTemperature.Views.Reports"
              xmlns:mapView="clr-namespace:ShellTemperature.Views.Maps"
              xmlns:dialogViews="clr-namespace:CustomDialog.Views;assembly=CustomDialog"
@@ -34,8 +36,13 @@
                 <reportsView:ReportUserControl DataContext="{Binding}" />
             </DataTemplate>
 
+            <!-- Maps Control -->
             <DataTemplate DataType="{x:Type mapVM:GoogleMapViewModel}">
                 <mapView:GoogleMapUserControl DataContext="{Binding}" />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type managementVM:ManagementViewModel}">
+                <managementView:ManagementUserControl DataContext="{Binding}" />
             </DataTemplate>
 
             <!--  Custom Dialog -->
