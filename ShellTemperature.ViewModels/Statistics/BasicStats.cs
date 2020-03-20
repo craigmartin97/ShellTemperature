@@ -99,19 +99,19 @@ namespace ShellTemperature.ViewModels.Statistics
             if (values == null || values.Length == 0)
                 throw new ArgumentNullException(nameof(values), "No data available");
 
-            double[] orderedValues = _sorter.BubbleSort(values);
+            _sorter.QuickSort(values, 0, values.Length - 1);
 
-            if (orderedValues.Length % 2 == 0) // even
+            if (values.Length % 2 == 0) // even
             {
-                int startIndex = (orderedValues.Length / 2) - 1;
+                int startIndex = (values.Length / 2) - 1;
                 int endIndex = startIndex + 1;
 
-                return (orderedValues[startIndex] + orderedValues[endIndex]) / 2;
+                return (values[startIndex] + values[endIndex]) / 2;
             }
             else // odd
             {
-                int medianIndex = ((orderedValues.Length + 1) / 2) - 1;
-                return orderedValues[medianIndex];
+                int medianIndex = ((values.Length + 1) / 2) - 1;
+                return values[medianIndex];
             }
         }
     }

@@ -1,7 +1,10 @@
 ﻿using NUnit.Framework;
 using ShellTemperature.ViewModels.Interfaces;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using ShellTemperature.ViewModels.Statistics;
 
 namespace ShellTemperature.Tests.SortAlgo
 {
@@ -34,15 +37,15 @@ namespace ShellTemperature.Tests.SortAlgo
             };
 
             // Act
-            double[] bubbleSortedValues = _sorter.BubbleSort(unorderedValues);
+            _sorter.BubbleSort(unorderedValues);
 
             // Assert
-            Assert.IsTrue(unorderedValues.Length == bubbleSortedValues.Length);
+            Assert.IsTrue(unorderedValues.Length == unorderedValues.Length);
 
             // Check that each value is the same at each index
-            for (int i = 0; i < bubbleSortedValues.Length; i++)
+            for (int i = 0; i < unorderedValues.Length; i++)
             {
-                Assert.AreEqual(orderedValues[i], bubbleSortedValues[i]);
+                Assert.AreEqual(orderedValues[i], unorderedValues[i]);
             }
         }
 
@@ -68,15 +71,73 @@ namespace ShellTemperature.Tests.SortAlgo
             double[] sortedValues = values.OrderBy(x => x).ToArray();
 
             // Act
-            double[] bubbleSortedValues = _sorter.BubbleSort(values);
+            _sorter.BubbleSort(values);
 
             // Assert
-            Assert.IsTrue(sortedValues.Length == bubbleSortedValues.Length);
+            Assert.IsTrue(sortedValues.Length == values.Length);
 
             // Check that each value is the same at each index
-            for (int i = 0; i < bubbleSortedValues.Length; i++)
+            for (int i = 0; i < values.Length; i++)
             {
-                Assert.AreEqual(sortedValues[i], bubbleSortedValues[i]);
+                Assert.AreEqual(sortedValues[i], values[i]);
+            }
+        }
+
+        [Test]
+        public void Quick_Sort()
+        {
+            // 3,4,7,9,12,20,21,22,25
+            double[] values = new double[1000];
+            Random random = new Random();
+            for (int i = 0; i < values.Length; i++)
+            {
+                int num = random.Next(0, 200);
+                double dec = random.NextDouble();
+
+                double val = num + dec;
+                values[i] = val;
+            }
+
+            double[] copy = new double[values.Length];
+            values.CopyTo(copy,0);
+
+            SortingAlgorithm sortingAlgorithm = new SortingAlgorithm();
+            sortingAlgorithm.QuickSort(values, 0, values.Length - 1);
+
+            copy = copy.OrderBy(x => x).ToArray(); // trusted computing base
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                Assert.AreEqual(copy[i], values[i]);
+            }
+        }
+
+        [Test]
+        public void BB()
+        {
+            // 3,4,7,9,12,20,21,22,25
+            double[] values = new double[1000];
+            Random random = new Random();
+            for (int i = 0; i < values.Length; i++)
+            {
+                int num = random.Next(0, 200);
+                double dec = random.NextDouble();
+
+                double val = num + dec;
+                values[i] = val;
+            }
+
+            double[] copy = new double[values.Length];
+            values.CopyTo(copy, 0);
+
+            SortingAlgorithm sortingAlgorithm = new SortingAlgorithm();
+            sortingAlgorithm.BubbleSort(values);
+
+            copy = copy.OrderBy(x => x).ToArray(); // trusted computing base
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                Assert.AreEqual(copy[i], values[i]);
             }
         }
     }

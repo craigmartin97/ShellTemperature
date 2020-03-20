@@ -5,6 +5,8 @@ using ShellTemperature.ViewModels.ViewModels.Management;
 using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 using System.Reflection;
+using ShellTemperature.Data;
+using ShellTemperature.Repository.Interfaces;
 
 namespace ShellTemperature.ViewModels.ViewModels
 {
@@ -15,7 +17,9 @@ namespace ShellTemperature.ViewModels.ViewModels
         private readonly ShellHistoryViewModel _shellHistoryViewModel;
         private readonly ReportViewModel _reportViewModel;
         private readonly GoogleMapViewModel _googleMapViewModel;
-        private readonly ManagementViewModel _managementViewModel;
+
+        private readonly IReadingCommentRepository<ReadingComment> _readingCommentRepository;
+        private readonly IRepository<Positions> _positionRepository;
         #endregion
 
         #region Public Properties
@@ -82,19 +86,24 @@ namespace ShellTemperature.ViewModels.ViewModels
             new RelayCommand(delegate { CurrentView = _googleMapViewModel; });
 
         public RelayCommand ManagementViewCommand =>
-            new RelayCommand(delegate { CurrentView = _managementViewModel; });
+            new RelayCommand(delegate { CurrentView = new ManagementViewModel(_readingCommentRepository, _positionRepository); });
         #endregion
 
         #region Constructor
         public MainWindowViewModel(TopBarViewModel topBarViewModel, LiveShellDataViewModel liveShellDataViewModel,
             ShellHistoryViewModel shellHistoryViewModel, ReportViewModel reportViewModel,
-            GoogleMapViewModel map, ManagementViewModel managementViewModel)
+            GoogleMapViewModel map,
+            IReadingCommentRepository<ReadingComment> readingCommentRepository,
+            IRepository<Positions> positionRepository)
         {
             _liveShellDataViewModel = liveShellDataViewModel;
             _shellHistoryViewModel = shellHistoryViewModel;
             _reportViewModel = reportViewModel;
             _googleMapViewModel = map;
-            _managementViewModel = managementViewModel;
+
+            _readingCommentRepository = readingCommentRepository;
+            _positionRepository = positionRepository;
+
 
             // Change view to the Live Shell Data View
             LiveShellDataViewCommand.Execute(null);

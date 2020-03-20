@@ -25,18 +25,18 @@ namespace ShellTemperature.Repository
                 throw new NullReferenceException("The temperature, device or comment is null");
 
             // see if the temperature already has a comment
-            ShellTemperatureComment exists = Context.ShellTemperatureComments.FirstOrDefault(x => x.ShellTemp.Id == temp.Id);
-            if (exists != null) // already exists
-            {
-                exists.Comment = readingComment; // Update the record
-            }
-            else
-            {
-                model.ShellTemp = temp;
-                model.ShellTemp.Device = device;
-                model.Comment = readingComment;
-                Context.ShellTemperatureComments.Add(model);
-            }
+            //ShellTemperatureComment exists = Context.ShellTemperatureComments.FirstOrDefault(x => x.ShellTemp.Id == temp.Id);
+            //if (exists != null) // already exists
+            //{
+            //    exists.Comment = readingComment; // Update the record
+            //}
+            //else
+            //{
+            model.ShellTemp = temp;
+            model.ShellTemp.Device = device;
+            model.Comment = readingComment;
+            Context.ShellTemperatureComments.Add(model);
+            //}
 
             Context.SaveChanges();
             return true;
@@ -75,12 +75,23 @@ namespace ShellTemperature.Repository
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The shell temperature comment supplied is null");
 
-            ShellTemperatureComment shellTemperatureComment = GetItem(model.Id);
-            if (shellTemperatureComment == null)
+            // get data from database
+            DeviceInfo device = Context.DevicesInfo.Find(model.ShellTemp.Device.Id);
+            ShellTemp temp = Context.ShellTemperatures.Find(model.ShellTemp.Id);
+            ReadingComment readingComment = Context.ReadingComments.Find(model.Comment.Id);
+
+            if (temp == null || device == null || readingComment == null)
                 throw new NullReferenceException("Could not find the shell temperature");
 
-            shellTemperatureComment.Comment = model.Comment;
-            shellTemperatureComment.ShellTemp = model.ShellTemp;
+            // see if the temperature already has a comment
+            ShellTemperatureComment exists = GetItem(model.Id);
+            if (exists == null)
+                throw new NullReferenceException("Could not find the item to update");
+
+            exists.Comment = readingComment;
+            exists.ShellTemp = temp;
+            exists.ShellTemp.Device = device;
+
             Context.SaveChanges();
             return true;
         }

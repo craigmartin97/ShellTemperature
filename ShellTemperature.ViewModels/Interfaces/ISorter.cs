@@ -2,6 +2,8 @@
 {
     public interface ISorter
     {
-        double[] BubbleSort(double[] values);
+        void BubbleSort(double[] values);
+
+        void QuickSort(double[] values, int low, int high);
     }
 }

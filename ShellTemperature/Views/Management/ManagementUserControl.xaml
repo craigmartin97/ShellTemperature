@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="750" d:DesignWidth="800">
     <StackPanel Background="{StaticResource WhiteColorBrush}">
 
         <StackPanel Margin="0,0,0,50">
@@ -89,21 +89,55 @@
                 <TextBlock Text="Edit Positions" TextDecorations="Underline" />
             </Label>
 
-            <ComboBox 
-                Margin="20,10,20,10"
-                HorizontalAlignment="Left"
-                MinWidth="600"
-                MinHeight="60"
-                Style="{StaticResource ComboBoxStyle}" />
+            <ComboBox ItemsSource="{Binding Path=Positions}"
+                      DisplayMemberPath="Position"
+                      SelectedItem="{Binding Path=SelectedPosition}"
+                      Margin="20,10,20,10"
+                      HorizontalAlignment="Left"
+                      MinWidth="600"
+                      MinHeight="40"
+                      Style="{StaticResource ComboBoxStyle}" />
+
+            <StackPanel>
+                <Label Content="Update Position (Enter): " Margin="16,0,0,0" FontFamily="{StaticResource LatoRegular}"
+                       FontWeight="Bold" FontSize="{StaticResource FontSize18}"/>
+                <TextBox Margin="20,0,20,20" MinHeight="40" FontSize="{StaticResource FontSize20}"
+                         FontFamily="{StaticResource LatoRegular}" Text="{Binding Path=UpdatedPosition, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalContentAlignment="Center" Padding="10,0,0,0" TextWrapping="WrapWithOverflow">
+                </TextBox>
+
+                <StackPanel.Style>
+                    <Style TargetType="{x:Type StackPanel}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=SelectedPosition}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.0" To="1.0" Duration="0:0:4" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+            </StackPanel>
+
 
             <Grid MinHeight="40">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
 
-                <Button Content="Delete" Style="{StaticResource BaseButtonStyle}" Margin="20,0,20,0" />
-                <Button Grid.Column="1" Content="Update" Style="{StaticResource BaseButtonStyle}" Margin="20,0,20,0" />
+                <Button Content="Delete" Style="{StaticResource BaseButtonStyle}" Margin="20,0,20,0" 
+                        Command="{Binding Path=DeletePositionCommand}"/>
+                <Button Grid.Column="1" Content="Update" Style="{StaticResource BaseButtonStyle}" Margin="20,0,20,0"
+                        Command="{Binding Path=UpdatePositionCommand}"/>
+                <Button Grid.Column="2" Content="Clear" Style="{StaticResource BaseButtonStyle}" Margin="20,0,20,0"
+                        Command="{Binding Path=ClearSelectedPositionCommand}"/>
             </Grid>
         </StackPanel>
     </StackPanel>

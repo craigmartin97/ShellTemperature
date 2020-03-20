@@ -129,37 +129,6 @@ namespace ShellTemperature.Tests.RepositoryTests
         {
             Assert.Throws<ArgumentNullException>(delegate { shellTemperatureCommentRepository.Create(null); });
         }
-
-        [Test]
-        public void Create_AlreadyHasComment()
-        {
-            // Arrange
-            Random random = new Random();
-
-            ShellTemp shellTemp = shellTemps[random.Next(0, shellTemps.Count)];
-            ReadingComment readingComment = readingComments[random.Next(0, readingComments.Count)];
-
-            ShellTemperatureComment newComment = new ShellTemperatureComment(readingComment, shellTemp);
-
-            // ACt
-            bool created = shellTemperatureCommentRepository.Create(newComment);
-
-            // Assert
-            Assert.IsTrue(created);
-
-            // Now use the same shelltemp and try and add another comment, can do that
-            ShellTemperatureComment anotherComment = new ShellTemperatureComment(readingComments[random.Next(0, readingComments.Count)],
-                 shellTemp);
-
-            bool exists = shellTemperatureCommentRepository.Create(anotherComment);
-            Assert.IsTrue(exists);
-
-            // Get could for shelltemp
-            int total = Context.ShellTemperatureComments
-                .Count(x => x.ShellTemp.Id == shellTemp.Id);
-
-            Assert.IsTrue(total == 1);
-        }
         #endregion
 
         #region Delete

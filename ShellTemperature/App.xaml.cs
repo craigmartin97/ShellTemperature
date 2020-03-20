@@ -16,6 +16,7 @@ using ShellTemperature.ViewModels.Statistics;
 using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
+using ShellTemperature.ViewModels.ViewModels.Management;
 using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 using ShellTemperature.Views;
@@ -24,7 +25,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
-using ShellTemperature.ViewModels.ViewModels.Management;
 
 namespace ShellTemperature
 {

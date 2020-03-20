@@ -6,6 +6,7 @@ using ShellTemperature.Repository.Interfaces;
 using ShellTemperature.ViewModels.Commands;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace ShellTemperature.ViewModels.ViewModels.Management
 {
@@ -17,8 +18,13 @@ namespace ShellTemperature.ViewModels.ViewModels.Management
         /// </summary>
         private readonly IReadingCommentRepository<ReadingComment> _readingCommentRepository;
 
+        /// <summary>
+        /// Positions repository to CRUD positions
+        /// </summary>
+        private readonly IRepository<Positions> _positionsRepository;
         #endregion
-        #region Properties
+
+        #region Comment Properties
         private ObservableCollection<ReadingComment> _comments;
         /// <summary>
         /// Collection of comments from the data source that can be changed
@@ -65,7 +71,58 @@ namespace ShellTemperature.ViewModels.ViewModels.Management
         }
         #endregion
 
-        #region Commands
+        #region Position Properties
+
+        private ObservableCollection<Positions> _positions;
+        /// <summary>
+        /// Collection of positions from the data source
+        /// </summary>
+        public ObservableCollection<Positions> Positions
+        {
+            get => _positions;
+            set
+            {
+                _positions = value;
+                OnPropertyChanged(nameof(Positions));
+            }
+        }
+
+        private Positions _selectedPosition;
+        /// <summary>
+        /// The selected position from the collection
+        /// </summary>
+        public Positions SelectedPosition
+        {
+            get => _selectedPosition;
+            set
+            {
+                if (value != null)
+                    UpdatedPosition = value.Position;
+
+                _selectedPosition = value;
+                OnPropertyChanged(nameof(SelectedPosition));
+            }
+        }
+
+        private string _updatedPosition;
+        /// <summary>
+        /// The updated position text to change the selected position to
+        /// </summary>
+        public string UpdatedPosition
+        {
+            get => _updatedPosition;
+            set
+            {
+                _updatedPosition = value;
+                OnPropertyChanged(nameof(UpdatedPosition));
+            }
+        }
+        #endregion
+
+        #region Comment Commands
+        /// <summary>
+        /// Delete the selected comment
+        /// </summary>
         public RelayCommand DeleteCommentCommand
         => new RelayCommand(delegate
         {
@@ -114,6 +171,10 @@ namespace ShellTemperature.ViewModels.ViewModels.Management
             service.OpenDialogService(alert);
         });
 
+        /// <summary>
+        /// Update the selected comment with the entered text inside the corresponding
+        /// text box
+        /// </summary>
         public RelayCommand UpdateCommentCommand
         => new RelayCommand(delegate
         {
@@ -171,18 +232,154 @@ namespace ShellTemperature.ViewModels.ViewModels.Management
             service.OpenDialogService(alert);
         });
 
+        /// <summary>
+        /// Clear the selected comment command
+        /// </summary>
         public RelayCommand ClearSelectedCommentCommand => new RelayCommand(delegate { SelectedComment = null; });
         #endregion
 
+        #region Position Commands
+        /// <summary>
+        /// Delete the selected position
+        /// </summary>
+        public RelayCommand DeletePositionCommand
+        => new RelayCommand(delegate
+        {
+            if (SelectedPosition == null)
+                return;
+
+            DialogService service = new DialogService();
+            ConfirmationDialogViewModel confirmation = new ConfirmationDialogViewModel(
+                "Delete " + SelectedPosition.Position + "?",
+                "You are about to delete " + SelectedPosition.Position + " are you sure?");
+
+            DialogResult result = service.OpenDialogService(confirmation);
+
+            if (result != DialogResult.Yes) // User didnt press yes
+                return;
+
+            bool deleted;
+            try
+            {
+                deleted = _positionsRepository.Delete(SelectedPosition.Id);
+            }
+            catch (NullReferenceException e)
+            {
+                Debug.WriteLine(e.Message);
+                AlertDialogViewModel errorAlert = new AlertDialogViewModel("Error", "Could not delete position");
+                service.OpenDialogService(errorAlert);
+                return;
+            }
+
+            string title;
+            string message;
+            if (deleted)
+            {
+                title = "Successfully deleted " + SelectedPosition.Position;
+                message = "The position has been successfully deleted";
+
+                SetPositions();
+                SelectedPosition = null;
+            }
+            else
+            {
+                title = "Failed to delete " + SelectedPosition.Position;
+                message = "The position could not be deleted try again.";
+            }
+
+            AlertDialogViewModel alert = new AlertDialogViewModel(title, message);
+            service.OpenDialogService(alert);
+        });
+
+        /// <summary>
+        /// Update the selected position with the entered text from the corresponding text box
+        /// </summary>
+        public RelayCommand UpdatePositionCommand
+        => new RelayCommand(delegate
+        {
+            if (SelectedPosition == null || string.IsNullOrWhiteSpace(UpdatedPosition))
+                return;
+
+            DialogService service = new DialogService();
+            ConfirmationDialogViewModel confirmation = new ConfirmationDialogViewModel(
+                "Update " + SelectedPosition.Position + "?",
+                "Are you sure you want to change " + SelectedPosition.Position + " to " + UpdatedPosition + "?");
+
+            DialogResult result = service.OpenDialogService(confirmation);
+
+            if (result != DialogResult.Yes) // The user did not press yes
+                return;
+
+            Positions position = new Positions
+            {
+                Id = SelectedPosition.Id,
+                Position = UpdatedPosition
+            };
+
+            bool updated;
+            try
+            {
+                updated = _positionsRepository.Update(position);
+            }
+            catch (NullReferenceException e)
+            {
+                Debug.WriteLine(e.Message);
+                AlertDialogViewModel errorAlert = new AlertDialogViewModel("Error", "Could not delete position");
+                service.OpenDialogService(errorAlert);
+                return;
+            }
+
+            string title;
+            string message;
+            if (updated)
+            {
+                title = "Successfully updated " + SelectedPosition.Position;
+                message = "The position " + SelectedPosition.Position + " has successfully been updated";
+
+                SetPositions();
+                SelectedPosition = null;
+            }
+            else
+            {
+                title = "Failed to update " + SelectedPosition.Position;
+                message = "The position was not updated try again.";
+            }
+
+            AlertDialogViewModel alert = new AlertDialogViewModel(title, message);
+            service.OpenDialogService(alert);
+        });
+
+        /// <summary>
+        /// Clear the selected position
+        /// </summary>
+        public RelayCommand ClearSelectedPositionCommand
+        => new RelayCommand(delegate
+        {
+            SelectedPosition = null;
+        });
+        #endregion
+
         #region Constructors
-        public ManagementViewModel(IReadingCommentRepository<ReadingComment> readingCommentRepository)
+        public ManagementViewModel(IReadingCommentRepository<ReadingComment> readingCommentRepository,
+            IRepository<Positions> positionsRepository)
         {
             _readingCommentRepository = readingCommentRepository;
+            _positionsRepository = positionsRepository;
             SetComments();
+            SetPositions();
         }
         #endregion
 
+        #region Helpers
+        /// <summary>
+        /// Set comments to to all of the comments from the data source
+        /// </summary>
         private void SetComments()
             => Comments = new ObservableCollection<ReadingComment>(_readingCommentRepository.GetAll());
+
+        private void SetPositions()
+            => Positions = new ObservableCollection<Positions>(_positionsRepository.GetAll());
+
+        #endregion
     }
 }

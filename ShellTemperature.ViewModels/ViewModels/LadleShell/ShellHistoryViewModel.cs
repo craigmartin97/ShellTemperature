@@ -24,6 +24,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
     /// </summary>
     public class ShellHistoryViewModel : TemperatureNotifierViewModel
     {
+
         #region Fields
         /// <summary>
         /// Device repository to get information about past used devices
@@ -205,7 +206,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             ShellTemperatureRecord[] shellTemperatureRecords = GetShellTemperatureRecords();
 
-            if(shellTemperatureRecords == null || !shellTemperatureRecords.Any())
+            if (shellTemperatureRecords == null || !shellTemperatureRecords.Any())
                 return;
 
             // path and sheet info for the excel file

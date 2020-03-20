@@ -9,4 +9,5 @@
     <system:String x:Key="Ok">Ok</system:String>
     <system:String x:Key="Yes">Yes</system:String>
     <system:String x:Key="No">No</system:String>
+    <system:String x:Key="Delete">Delete</system:String>
 </ResourceDictionary>

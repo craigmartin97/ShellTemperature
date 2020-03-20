@@ -39,7 +39,7 @@
                     </Grid>
 
                     <!--  Combo box select existing item -->
-                    <ComboBox Grid.Row="2" Background="Pink"
+                    <ComboBox Grid.Row="2"
                               ItemsSource="{Binding Path=CommentItems}"
                               SelectedItem="{Binding Path=SelectedComment}"
                               Style="{StaticResource ComboBoxStyle}"
@@ -47,15 +47,22 @@
                     </ComboBox>
                 </Grid>
 
+                <StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <!--  Delete button -->
+                    <Button Content="{StaticResource Delete}" 
+                            Style="{StaticResource DialogButtonsStyle}"
+                            Command="{Binding Path=DeleteCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" />
 
-                <!--  Close / OK btn to close dialog -->
-                <Button HorizontalAlignment="Right"
+                    <!--  Close / OK btn to close dialog -->
+                    <Button 
                             IsDefault="True"
-                            Grid.Row="1"
                             Content="{StaticResource Ok}" 
                             Style="{StaticResource DialogButtonsStyle}"
                             Command="{Binding Path=OKCommand}"
                             CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" />
+                </StackPanel>
+
             </Grid>
         </Border>
     </Grid>

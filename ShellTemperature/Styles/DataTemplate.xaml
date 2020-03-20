@@ -80,7 +80,7 @@
                                             <Style TargetType="{x:Type Label}">
                                                 <Setter Property="Content" Value="{Binding Path=Comment}" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Path=Comment}" Value="{x:Null}">
+                                                    <DataTrigger Binding="{Binding Path=Comment.Comment}" Value="{x:Null}">
                                                         <Setter Property="Content" Value="N/A" />
                                                     </DataTrigger>
                                                 </Style.Triggers>

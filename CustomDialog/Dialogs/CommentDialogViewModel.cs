@@ -1,14 +1,17 @@
 ﻿using CustomDialog.Commands;
 using CustomDialog.Interfaces;
-using ShellTemperature.Data;
 using System.Collections.Generic;
 using System.Windows.Input;
+using CustomDialog.Annotations;
+using ShellTemperature.Data;
 
 namespace CustomDialog.Dialogs
 {
-    public class CommentDialogViewModel : BaseDialogViewModel<string>
+    public class CommentDialogViewModel : BaseDialogViewModel<CommentDialogResult>
     {
         public ICommand OKCommand { get; set; }
+
+        public ICommand DeleteCommand { get; set; }
 
         #region Properties
         private IEnumerable<string> _commentItems;
@@ -34,7 +37,7 @@ namespace CustomDialog.Dialogs
             get => _selectedReadingComment;
             set
             {
-                if (string.IsNullOrWhiteSpace(value))
+                if (value == null)
                     return;
 
                 Comment = value;
@@ -64,6 +67,8 @@ namespace CustomDialog.Dialogs
             CommentItems = _commentItems;
 
             OKCommand = new GenericRelayCommand<IDialogWindow>(OK);
+            DeleteCommand = new GenericRelayCommand<IDialogWindow>(Delete);
+
         }
 
         //Window must be passed in param to close.
@@ -72,7 +77,15 @@ namespace CustomDialog.Dialogs
             if (string.IsNullOrEmpty(Comment) && SelectedComment == null) // No comment / selection has been made
                 return;
 
-            CloseDialogWithResult(window, Comment);
+            CommentDialogResult result = new CommentDialogResult(Comment, false);
+
+            CloseDialogWithResult(window, result);
+        }
+
+        private void Delete(IDialogWindow window)
+        {
+            CommentDialogResult result = new CommentDialogResult(null, true);
+            CloseDialogWithResult(window, result);
         }
     }
 }

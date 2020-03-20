@@ -28,7 +28,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {

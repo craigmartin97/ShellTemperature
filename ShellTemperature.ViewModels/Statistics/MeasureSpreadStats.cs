@@ -25,11 +25,10 @@ namespace ShellTemperature.ViewModels.Statistics
                 throw new ArgumentNullException(nameof(values), "No data available");
             if (values.Length == 1)
                 throw new InvalidOperationException("Unable to calculate range with only one value");
-            
 
-            double[] sortedValues = _sortingAlgorithm.BubbleSort(values);
-            double min = sortedValues[0];
-            double max = sortedValues[^1];
+            _sortingAlgorithm.QuickSort(values, 0, values.Length - 1);
+            double min = values[0];
+            double max = values[^1];
 
             return max - min;
         }
@@ -86,7 +85,7 @@ namespace ShellTemperature.ViewModels.Statistics
             out double[] first,
             out double[] third)
         {
-            double[] sortedTemps = _sortingAlgorithm.BubbleSort(values);
+            _sortingAlgorithm.BubbleSort(values);
 
             double[] firstQuartile;
             double[] thirdQuartile;
@@ -94,14 +93,14 @@ namespace ShellTemperature.ViewModels.Statistics
             int index;
             int thirdQuantileStartIndex;
             // is even
-            if (sortedTemps.Length % 2 == 0)
+            if (values.Length % 2 == 0)
             {
-                index = sortedTemps.Length / 2;
+                index = values.Length / 2;
                 thirdQuantileStartIndex = index;
             }
             else // is odd
             {
-                index = (sortedTemps.Length - 1) / 2;
+                index = (values.Length - 1) / 2;
                 thirdQuantileStartIndex = index + 1;
             }
 
@@ -110,13 +109,13 @@ namespace ShellTemperature.ViewModels.Statistics
 
             for (int i = 0; i < index; i++)
             {
-                firstQuartile[i] = sortedTemps[i];
+                firstQuartile[i] = values[i];
             }
 
             int indexCounter = 0;
-            for (int i = thirdQuantileStartIndex; i < sortedTemps.Length; i++)
+            for (int i = thirdQuantileStartIndex; i < values.Length; i++)
             {
-                thirdQuartile[indexCounter] = sortedTemps[i];
+                thirdQuartile[indexCounter] = values[i];
                 indexCounter++;
             }
 
@@ -196,7 +195,7 @@ namespace ShellTemperature.ViewModels.Statistics
             }
 
             double meanOfDistances = _basicStats.Mean(distances);
-            return Math.Round(meanOfDistances,2);
+            return Math.Round(meanOfDistances, 2);
         }
     }
 }
