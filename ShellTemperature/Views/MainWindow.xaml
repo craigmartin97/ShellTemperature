@@ -8,7 +8,7 @@
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Visibility="Visible"
-        Title="Shell Temperature" MinWidth="1220" MinHeight="720" Width="1250"
+        Title="Shell Temperature" MinWidth="1220" MinHeight="780" Width="1250"
         ResizeMode="CanResize"
         Icon="../Images/mpiLion.png">
 
@@ -121,9 +121,6 @@
 
                         <!-- Btn for report history -->
                         <Button Content="Report" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ReportHistoryViewCommand}" />
-
-                        <!-- Btn for showing google map -->
-                        <Button Content="Map" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=MapViewCommand}" />
                         
                         <!-- Manage comments and positions -->
                         <Button Content="Management" Style="{StaticResource NavigationButtonStyle}" Command="{Binding Path=ManagementViewCommand}"/>

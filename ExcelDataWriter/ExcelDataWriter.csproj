@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ShellTemperature.Models\ShellTemperature.Models.csproj" />
+    <ProjectReference Include="..\ShellTemperature.Repository\ShellTemperature.Repository.csproj" />
   </ItemGroup>
 
 </Project>

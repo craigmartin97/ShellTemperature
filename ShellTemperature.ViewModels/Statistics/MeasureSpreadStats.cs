@@ -163,7 +163,7 @@ namespace ShellTemperature.ViewModels.Statistics
             double[] variance = new double[values.Length];
             for (int i = 0; i < values.Length; i++)
             {
-                double pointDiff = meanAvg - values[i];
+                double pointDiff = values[i] - meanAvg;
                 double pointVariance = pointDiff * pointDiff; // squared
                 variance[i] = pointVariance;
             }
@@ -173,7 +173,7 @@ namespace ShellTemperature.ViewModels.Statistics
             for (int i = 0; i < variance.Length; i++)
                 total += variance[i];
 
-            double totalVariance = total / variance.Length;
+            double totalVariance = ((double)1 / variance.Length) * total;
             double standardDeviation = Math.Sqrt(totalVariance);
             return Math.Round(standardDeviation, 2);
         }

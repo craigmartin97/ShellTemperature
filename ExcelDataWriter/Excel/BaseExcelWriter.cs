@@ -48,5 +48,14 @@ namespace ExcelDataWriter.Excel
                 process.Start();
             }
         }
+
+        protected void AutoFitCols()
+        {
+            // auto fit columns
+            for (int i = 1; i <= _excelData.Worksheet.Dimension.End.Column; i++)
+            {
+                _excelData.Worksheet.Column(i).AutoFit();
+            }
+        }
     }
 }

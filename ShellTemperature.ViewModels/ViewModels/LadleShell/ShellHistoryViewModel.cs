@@ -6,16 +6,18 @@ using ShellTemperature.Data;
 using ShellTemperature.Models;
 using ShellTemperature.Repository.Interfaces;
 using ShellTemperature.ViewModels.Commands;
+using ShellTemperature.ViewModels.DataManipulation;
 using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels.TemperatureNotifier;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Threading;
+using System.Windows;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -40,6 +42,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Shell Temperature repository position
         /// </summary>
         private readonly IRepository<ShellTemperaturePosition> _shellTemperaturePositionRepository;
+
+        private readonly ShellTemperatureRecordConvertion _shellTemperatureRecordConvertion;
         #endregion
 
         #region Properties
@@ -85,18 +89,30 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             get => _start;
             set
             {
-                // prevent stack overflow
-                if (_start == value)
-                    return;
+                LoadingSpinnerVisibility = true;
 
-                if (value > End) // the Start date cannot be after the end
-                    return;
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += (sender, args) =>
+                {
+                    Thread.Sleep(1000); // Make spinner spin
+                    // prevent stack overflow
+                    if (_start == value)
+                        return;
 
-                _start = value;
-                OnPropertyChanged(nameof(Start));
+                    if (value > End) // the Start date cannot be after the end
+                        return;
 
-                SetBluetoothData();
-                SetDataPoints();
+                    _start = value;
+                    OnPropertyChanged(nameof(Start));
+
+                    ShellTemperatureRecord[] records = GetShellTemperatureRecords();
+                    DataPoint[] dataPoints = GetDataPoints(records);
+
+                    SetBluetoothData(records);
+                    SetDataPoints(dataPoints);
+                };
+                worker.RunWorkerCompleted += DateTimeWorkerComplete;
+                worker.RunWorkerAsync();
             }
         }
 
@@ -113,19 +129,30 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             get => _end;
             set
             {
-                // prevent stack overflow
-                if (_end == value)
-                    return;
+                LoadingSpinnerVisibility = true;
 
-                // the end date cannot be before the start date, cannot be in future either
-                if (value < Start || value > DateTime.Now.Date)
-                    return;
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += (sender, args) =>
+                {
+                    // prevent stack overflow
+                    if (_end == value)
+                        return;
 
-                _end = value;
-                OnPropertyChanged(nameof(End));
+                    // the end date cannot be before the start date, cannot be in future either
+                    if (value < Start || value > DateTime.Now.Date)
+                        return;
 
-                SetBluetoothData();
-                SetDataPoints();
+                    _end = value;
+                    OnPropertyChanged(nameof(End));
+
+                    ShellTemperatureRecord[] records = GetShellTemperatureRecords();
+                    DataPoint[] dataPoints = GetDataPoints(records);
+
+                    SetBluetoothData(records);
+                    SetDataPoints(dataPoints);
+                };
+                worker.RunWorkerCompleted += DateTimeWorkerComplete;
+                worker.RunWorkerAsync();
             }
         }
 
@@ -154,8 +181,27 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             {
                 _currentDeviceInfo = value;
 
-                SetBluetoothData();
-                SetDataPoints();
+                if (value != null)
+                {
+
+                    BackgroundWorker worker = new BackgroundWorker();
+
+                    LoadingSpinnerVisibility = true;
+                    worker.DoWork += (sender, args) =>
+                    {
+                        Thread.Sleep(1000); // spin
+                        ShellTemperatureRecord[] records = GetShellTemperatureRecords();
+                        DataPoint[] points = GetDataPoints(records);
+
+                        Application.Current.Dispatcher.Invoke(delegate
+                        {
+                            SetBluetoothData(records);
+                            SetDataPoints(points);
+                        });
+                    };
+                    worker.RunWorkerCompleted += DateTimeWorkerComplete;
+                    worker.RunWorkerAsync();
+                }
 
                 OnPropertyChanged(nameof(CurrentDeviceInfo));
             }
@@ -191,9 +237,24 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 if (selectedSdCardShellTemps.Length > 0)
                     SdCardShellTemperatureRepository.DeleteRange(selectedSdCardShellTemps);
 
+                // Set data points on screen
                 SetBluetoothData();
                 SetDataPoints();
             });
+
+        private bool _loadingSpinnerVisibility;
+        /// <summary>
+        /// Is the loading spinner overlay showing or not?
+        /// </summary>
+        public bool LoadingSpinnerVisibility
+        {
+            get => _loadingSpinnerVisibility;
+            set
+            {
+                _loadingSpinnerVisibility = value;
+                OnPropertyChanged(nameof(LoadingSpinnerVisibility));
+            }
+        }
         #endregion
 
         #region Commands
@@ -204,7 +265,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         public RelayCommand SendToExcelCommand =>
         new RelayCommand(delegate
         {
-            ShellTemperatureRecord[] shellTemperatureRecords = GetShellTemperatureRecords();
+            ShellTemperatureRecord[] shellTemperatureRecords = _shellTemperatureRecordConvertion.GetShellTemperatureRecords(Start, End, CurrentDeviceInfo);
 
             if (shellTemperatureRecords == null || !shellTemperatureRecords.Any())
                 return;
@@ -222,7 +283,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             ExcelWriter excelWriter = new ExcelWriter(excelData, excelStyle);
 
             // Get the properties for the type
-            string[] headers = GetHeaders(shellTemperatureRecords[0]);
+            string[] headers = shellTemperatureRecords[0].GetHeaders();
 
             excelWriter.WriteHeaders(headers);
             excelWriter.WriteToExcelFile(shellTemperatureRecords);
@@ -240,21 +301,56 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
              IRepository<ShellTemperaturePosition> shellTemperaturePositionRepository,
              IReadingCommentRepository<ReadingComment> readingCommentRepository,
              IRepository<ShellTemperatureComment> commentRepository,
-             IRepository<SdCardShellTemperatureComment> sdCardCommentRepository)
+             IRepository<SdCardShellTemperatureComment> sdCardCommentRepository,
+             ShellTemperatureRecordConvertion shellTemperatureRecordConvertion)
             : base(readingCommentRepository, commentRepository, shellTemperature, sdCardShellTemperatureRepository,
                 sdCardCommentRepository)
         {
             _deviceRepository = deviceRepository;
             _temperatureSubject = subject;
             _shellTemperaturePositionRepository = shellTemperaturePositionRepository;
+            _shellTemperatureRecordConvertion = shellTemperatureRecordConvertion;
 
             _temperatureSubject.Attach(this);
 
             // get the last seven days of temps and display to the user in the list.
             UpdateDevices();
+
             SetBluetoothData();
             SetDataPoints();
         }
+        #endregion
+
+        #region Set Data
+
+        private ShellTemperatureRecord[] GetShellTemperatureRecords()
+            => _shellTemperatureRecordConvertion.GetShellTemperatureRecords(Start, End, CurrentDeviceInfo)
+                .OrderBy(time => time.RecordedDateTime).ToArray();
+
+        private DataPoint[] GetDataPoints(ShellTemperatureRecord[] records)
+        {
+            DataPoint[] dataPoints = new DataPoint[records.Length];
+            for (int i = 0; i < dataPoints.Length; i++)
+            {
+                DataPoint point = new DataPoint(
+                    DateTimeAxis.ToDouble(records[i].RecordedDateTime), records[i].Temperature);
+
+                dataPoints[i] = point;
+            }
+
+            return dataPoints;
+        }
+
+        /// <summary>
+        /// Update the devices collection
+        /// </summary>
+        private void UpdateDevices()
+        {
+            Devices = new ObservableCollection<DeviceInfo>(_deviceRepository.GetAll());
+            if (Devices.Count > 0)
+                CurrentDeviceInfo = Devices[0];
+        }
+
         #endregion
 
         #region Set Data
@@ -297,113 +393,22 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             }
         }
 
-        /// <summary>
-        /// Update the devices collection
-        /// </summary>
-        private void UpdateDevices()
+        private void SetBluetoothData(ShellTemperatureRecord[] records)
         {
-            Devices = new ObservableCollection<DeviceInfo>(_deviceRepository.GetAll());
-            if (Devices.Count > 0)
-                CurrentDeviceInfo = Devices[0];
+            Application.Current.Dispatcher.Invoke(delegate
+            {
+                BluetoothData.Clear();
+                BluetoothData = new ObservableCollection<ShellTemperatureRecord>(records);
+            });
         }
 
-        /// <summary>
-        /// For a given shell temperature record property
-        /// extract the name of the property in a correctly
-        /// formatted order
-        /// </summary>
-        /// <param name="record">Shell temperature record</param>
-        /// <returns>Return string array of column headers in formatted order</returns>
-        private string[] GetHeaders(ShellTemperatureRecord record)
+        private void SetDataPoints(DataPoint[] dataPoints)
         {
-            // Get the properties for the type
-            PropertyInfo[] properties = record.GetType().GetProperties().ToArray();
-            string[] headers = new string[properties.Length];
-
-            // Extract the order and name and insert into array at correct position
-            foreach (var property in properties)
+            Application.Current.Dispatcher.Invoke(delegate
             {
-                Attribute[] t = property.GetCustomAttributes(typeof(DisplayAttribute)).ToArray();
-                if (t.Length != 1) continue;
-
-                // Get the order for the property
-                int order = ((DisplayAttribute)t[0]).Order;
-                headers[order] = property.Name;
-            }
-
-            return headers;
-        }
-
-        /// <summary>
-        /// Get all the live and sd card shell temperatures along with
-        /// the comments and positions
-        /// </summary>
-        /// <returns></returns>
-        private ShellTemperatureRecord[] GetShellTemperatureRecords()
-        {
-            // Get live data and live data comments and positions
-            ShellTemp[] tempData = ShellTemperatureRepository.GetShellTemperatureData(Start, End,
-                CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress).ToArray();
-
-            ShellTemperatureComment[] liveDataComments = CommentRepository.GetAll()
-                .Where(x => x.ShellTemp.RecordedDateTime >= Start
-                            && x.ShellTemp.RecordedDateTime <= End)
-                .ToArray();
-
-            ShellTemperaturePosition[] positions = _shellTemperaturePositionRepository.GetAll().ToArray();
-
-            // Get SD Card data and SD card data comments
-            SdCardShellTemp[] sdCardShellTemps = SdCardShellTemperatureRepository.GetShellTemperatureData(Start, End,
-                CurrentDeviceInfo.DeviceName, CurrentDeviceInfo.DeviceAddress).ToArray();
-
-            SdCardShellTemperatureComment[] sdCardComments = SdCardCommentRepository.GetAll().ToArray();
-
-            // Create new temp list of records
-            List<ShellTemperatureRecord> records = new List<ShellTemperatureRecord>();
-
-            // For ever item in ShellTemps, find and match the comment that may have been made
-            foreach (ShellTemp shellTemp in tempData)
-            {
-                ShellTemperatureRecord shellTemperatureRecord =
-                    new ShellTemperatureRecord(shellTemp.Id, shellTemp.Temperature, shellTemp.RecordedDateTime,
-                        shellTemp.Latitude, shellTemp.Longitude, shellTemp.Device, false); // Not from SD
-
-                // Find the comment for the shell temperature
-                ShellTemperatureComment comment =
-                    liveDataComments.FirstOrDefault(x => x.ShellTemp.Id == shellTemperatureRecord.Id);
-
-                ShellTemperaturePosition position =
-                    positions.FirstOrDefault(x => x.ShellTemp.Id == shellTemperatureRecord.Id);
-
-                if (comment?.Comment != null)
-                    shellTemperatureRecord.Comment = comment.Comment.Comment;
-                if (position?.Position != null)
-                    shellTemperatureRecord.Position = position.Position.Position;
-
-                records.Add(shellTemperatureRecord);
-            }
-
-            // Find the sd card data shell temps
-            foreach (SdCardShellTemp shellTemp in sdCardShellTemps)
-            {
-                if (!shellTemp.RecordedDateTime.HasValue) // Doesn't have DateTime, skip
-                    continue;
-
-                ShellTemperatureRecord shellTemperatureRecord =
-                    new ShellTemperatureRecord(shellTemp.Id, shellTemp.Temperature, (DateTime)shellTemp.RecordedDateTime,
-                        shellTemp.Latitude, shellTemp.Longitude, shellTemp.Device, true); // This is from SD
-
-                // Find the comment for the sd card shell temperature
-                SdCardShellTemperatureComment temp =
-                    sdCardComments.FirstOrDefault(x => x.SdCardShellTemp.Id == shellTemperatureRecord.Id);
-
-                if (temp?.Comment != null)
-                    shellTemperatureRecord.Comment = temp.Comment.Comment;
-
-                records.Add(shellTemperatureRecord);
-            }
-
-            return records.ToArray();
+                DataPoints.Clear();
+                DataPoints = new ObservableCollection<DataPoint>(dataPoints);
+            });
         }
         #endregion
 
@@ -425,5 +430,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     latestReading.Temperature));
             }
         }
+
+        private void DateTimeWorkerComplete(object sender, RunWorkerCompletedEventArgs e)
+            => LoadingSpinnerVisibility = false;
     }
 }

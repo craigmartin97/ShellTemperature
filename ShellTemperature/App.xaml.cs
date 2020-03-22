@@ -17,7 +17,6 @@ using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.ViewModels.ViewModels.Management;
-using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 using ShellTemperature.Views;
 using System;
@@ -25,6 +24,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using ShellTemperature.ViewModels.DataManipulation;
 
 namespace ShellTemperature
 {
@@ -180,6 +180,8 @@ namespace ShellTemperature
             // add the outlier detector
             services.AddSingleton<OutlierDetector>();
 
+            services.AddSingleton<ShellTemperatureRecordConvertion>();
+
             // statistics & sorting
             services.AddSingleton<ISorter, SortingAlgorithm>();
             services.AddSingleton<IBasicStats, BasicStats>();
@@ -210,7 +212,6 @@ namespace ShellTemperature
             services.AddSingleton<LiveShellDataViewModel>();
             services.AddScoped<ShellHistoryViewModel>();
             services.AddSingleton<ReportViewModel>();
-            services.AddSingleton<GoogleMapViewModel>();
             services.AddSingleton<ManagementViewModel>();
 
         }

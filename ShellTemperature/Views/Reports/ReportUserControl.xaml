@@ -4,76 +4,129 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:spinningWheel="clr-namespace:ShellTemperature.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="{StaticResource WhiteColorBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+    <Grid>
+        <spinningWheel:SpinningWhell Panel.ZIndex="100"
+                                     Visibility="{Binding Path=LoadingSpinnerVisibility, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-        <xctk:DateTimePickerBase Style="{StaticResource BaseDateTimePickerStyle}"
-                                 Value="{Binding Path=Start, UpdateSourceTrigger=PropertyChanged}" />
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Device(s):" Style="{StaticResource DefaultDescriptorLabelStyle}"
+            />
 
-        <xctk:DateTimePickerBase Grid.Row="0" Grid.Column="1" Style="{StaticResource BaseDateTimePickerStyle}"
-                                 Value="{Binding Path=End, UpdateSourceTrigger=PropertyChanged}" />
+                <CheckBox Style="{DynamicResource CheckBoxStyle2}" 
+                      IsChecked="{Binding Path=AllDevicesIsChecked}" Content="All Devices" FontSize="{StaticResource FontSize18}"
+                      VerticalAlignment="Center"
+                      VerticalContentAlignment="Center" Margin="20,0,25,0"/>
 
-        <!-- Minimum -->
-        <Label Grid.Row="1" Content="Minimum:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="1" Grid.Column="1" Content="{Binding Path=Minimum, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}"/>
+                <ComboBox MinWidth="200"
+                      ItemsSource="{Binding Path=Devices}"
+                      SelectedItem="{Binding Path=SelectedDevice}"
+                      DisplayMemberPath="DeviceName"
+                      Opacity="1">
+                    <ComboBox.Style>
+                        <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ComboBoxStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=AllDevicesIsChecked}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ComboBox.Style>
+                </ComboBox>
+            </StackPanel>
 
-        <!-- Maximum -->
-        <Label Grid.Row="2" Content="Maximum:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=Maximum, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}"/>
+            <StackPanel Orientation="Horizontal" Margin="20,20,0,0" HorizontalAlignment="Left">
+                <!-- Start -->
+                <Label  Content="Start:" Style="{StaticResource DefaultDescriptorLabelStyle}"/>
+                <xctk:DateTimePickerBase Style="{StaticResource BaseDateTimePickerStyle}" 
+                                     MinWidth="260"
+                                     Value="{Binding Path=Start, UpdateSourceTrigger=PropertyChanged}" />
 
-        <!-- Average -->
-        <Label Grid.Row="3" Content="Average:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Average, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <!-- End -->
+                <Label Content="End:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <xctk:DateTimePickerBase Style="{StaticResource BaseDateTimePickerStyle}"
+                                     MinWidth="260"
+                                     Value="{Binding Path=End, UpdateSourceTrigger=PropertyChanged}" />
 
-        <!-- Median -->
-        <Label Grid.Row="4" Content="Median:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="4" Grid.Column="1" Content="{Binding Path=Median, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="No Records Found" Foreground="{StaticResource BloodRedBrush}" FontSize="{StaticResource FontSize18}" FontFamily="{StaticResource LatoRegular}"
+                       FontWeight="Bold"
+                       Visibility="{Binding Path=NoRecordsFoundVisibility, Converter={StaticResource BooleanToVisibilityConverter}}"></Label>
+            </StackPanel>
 
-        <!-- Mode -->
-        <Label Grid.Row="5" Content="Mode:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="5" Grid.Column="1" Content="{Binding Path=Mode, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            <!-- Minimum -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Minimum:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=Minimum, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}"/>
+            </StackPanel>
 
-        <!--  Range -->
-        <Label Grid.Row="6" Content="Range:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="6" Grid.Column="1" Content="{Binding Path=Range, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            <!-- Maximum -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Maximum:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=Maximum, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}"/>
+            </StackPanel>
 
-        <!--  Interquartile Range -->
-        <Label Grid.Row="7" Content="Interquartile Range:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="7" Grid.Column="1" Content="{Binding Path=InterquartileRange, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            <!-- Average -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Average:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=Average, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            </StackPanel>
 
-        <!--  Standard Deviation -->
-        <Label Grid.Row="8" Content="Standard Deviation:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="8" Grid.Column="1" Content="{Binding Path=StandardDeviation, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            <!-- Median -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Median:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=Median, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            </StackPanel>
 
-        <!--  Mean Deviation -->
-        <Label Grid.Row="9" Content="Mean Deviation:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
-        <Label Grid.Row="9" Grid.Column="1" Content="{Binding Path=MeanDeviation, FallbackValue=Error}"
-               Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            <!-- Mode -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Mode:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=Mode, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            </StackPanel>
+
+            <!--  Range -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Range:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=Range, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            </StackPanel>
+
+            <!--  Interquartile Range -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Interquartile Range:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=InterquartileRange, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            </StackPanel>
+
+
+            <!--  Standard Deviation -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Standard Deviation:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=StandardDeviation, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            </StackPanel>
+
+
+            <!--  Mean Deviation -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0">
+                <Label Content="Mean Deviation:" Style="{StaticResource DefaultDescriptorLabelStyle}" />
+                <Label Content="{Binding Path=MeanDeviation, FallbackValue=Error}"
+                   Style="{StaticResource DefaultDescriptorLabelStyle}" />
+            </StackPanel>
+
+            <Button Content="Send To Excel" MinWidth="200" MaxWidth="220" Margin="20,20,0,0" HorizontalAlignment="Left"
+                Style="{StaticResource BaseButtonStyle}" Command="{Binding Path=SendToExcelCommand}"/>
+
+        </StackPanel>
     </Grid>
+    
 </UserControl>

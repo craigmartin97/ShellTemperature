@@ -13,7 +13,6 @@ using ShellTemperature.ViewModels.Statistics;
 using ShellTemperature.ViewModels.TemperatureObserver;
 using ShellTemperature.ViewModels.ViewModels;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
-using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 using System;
 using System.Collections.Generic;

@@ -1,12 +1,11 @@
-﻿using ShellTemperature.ViewModels.Commands;
+﻿using ShellTemperature.Data;
+using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.ViewModels.ConnectionStatus;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 using ShellTemperature.ViewModels.ViewModels.Management;
-using ShellTemperature.ViewModels.ViewModels.Maps;
 using ShellTemperature.ViewModels.ViewModels.Reports;
 using System.Reflection;
-using ShellTemperature.Data;
-using ShellTemperature.Repository.Interfaces;
 
 namespace ShellTemperature.ViewModels.ViewModels
 {
@@ -16,7 +15,6 @@ namespace ShellTemperature.ViewModels.ViewModels
         private readonly LiveShellDataViewModel _liveShellDataViewModel;
         private readonly ShellHistoryViewModel _shellHistoryViewModel;
         private readonly ReportViewModel _reportViewModel;
-        private readonly GoogleMapViewModel _googleMapViewModel;
 
         private readonly IReadingCommentRepository<ReadingComment> _readingCommentRepository;
         private readonly IRepository<Positions> _positionRepository;
@@ -82,9 +80,6 @@ namespace ShellTemperature.ViewModels.ViewModels
         public RelayCommand ReportHistoryViewCommand =>
             new RelayCommand(delegate { CurrentView = _reportViewModel; });
 
-        public RelayCommand MapViewCommand =>
-            new RelayCommand(delegate { CurrentView = _googleMapViewModel; });
-
         public RelayCommand ManagementViewCommand =>
             new RelayCommand(delegate { CurrentView = new ManagementViewModel(_readingCommentRepository, _positionRepository); });
         #endregion
@@ -92,14 +87,12 @@ namespace ShellTemperature.ViewModels.ViewModels
         #region Constructor
         public MainWindowViewModel(TopBarViewModel topBarViewModel, LiveShellDataViewModel liveShellDataViewModel,
             ShellHistoryViewModel shellHistoryViewModel, ReportViewModel reportViewModel,
-            GoogleMapViewModel map,
             IReadingCommentRepository<ReadingComment> readingCommentRepository,
             IRepository<Positions> positionRepository)
         {
             _liveShellDataViewModel = liveShellDataViewModel;
             _shellHistoryViewModel = shellHistoryViewModel;
             _reportViewModel = reportViewModel;
-            _googleMapViewModel = map;
 
             _readingCommentRepository = readingCommentRepository;
             _positionRepository = positionRepository;

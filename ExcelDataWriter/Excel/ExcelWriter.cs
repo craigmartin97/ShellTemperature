@@ -1,5 +1,10 @@
-﻿using ExcelDataWriter.Interfaces;
-using ShellTemperature.Data;
+﻿using System.Diagnostics;
+using System.Drawing;
+using ExcelDataWriter.Interfaces;
+using OfficeOpenXml;
+using OfficeOpenXml.Drawing;
+using OfficeOpenXml.Drawing.Chart;
+using OfficeOpenXml.Style;
 using ShellTemperature.Models;
 
 namespace ExcelDataWriter.Excel
@@ -58,12 +63,43 @@ namespace ExcelDataWriter.Excel
                 row++;
             }
 
-            // auto fit columns
-            for (int i = 1; i <= _excelData.Worksheet.Dimension.End.Column; i++)
+            AutoFitCols();
+
+            _excelData.Package.Save();
+        }
+
+        public void WriteCalculations(object[][] calculations)
+        {
+            int row = 1;
+            int col = 11;
+
+            for (int i = 0; i < calculations.Length; i++)
             {
-                _excelData.Worksheet.Column(i).AutoFit();
+                for (int j = 0; j < calculations[i].Length; j++)
+                {
+                    if (j % 2 == 0) // even so must be string
+                    {
+                        string header = (string)calculations[i][j];
+                        _excelData.Worksheet.Cells[row, col].Value = header;
+
+                        // Style
+                        _excelStyler.ApplyFontSize(row, col, 14);
+                        _excelStyler.ApplyBackground(row, col, Color.CornflowerBlue);
+                        _excelStyler.ApplyBorder(row, col, ExcelBorderStyle.Medium, Color.Black);
+                        _excelStyler.ApplyForeground(row, col, Color.White);
+                        _excelStyler.ApplyFontWeight(row, col, true);
+                    }
+                    else
+                    {
+                        double value = (double)calculations[i][j];
+                        _excelData.Worksheet.Cells[row, col+1].Value = value;
+                    }
+                }
+
+                row++;
             }
 
+            _excelData.Worksheet.Column(col).AutoFit();
             _excelData.Package.Save();
         }
 

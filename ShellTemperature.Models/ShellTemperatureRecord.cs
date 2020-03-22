@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 using ShellTemperature.Data;
 
 namespace ShellTemperature.Models
@@ -88,6 +90,33 @@ namespace ShellTemperature.Models
             : this(id, temperature, recordedDateTime, latitude, longitude, deviceInfo, comment)
         {
             IsFromSdCard = isFromSdCard;
+        }
+
+        /// <summary>
+        /// For a given shell temperature record property
+        /// extract the name of the property in a correctly
+        /// formatted order
+        /// </summary>
+        /// <param name="record">Shell temperature record</param>
+        /// <returns>Return string array of column headers in formatted order</returns>
+        public string[] GetHeaders()
+        {
+            // Get the properties for the type
+            PropertyInfo[] properties = this.GetType().GetProperties().ToArray();
+            string[] headers = new string[properties.Length];
+
+            // Extract the order and name and insert into array at correct position
+            foreach (var property in properties)
+            {
+                Attribute[] t = property.GetCustomAttributes(typeof(DisplayAttribute)).ToArray();
+                if (t.Length != 1) continue;
+
+                // Get the order for the property
+                int order = ((DisplayAttribute)t[0]).Order;
+                headers[order] = property.Name;
+            }
+
+            return headers;
         }
     }
 }

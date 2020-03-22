@@ -6,15 +6,15 @@ namespace ShellTemperature.ViewModels.Statistics
     {
         public void BubbleSort(double[] values)
         {
-            for (int write = 0; write < values.Length; write++)
+            for (int i = 0; i < values.Length; i++)
             {
-                for (int sort = 0; sort < values.Length - 1; sort++)
+                for (int j = 0; j < values.Length - 1; j++)
                 {
-                    if (values[sort] > values[sort + 1])
+                    if (values[j] > values[j + 1])
                     {
-                        double temp = values[sort + 1];
-                        values[sort + 1] = values[sort];
-                        values[sort] = temp;
+                        double temp = values[j + 1];
+                        values[j + 1] = values[j];
+                        values[j] = temp;
                     }
                 }
             }

@@ -4,14 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:spinningWheel="clr-namespace:ShellTemperature.Views"
              xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1200">
     <Grid>
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2.2*"/>
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
+
+        <spinningWheel:SpinningWhell Panel.ZIndex="100" Grid.ColumnSpan="2"
+                                     Visibility="{Binding Path=LoadingSpinnerVisibility, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
         <Grid>
             <Grid.RowDefinitions >
