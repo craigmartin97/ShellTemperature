@@ -26,7 +26,7 @@ namespace BluetoothService.BluetoothServices
         /// <returns></returns>
         public List<BluetoothDevice> GetBluetoothDevices()
         {
-            BluetoothDeviceInfo[] foundDevices = new BluetoothClient().DiscoverDevices(); //1000, true, true, false, true
+            BluetoothDeviceInfo[] foundDevices = new BluetoothClient().DiscoverDevicesInRange(); //1000, true, true, false, true
             List<BluetoothDevice> devices = new List<BluetoothDevice>();
 
             foreach (BluetoothConfiguration s in _temperatureDevices)
