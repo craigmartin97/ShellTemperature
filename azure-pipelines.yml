@@ -27,3 +27,6 @@ stages:
         dockerfile: '**/Dockerfile'
         tags: |
           $(tag)
+        packageType: sdk
+        version: '3.0.100-preview6-012264'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
