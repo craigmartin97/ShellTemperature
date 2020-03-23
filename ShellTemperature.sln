@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomDialog", "CustomDialo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExcelDataWriter", "ExcelDataWriter\ExcelDataWriter.csproj", "{D2F583A3-2599-4210-98B7-32DA0246BEFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShellTemperature.Data", "ShellTemperature.Data\ShellTemperature.Data.csproj", "{11D48C2F-7158-48E6-B83D-5C98EBE17534}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShellTemperature.Data", "ShellTemperature.Data\ShellTemperature.Data.csproj", "{11D48C2F-7158-48E6-B83D-5C98EBE17534}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShellTemperature.API", "ShellTemperature.API\ShellTemperature.API.csproj", "{37F61374-6867-431A-8046-982C52F53851}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{11D48C2F-7158-48E6-B83D-5C98EBE17534}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11D48C2F-7158-48E6-B83D-5C98EBE17534}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11D48C2F-7158-48E6-B83D-5C98EBE17534}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37F61374-6867-431A-8046-982C52F53851}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37F61374-6867-431A-8046-982C52F53851}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37F61374-6867-431A-8046-982C52F53851}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37F61374-6867-431A-8046-982C52F53851}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
