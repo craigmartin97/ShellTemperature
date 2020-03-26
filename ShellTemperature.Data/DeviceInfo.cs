@@ -18,5 +18,7 @@ namespace ShellTemperature.Data
         [Required]
         public string DeviceName { get; set; }
 
+        [Required]
+        public DeviceType DeviceType { get; set; }
     }
 }

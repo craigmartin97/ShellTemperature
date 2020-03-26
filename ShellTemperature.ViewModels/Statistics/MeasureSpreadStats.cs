@@ -24,7 +24,7 @@ namespace ShellTemperature.ViewModels.Statistics
             if (values == null || values.Length == 0)
                 throw new ArgumentNullException(nameof(values), "No data available");
             if (values.Length == 1)
-                throw new InvalidOperationException("Unable to calculate range with only one value");
+                return 0; // Can't calculate range with one value
 
             _sortingAlgorithm.QuickSort(values, 0, values.Length - 1);
             double min = values[0];
@@ -132,6 +132,7 @@ namespace ShellTemperature.ViewModels.Statistics
         private double GetQuantileMedian(double[] quantile)
         {
             if (quantile == null) throw new ArgumentNullException(nameof(quantile));
+            if (quantile.Length < 2) return 0; // can't calculate with not enough values
 
             if (quantile.Length % 2 == 0) // even
             {

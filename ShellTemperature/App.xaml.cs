@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Resources;
 using System.Windows;
 
 namespace ShellTemperature
@@ -40,6 +41,8 @@ namespace ShellTemperature
         private ClearList clearList = new ClearList();
 
         private IConfiguration _configuration;
+
+        private string _enviromentTag;
 
         /// <summary>
         /// Method initiates the startup of the application.
@@ -58,6 +61,7 @@ namespace ShellTemperature
             {
                 if (e.Args[i].Equals("-config"))
                 {
+                    _enviromentTag = e.Args[i + 1];
                     switch (e.Args[i + 1])
                     {
                         case "Development":
@@ -209,7 +213,19 @@ namespace ShellTemperature
 
             services.AddSingleton<TopBarViewModel>();
             services.AddSingleton<MainWindowViewModel>();
-            services.AddSingleton<LiveShellDataViewModel>();
+
+            if (string.IsNullOrWhiteSpace(_enviromentTag))
+            {
+                services.AddSingleton<BaseLiveShellDataViewModel, LiveBluetoothOnlyShellDataViewModel>();
+            }
+            else
+            {
+                if (_enviromentTag.Equals("Development")) // Test mode, only access to test database so no way to check for wifi data
+                    services.AddSingleton<BaseLiveShellDataViewModel, LiveBluetoothOnlyShellDataViewModel>();
+                else if (_enviromentTag.Equals("Live")) // Live mode, also need to check for wifi data
+                    services.AddSingleton<BaseLiveShellDataViewModel, LiveWifiAndBluetoothShellDataViewModel>();
+            }
+
             services.AddScoped<ShellHistoryViewModel>();
             services.AddSingleton<ReportViewModel>();
             services.AddSingleton<ManagementViewModel>();

@@ -12,7 +12,7 @@ namespace ShellTemperature.ViewModels.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         #region Injected Objects
-        private readonly LiveShellDataViewModel _liveShellDataViewModel;
+        private readonly BaseLiveShellDataViewModel _liveShellDataViewModel;
         private readonly ShellHistoryViewModel _shellHistoryViewModel;
         private readonly ReportViewModel _reportViewModel;
 
@@ -85,7 +85,7 @@ namespace ShellTemperature.ViewModels.ViewModels
         #endregion
 
         #region Constructor
-        public MainWindowViewModel(TopBarViewModel topBarViewModel, LiveShellDataViewModel liveShellDataViewModel,
+        public MainWindowViewModel(TopBarViewModel topBarViewModel, BaseLiveShellDataViewModel liveShellDataViewModel,
             ShellHistoryViewModel shellHistoryViewModel, ReportViewModel reportViewModel,
             IReadingCommentRepository<ReadingComment> readingCommentRepository,
             IRepository<Positions> positionRepository)
