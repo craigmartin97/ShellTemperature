@@ -10,6 +10,7 @@ using ShellTemperature.Repository;
 using ShellTemperature.Repository.Interfaces;
 using ShellTemperature.ViewModels;
 using ShellTemperature.ViewModels.ConnectionObserver;
+using ShellTemperature.ViewModels.DataManipulation;
 using ShellTemperature.ViewModels.Interfaces;
 using ShellTemperature.ViewModels.Outliers;
 using ShellTemperature.ViewModels.Statistics;
@@ -24,7 +25,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
-using ShellTemperature.ViewModels.DataManipulation;
 
 namespace ShellTemperature
 {
