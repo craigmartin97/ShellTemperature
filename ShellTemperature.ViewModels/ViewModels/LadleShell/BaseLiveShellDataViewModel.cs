@@ -353,7 +353,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 }
             }
 
-            return new FindDevices(){ BluetoothDevices = allDevicesFound }; 
+            return new FindDevices
+            {
+                BluetoothDevices = allDevicesFound,
+                WifiDevices = new List<WifiDevice>() // just create a blank list. Children will override
+            }; 
         }
 
         /// <summary>

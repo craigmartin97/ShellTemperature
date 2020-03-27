@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using ShellTemperature.ViewModels.Commands;
+using OxyPlot.Axes;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -95,7 +96,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         private void InstantiateNewDevice(WifiDevice wifiDevice)
         {
             wifiDevice.Timer.Tick += (sender, args) => Timer_Tick(wifiDevice);
-            wifiDevice.Timer.Interval = new TimeSpan(0, 0, 60);
+            wifiDevice.Timer.Interval = new TimeSpan(0, 0, 30);
             wifiDevice.Timer.Start();
 
             Devices.Add(wifiDevice);
@@ -122,7 +123,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         {
             foreach (var dataReading in device.Temp)
             {
-                device.DataPoints.Add(new DataPoint(dataReading.RecordedDateTime.Ticks, dataReading.Temperature));
+                device.DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(dataReading.RecordedDateTime),
+                    dataReading.Temperature));
             }
         }
 
@@ -140,6 +142,13 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
             if (!inUse)
             {
+                if (device.FailureAttempts < 5)
+                {
+                    device.FailureAttempts++;
+                    return;
+                }
+
+                // Has failed more than 5 times, remove device
                 Application.Current.Dispatcher.Invoke(delegate
                 {
                     Devices.Remove(device);
@@ -147,10 +156,13 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                         SetConnectionStatus(); // Set to null and default message
                     else
                         SelectedDevice = Devices.FirstOrDefault(); // Select next item
+
+                    device.Timer.Stop();
                 });
             }
             else
             {
+                // Latest Temperatures
                 ShellTemperatureRecord[] temps = recentTemps.Select(temp
                     => new ShellTemperatureRecord(temp.Id, temp.Temperature, temp.RecordedDateTime,
                         temp.Latitude, temp.Longitude, temp.Device)).ToArray();
@@ -158,9 +170,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 foreach (ShellTemperatureRecord temp in temps)
                 {
                     device.Temp.Add(temp);
+                    device.DataPoints.Add(new DataPoint(DateTimeAxis.ToDouble(temp.RecordedDateTime), temp.Temperature));
                 }
 
-                SetWifiDeviceDataPoints(device);
                 SetConnectionStatus(device, DeviceConnectionStatus.CONNECTED);
             }
         }

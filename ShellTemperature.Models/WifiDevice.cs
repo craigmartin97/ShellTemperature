@@ -13,5 +13,11 @@ namespace ShellTemperature.Models
         }
 
         public DateTime StartRecordingTime { get; set; }
+
+        /// <summary>
+        /// Indicates how many times a data retrieval has been attempted
+        /// and been unsuccessful with new data
+        /// </summary>
+        public int FailureAttempts { get; set; }
     }
 }
