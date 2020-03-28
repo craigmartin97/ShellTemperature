@@ -8,6 +8,7 @@ using NLog.Extensions.Logging;
 using ShellTemperature.Data;
 using ShellTemperature.Repository;
 using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.Service;
 using ShellTemperature.ViewModels;
 using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.DataManipulation;
@@ -24,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Resources;
+using System.Net.Http.Headers;
 using System.Windows;
 
 namespace ShellTemperature
@@ -105,7 +106,9 @@ namespace ShellTemperature
             ConfigureServices(serviceCollection);
             ConfigureViews(serviceCollection);
             ConfigureViewModels(serviceCollection);
-            ConfigDatabase(serviceCollection);
+
+            ConfigureHttpClient(serviceCollection); // Http Client
+            ConfigDatabase(serviceCollection); // Database
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -271,6 +274,23 @@ namespace ShellTemperature
 
                 context.Positions.AddRange(positions);
                 context.SaveChanges();
+            }
+        }
+        #endregion
+
+        #region Add HttpClient
+
+        private void ConfigureHttpClient(IServiceCollection services)
+        {
+            if (_enviromentTag.Equals("Live")) // USING LIVE, Inject HttpClient's
+            {
+                // Inject Http Client for MPI API
+                services.AddHttpClient<BaseService>(service =>
+                {
+                    service.BaseAddress = new Uri(_configuration["APIAddress"]);
+                    service.DefaultRequestHeaders.Accept.Clear();
+                    service.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                });
             }
         }
         #endregion

@@ -29,8 +29,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.3" />
     <PackageReference Include="NLog" Version="4.6.8" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.6.1" />
     <PackageReference Include="OxyPlot.Wpf" Version="2.0.0" />
@@ -40,6 +41,7 @@
     <ProjectReference Include="..\Behaviours\Behaviours.csproj" />
     <ProjectReference Include="..\CustomDialog\CustomDialog.csproj" />
     <ProjectReference Include="..\ShellTemperature.Repository\ShellTemperature.Repository.csproj" />
+    <ProjectReference Include="..\ShellTemperature.Service\ShellTemperature.Service.csproj" />
     <ProjectReference Include="..\ShellTemperature.ViewModels\ShellTemperature.ViewModels.csproj" />
   </ItemGroup>
 

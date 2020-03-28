@@ -357,7 +357,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             {
                 BluetoothDevices = allDevicesFound,
                 WifiDevices = new List<WifiDevice>() // just create a blank list. Children will override
-            }; 
+            };
         }
 
         /// <summary>
