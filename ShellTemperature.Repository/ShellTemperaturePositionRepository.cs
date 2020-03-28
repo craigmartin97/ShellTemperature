@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShellTemperature.Data;
 using ShellTemperature.Repository.Interfaces;
@@ -11,7 +12,7 @@ namespace ShellTemperature.Repository
     {
         public ShellTemperaturePositionRepository(ShellDb context) : base(context) { }
 
-        public bool Create(ShellTemperaturePosition model)
+        public async Task<bool> Create(ShellTemperaturePosition model)
         {
             // Validation
             if (model == null)
@@ -19,9 +20,9 @@ namespace ShellTemperature.Repository
             if (model.ShellTemp?.Device == null || model.Position == null)
                 throw new ArgumentNullException(nameof(model), "The model supplied is invalid as it has null references");
 
-            ShellTemp dbShellTemp = Context.ShellTemperatures.Find(model.ShellTemp.Id);
-            DeviceInfo dbDeviceInfo = Context.DevicesInfo.Find(model.ShellTemp.Device.Id);
-            Positions dbDevicePosition = Context.Positions.Find(model.Position.Id);
+            ShellTemp dbShellTemp = await Context.ShellTemperatures.FindAsync(model.ShellTemp.Id);
+            DeviceInfo dbDeviceInfo = await Context.DevicesInfo.FindAsync(model.ShellTemp.Device.Id);
+            Positions dbDevicePosition = await Context.Positions.FindAsync(model.Position.Id);
 
             if (dbDeviceInfo != null && dbShellTemp != null)
             {
@@ -29,8 +30,8 @@ namespace ShellTemperature.Repository
                 model.ShellTemp.Device = dbDeviceInfo;
                 model.Position = dbDevicePosition;
 
-                Context.ShellTemperaturePositions.Add(model);
-                Context.SaveChanges();
+                await Context.ShellTemperaturePositions.AddAsync(model);
+                await Context.SaveChangesAsync();
                 return true;
             }
 

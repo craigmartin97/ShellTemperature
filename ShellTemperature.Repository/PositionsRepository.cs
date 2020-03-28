@@ -3,6 +3,8 @@ using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace ShellTemperature.Repository
 {
@@ -10,7 +12,7 @@ namespace ShellTemperature.Repository
     {
         public PositionsRepository(ShellDb context) : base(context) { }
 
-        public bool Create(Positions model)
+        public async Task<bool> Create(Positions model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The position model supplied is null");
@@ -19,12 +21,12 @@ namespace ShellTemperature.Repository
             if (dbDevicePosition != null)
                 return false;
             
-            bool positionExists = Context.Positions.Any(x => x.Position.Equals(model.Position));
+            bool positionExists = await Context.Positions.AnyAsync(x => x.Position.Equals(model.Position));
             if (positionExists)
                 return false; // already exists
 
-            Context.Positions.Add(model);
-            Context.SaveChanges();
+            await Context.Positions.AddAsync(model);
+            await Context.SaveChangesAsync();
             return true;
         }
 

@@ -1,9 +1,9 @@
-﻿using ShellTemperature.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using ShellTemperature.Data;
 using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace ShellTemperature.Repository
 {
@@ -11,34 +11,25 @@ namespace ShellTemperature.Repository
     {
         public ShellTemperatureCommentRepository(ShellDb context) : base(context) { }
 
-        public bool Create(ShellTemperatureComment model)
+        public async Task<bool> Create(ShellTemperatureComment model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The comment object was null");
 
             // get data from database
-            DeviceInfo device = Context.DevicesInfo.Find(model.ShellTemp.Device.Id);
-            ShellTemp temp = Context.ShellTemperatures.Find(model.ShellTemp.Id);
-            ReadingComment readingComment = Context.ReadingComments.Find(model.Comment.Id);
+            DeviceInfo device = await Context.DevicesInfo.FindAsync(model.ShellTemp.Device.Id);
+            ShellTemp temp = await Context.ShellTemperatures.FindAsync(model.ShellTemp.Id);
+            ReadingComment readingComment = await Context.ReadingComments.FindAsync(model.Comment.Id);
 
             if (temp == null || device == null || readingComment == null)
                 throw new NullReferenceException("The temperature, device or comment is null");
 
-            // see if the temperature already has a comment
-            //ShellTemperatureComment exists = Context.ShellTemperatureComments.FirstOrDefault(x => x.ShellTemp.Id == temp.Id);
-            //if (exists != null) // already exists
-            //{
-            //    exists.Comment = readingComment; // Update the record
-            //}
-            //else
-            //{
             model.ShellTemp = temp;
             model.ShellTemp.Device = device;
             model.Comment = readingComment;
-            Context.ShellTemperatureComments.Add(model);
-            //}
+            await Context.ShellTemperatureComments.AddAsync(model);
 
-            Context.SaveChanges();
+            await Context.SaveChangesAsync();
             return true;
         }
 

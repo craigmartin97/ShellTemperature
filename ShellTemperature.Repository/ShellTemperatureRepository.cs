@@ -4,6 +4,7 @@ using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ShellTemperature.Repository
 {
@@ -11,17 +12,21 @@ namespace ShellTemperature.Repository
     {
         public ShellTemperatureRepository(ShellDb context) : base(context) { }
 
-        public bool Create(ShellTemp model)
+        public async Task<bool> Create(ShellTemp model)
         {
             if (model?.Device == null)
                 throw new ArgumentNullException(nameof(model), "The model supplied was invalid");
 
-            DeviceInfo dbDevice = Context.DevicesInfo.Find(model.Device.Id);
-            DeviceInfo device = dbDevice ?? model.Device;
+            // Try and find the device in the database
+            DeviceInfo dbDevice = await Context.DevicesInfo.FindAsync(model.Device.Id) ??
+                                  await Context.DevicesInfo.FirstOrDefaultAsync(dev =>
+                                      dev.DeviceAddress.Equals(model.Device.DeviceAddress));
+
+            DeviceInfo device = dbDevice ?? model.Device; // Use the database device or add models device
             model.Device = device;
 
-            Context.Add(model);
-            Context.SaveChanges();
+            await Context.AddAsync(model);
+            await Context.SaveChangesAsync();
             return true;
         }
 

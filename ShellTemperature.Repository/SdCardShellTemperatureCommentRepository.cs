@@ -4,6 +4,7 @@ using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ShellTemperature.Repository
 {
@@ -11,21 +12,21 @@ namespace ShellTemperature.Repository
     {
         public SdCardShellTemperatureCommentRepository(ShellDb context) : base(context) { }
 
-        public bool Create(SdCardShellTemperatureComment model)
+        public async Task<bool> Create(SdCardShellTemperatureComment model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The comment object was null");
 
             // get data from database
-            DeviceInfo device = Context.DevicesInfo.Find(model.SdCardShellTemp.Device.Id);
-            SdCardShellTemp temp = Context.SdCardShellTemperatures.Find(model.SdCardShellTemp.Id);
-            ReadingComment readingComment = Context.ReadingComments.Find(model.Comment.Id);
+            DeviceInfo device = await Context.DevicesInfo.FindAsync(model.SdCardShellTemp.Device.Id);
+            SdCardShellTemp temp = await Context.SdCardShellTemperatures.FindAsync(model.SdCardShellTemp.Id);
+            ReadingComment readingComment = await Context.ReadingComments.FindAsync(model.Comment.Id);
 
             if (temp == null || device == null || readingComment == null)
                 throw new NullReferenceException("The temperature, device or comment is null");
 
             // see if the temperature already has a comment
-            SdCardShellTemperatureComment exists = Context.SdCardShellTemperatureComments.FirstOrDefault(x => x.SdCardShellTemp.Id == temp.Id);
+            SdCardShellTemperatureComment exists = await Context.SdCardShellTemperatureComments.FirstOrDefaultAsync(x => x.SdCardShellTemp.Id == temp.Id);
             if (exists != null) // already exists
             {
                 exists.Comment = readingComment; // Update the record
@@ -35,10 +36,10 @@ namespace ShellTemperature.Repository
                 model.SdCardShellTemp = temp;
                 model.SdCardShellTemp.Device = device;
                 model.Comment = readingComment;
-                Context.SdCardShellTemperatureComments.Add(model);
+                await Context.SdCardShellTemperatureComments.AddAsync(model);
             }
 
-            Context.SaveChanges();
+            await Context.SaveChangesAsync();
             return true;
         }
 

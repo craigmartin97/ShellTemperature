@@ -3,6 +3,7 @@ using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ShellTemperature.Repository
 {
@@ -19,7 +20,7 @@ namespace ShellTemperature.Repository
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public bool Create(ReadingComment model)
+        public async Task<bool> Create(ReadingComment model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The model supplied is null");
@@ -30,8 +31,8 @@ namespace ShellTemperature.Repository
                 return false;
 
             // exists was null so it can't exist, add into dbo
-            Context.ReadingComments.Add(model);
-            Context.SaveChanges();
+            await Context.ReadingComments.AddAsync(model);
+            await Context.SaveChangesAsync();
             return true;
 
         }

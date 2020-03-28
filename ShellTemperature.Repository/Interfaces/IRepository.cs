@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ShellTemperature.Repository.Interfaces
 {
@@ -10,7 +11,7 @@ namespace ShellTemperature.Repository.Interfaces
         /// </summary>
         /// <param name="model">The model object to create in the repository</param>
         /// <returns></returns>
-        bool Create(T model);
+        Task<bool> Create(T model);
 
         /// <summary>
         /// Get a collection of type T

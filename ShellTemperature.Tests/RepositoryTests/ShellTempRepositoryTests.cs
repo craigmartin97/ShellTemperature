@@ -68,7 +68,7 @@ namespace ShellTemperature.Tests.RepositoryTests
         }
 
         [Test, Order(1)]
-        public void Create_Test()
+        public async void Create_Test()
         {
             // Arrange
             Random random = new Random();
@@ -91,7 +91,7 @@ namespace ShellTemperature.Tests.RepositoryTests
                 };
 
                 // Act
-                bool created = temperatureRepository.Create(temp);
+                bool created = await temperatureRepository.Create(temp);
 
                 // Assert
                 Assert.IsTrue(created);

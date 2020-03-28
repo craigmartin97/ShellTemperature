@@ -4,6 +4,7 @@ using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ShellTemperature.Repository
 {
@@ -11,17 +12,17 @@ namespace ShellTemperature.Repository
     {
         public SdCardShellTemperatureRepository(ShellDb context) : base(context) { }
 
-        public bool Create(SdCardShellTemp model)
+        public async Task<bool> Create(SdCardShellTemp model)
         {
             if (model?.Device == null)
                 throw new ArgumentNullException(nameof(model), "The model supplied was invalid");
 
-            DeviceInfo dbDevice = Context.DevicesInfo.Find(model.Device.Id);
+            DeviceInfo dbDevice = await Context.DevicesInfo.FindAsync(model.Device.Id);
             DeviceInfo device = dbDevice ?? model.Device;
             model.Device = device;
 
-            Context.Add(model);
-            Context.SaveChanges();
+            await Context.AddAsync(model);
+            await Context.SaveChangesAsync();
             return true;
         }
 

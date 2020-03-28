@@ -73,12 +73,12 @@ namespace ShellTemperature.Tests.RepositoryTests
         /// Creaet a new valid position.
         /// </summary>
         [Test, Order(1)]
-        public void Create_Test()
+        public async void Create_Test()
         {
             // Arrange
             Positions devicePosition = new Positions("Craig");
             // Act
-            bool created = positionsRepository.Create(devicePosition);
+            bool created = await positionsRepository.Create(devicePosition);
             // Assert
             Assert.IsTrue(created);
         }
@@ -94,20 +94,20 @@ namespace ShellTemperature.Tests.RepositoryTests
         }
 
         [Test, Order(3)]
-        public void Create_AlreadyExists_Test()
+        public async void Create_AlreadyExists_Test()
         {
             foreach (var devicePosition in devPos)
             {
-                bool created = positionsRepository.Create(devicePosition);
+                bool created = await positionsRepository.Create(devicePosition);
                 Assert.IsFalse(created); // already exists!!!
             }
         }
 
         [Test, Order(4)]
-        public void Create_AlreadyExistsPosition_Test()
+        public async void Create_AlreadyExistsPosition_Test()
         {
             Positions position = new Positions("Side");
-            bool created = positionsRepository.Create(position);
+            bool created = await positionsRepository.Create(position);
             Assert.IsFalse(created); // already exists!!!
         }
 

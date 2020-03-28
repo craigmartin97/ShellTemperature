@@ -42,7 +42,7 @@ namespace ShellTemperature.Tests.RepositoryTests
         /// Create a new device info should pass
         /// </summary>
         [Test, Order(1)]
-        public void Create_Test()
+        public async void Create_Test()
         {
             // Arrange
             DeviceInfo deviceInfo = new DeviceInfo
@@ -53,7 +53,7 @@ namespace ShellTemperature.Tests.RepositoryTests
             };
 
             // Act
-            bool created = deviceRepository.Create(deviceInfo);
+            bool created = await deviceRepository.Create(deviceInfo);
 
             // Assert
             Assert.IsTrue(created);

@@ -3,6 +3,8 @@ using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace ShellTemperature.Repository
 {
@@ -17,15 +19,15 @@ namespace ShellTemperature.Repository
         /// </summary>
         /// <param name="model">The device to create</param>
         /// <returns></returns>
-        public bool Create(DeviceInfo model)
+        public async Task<bool> Create(DeviceInfo model)
         {
-            DeviceInfo alreadyExists = Context.DevicesInfo.FirstOrDefault(x => x.DeviceAddress.Equals(model.DeviceAddress));
+            DeviceInfo alreadyExists = await Context.DevicesInfo.FirstOrDefaultAsync(x => x.DeviceAddress.Equals(model.DeviceAddress));
 
             if (alreadyExists != null)
                 throw new ArgumentException("The device " + model.DeviceAddress + " already exists in the data store");
 
-            Context.Add(model);
-            Context.SaveChanges();
+            await Context.AddAsync(model);
+            await Context.SaveChangesAsync();
             return true;
         }
 

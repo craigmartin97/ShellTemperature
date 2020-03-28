@@ -107,7 +107,7 @@ namespace ShellTemperature.Tests.RepositoryTests
 
         #region Create
         [Test]
-        public void Create()
+        public async void Create()
         {
             // Arrange
             Random random = new Random();
@@ -118,7 +118,7 @@ namespace ShellTemperature.Tests.RepositoryTests
             ShellTemperatureComment newComment = new ShellTemperatureComment(readingComment, shellTemp);
 
             // ACt
-            bool created = shellTemperatureCommentRepository.Create(newComment);
+            bool created = await shellTemperatureCommentRepository.Create(newComment);
 
             // Assert
             Assert.IsTrue(created);
