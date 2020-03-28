@@ -1,9 +1,7 @@
 ﻿using BluetoothService;
-using BluetoothService.BluetoothServices;
 using BluetoothService.Enums;
 using OxyPlot;
 using ShellTemperature.Data;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 
