@@ -82,7 +82,7 @@ namespace ShellTemperature.Tests.RepositoryTests
 
 
         [Test]
-        public async void Create()
+        public void Create()
         {
             Random random = new Random();
 
@@ -104,7 +104,7 @@ namespace ShellTemperature.Tests.RepositoryTests
                 Position = position
             };
 
-            bool created = await shellTemperaturePositionRepository.Create(shellTemperaturePosition);
+            bool created = shellTemperaturePositionRepository.Create(shellTemperaturePosition);
             Assert.IsTrue(created);
         }
 
@@ -125,7 +125,7 @@ namespace ShellTemperature.Tests.RepositoryTests
         }
 
         [Test]
-        public async void Create_CantFindShellTemp()
+        public void Create_CantFindShellTemp()
         {
             Random random = new Random();
 
@@ -145,7 +145,7 @@ namespace ShellTemperature.Tests.RepositoryTests
                 Position = position
             };
 
-            bool created = await shellTemperaturePositionRepository.Create(shellTemperaturePosition);
+            bool created = shellTemperaturePositionRepository.Create(shellTemperaturePosition);
             Assert.IsFalse(created);
         }
 

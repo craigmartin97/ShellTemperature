@@ -11,7 +11,7 @@ namespace ShellTemperature.Repository.Interfaces
         /// </summary>
         /// <param name="model">The model object to create in the repository</param>
         /// <returns></returns>
-        Task<bool> Create(T model);
+        bool Create(T model);
 
         /// <summary>
         /// Get a collection of type T

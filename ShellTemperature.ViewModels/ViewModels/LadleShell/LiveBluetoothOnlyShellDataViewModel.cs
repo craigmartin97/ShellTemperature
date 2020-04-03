@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ShellTemperature.Data;
-using ShellTemperature.Models;
 using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.Service;
+using ShellTemperature.Service.Live;
 using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.Outliers;
 using ShellTemperature.ViewModels.TemperatureObserver;
@@ -17,6 +18,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
     public class LiveBluetoothOnlyShellDataViewModel : BaseLiveShellDataViewModel
     {
         #region Constructors
+
         public LiveBluetoothOnlyShellDataViewModel(IBluetoothFinder bluetoothFinder,
             IShellTemperatureRepository<ShellTemp> shellTemperatureRepository,
             IShellTemperatureRepository<SdCardShellTemp> sdCardShellTemperatureRepository,
@@ -32,10 +34,13 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             IRepository<Positions> positionRepository,
             IRepository<ShellTemperaturePosition> shellTempPositionRepository,
             IRepository<SdCardShellTemperatureComment> sdCardCommentRepository)
-            : base(bluetoothFinder, shellTemperatureRepository, sdCardShellTemperatureRepository, deviceRepository, configuration, subject,
+            : base(bluetoothFinder, shellTemperatureRepository, sdCardShellTemperatureRepository, deviceRepository,
+                configuration, subject,
                 temperatureSubject, logger, outlierDetector, clear, commentRepository, readingCommentRepository,
                 positionRepository, shellTempPositionRepository, sdCardCommentRepository)
-        { }
+        {
+
+        }
         #endregion
     }
 }

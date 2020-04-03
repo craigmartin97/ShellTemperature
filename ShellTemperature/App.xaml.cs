@@ -27,6 +27,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Windows;
+using ShellTemperature.Service.Development;
+using ShellTemperature.Service.Live;
+using Polly;
 
 namespace ShellTemperature
 {
@@ -107,7 +110,7 @@ namespace ShellTemperature
             ConfigureViews(serviceCollection);
             ConfigureViewModels(serviceCollection);
 
-            ConfigureHttpClient(serviceCollection); // Http Client
+            
             ConfigDatabase(serviceCollection); // Database
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
@@ -173,6 +176,26 @@ namespace ShellTemperature
 
                 return new BluetoothFinder(bluetoothConfigurations.ToArray());
             });
+
+            //if (_enviromentTag.Equals("Development"))
+            //{
+            //    services.AddScoped<IShellTemperatureService<ShellTemp>, ShellTemperatureDevelopmentService>();
+            //}
+            //else if (_enviromentTag.Equals("Live"))
+            //{
+                // Inject Http Client for MPI API
+                services.AddHttpClient<IShellTemperatureService<ShellTemp>, ShellTemperatureLiveService>
+                (service =>
+                {
+                    service.BaseAddress = new Uri(_configuration["APIAddress"]);
+                    service.DefaultRequestHeaders.Accept.Clear();
+                    service.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                })
+                    .AddTransientHttpErrorPolicy(p =>
+                        p.OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+                            .WaitAndRetryAsync(3, retry => TimeSpan.FromSeconds(Math.Pow(2, retry))))
+                    .AddTransientHttpErrorPolicy(p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30))); ;
+            //}
 
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
@@ -274,23 +297,6 @@ namespace ShellTemperature
 
                 context.Positions.AddRange(positions);
                 context.SaveChanges();
-            }
-        }
-        #endregion
-
-        #region Add HttpClient
-
-        private void ConfigureHttpClient(IServiceCollection services)
-        {
-            if (_enviromentTag.Equals("Live")) // USING LIVE, Inject HttpClient's
-            {
-                // Inject Http Client for MPI API
-                services.AddHttpClient<BaseService>(service =>
-                {
-                    service.BaseAddress = new Uri(_configuration["APIAddress"]);
-                    service.DefaultRequestHeaders.Accept.Clear();
-                    service.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                });
             }
         }
         #endregion

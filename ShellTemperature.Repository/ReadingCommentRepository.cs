@@ -20,7 +20,7 @@ namespace ShellTemperature.Repository
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<bool> Create(ReadingComment model)
+        public bool Create(ReadingComment model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The model supplied is null");
@@ -31,8 +31,8 @@ namespace ShellTemperature.Repository
                 return false;
 
             // exists was null so it can't exist, add into dbo
-            await Context.ReadingComments.AddAsync(model);
-            await Context.SaveChangesAsync();
+            Context.ReadingComments.Add(model);
+            Context.SaveChanges();
             return true;
 
         }

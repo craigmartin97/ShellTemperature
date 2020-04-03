@@ -13,6 +13,7 @@ using OxyPlot.Axes;
 using ShellTemperature.Data;
 using ShellTemperature.Models;
 using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.Service;
 using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.Outliers;
@@ -25,6 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 

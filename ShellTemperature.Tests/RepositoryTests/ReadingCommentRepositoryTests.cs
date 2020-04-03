@@ -36,13 +36,13 @@ namespace ShellTemperature.Tests.RepositoryTests
         /// Create a new reading comment
         /// </summary>
         [Test, Order(1)]
-        public async void Create_Test()
+        public void Create_Test()
         {
             // Arrange
             ReadingComment readingComment = new ReadingComment("MyComment");
 
             // Act
-            bool created = await readingCommentRepository.Create(readingComment);
+            bool created = readingCommentRepository.Create(readingComment);
 
             // Assert
             Assert.IsTrue(created);
@@ -55,11 +55,11 @@ namespace ShellTemperature.Tests.RepositoryTests
         }
 
         [Test, Order(3)]
-        public async void Create_AlreadyExists_Test()
+        public void Create_AlreadyExists_Test()
         {
             foreach (var readingComment in readingComments)
             {
-                bool created = await readingCommentRepository.Create(readingComment);
+                bool created = readingCommentRepository.Create(readingComment);
                 Assert.IsFalse(created); // they already exists!!!
             }
         }

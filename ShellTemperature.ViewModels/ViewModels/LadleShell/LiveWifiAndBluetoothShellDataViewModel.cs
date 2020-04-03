@@ -3,9 +3,12 @@ using BluetoothService.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
+using OxyPlot.Axes;
 using ShellTemperature.Data;
 using ShellTemperature.Models;
 using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.Service;
+using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.Outliers;
 using ShellTemperature.ViewModels.TemperatureObserver;
@@ -13,14 +16,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
-using ShellTemperature.ViewModels.Commands;
-using OxyPlot.Axes;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
     public class LiveWifiAndBluetoothShellDataViewModel : BaseLiveShellDataViewModel
     {
+        #region Fields
+
+        private readonly IShellTemperatureRepository<ShellTemp> _shellTemperatureRepository;
+        #endregion
+
         public override RelayCommand StartCommand
             => new RelayCommand(delegate
             {
@@ -49,6 +56,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 temperatureSubject, logger, outlierDetector, clear, commentRepository, readingCommentRepository,
                 positionRepository, shellTempPositionRepository, sdCardCommentRepository)
         {
+            _shellTemperatureRepository = shellTemperatureRepository;
+
             IList<DeviceInfo> potentialWifiDevices = FindPotentialWifiDevices();
 
             foreach (DeviceInfo device in potentialWifiDevices.ToList())
@@ -57,12 +66,16 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 DateTime end = DateTime.Now;
 
                 WifiDevice wifiDevice = new WifiDevice(device.DeviceName, device.DeviceAddress, start);
-                bool inUse = WifiDeviceInUse(wifiDevice, start, end, out ShellTemp[] recentTemps);
-                if (!inUse)
+
+                IEnumerable<ShellTemp> shellTemps = _shellTemperatureRepository.GetShellTemperatureData(start, end,
+                    device.DeviceName, device.DeviceAddress);
+                ShellTemp[] dataReadings = shellTemps as ShellTemp[] ?? shellTemps.ToArray();
+
+                if (dataReadings.Length == 0)
                     potentialWifiDevices.Remove(device);
                 else
                 {
-                    SetWifiDeviceDataReadings(wifiDevice, recentTemps);
+                    SetWifiDeviceDataReadings(wifiDevice, dataReadings);
                     SetWifiDeviceDataPoints(wifiDevice);
                     InstantiateNewDevice(wifiDevice);
 
@@ -79,17 +92,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             SetCanRemoveDevices();
         }
         #endregion
-
-        /// <summary>
-        /// Check if the found wifi device is in use
-        /// </summary>
-        /// <param name="wifiDevices"></param>
-        /// <param name="previousMinutes"></param>
-        private bool WifiDeviceInUse(WifiDevice wifiDevice, DateTime start, DateTime end, out ShellTemp[] recentTemps)
-        {
-            recentTemps = GetDeviceData(start, end, wifiDevice);
-            return recentTemps.Any();
-        }
 
         #region Instansiate Device
 
@@ -129,8 +131,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         }
 
         private ShellTemp[] GetDeviceData(DateTime start, DateTime end, WifiDevice device)
-            => ShellTemperatureRepository.GetShellTemperatureData(start, end,
-                device.DeviceName, device.DeviceAddress).ToArray();
+        {
+            return ShellTemperatureRepository.GetShellTemperatureData(start, end,
+                           device.DeviceName, device.DeviceAddress).ToArray();
+        }
 
         private void Timer_Tick(WifiDevice device)
         {
@@ -138,9 +142,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             DateTime start = device.Temp[^1].RecordedDateTime.AddSeconds(1);
             DateTime end = DateTime.Now;
 
-            bool inUse = WifiDeviceInUse(device, start, end, out ShellTemp[] recentTemps);
+            ShellTemp[] dataReadings = GetDeviceData(start, end, device); //WifiDeviceInUse(device, start, end, out ShellTemp[] recentTemps);
 
-            if (!inUse)
+            if (dataReadings.Length == 0)
             {
                 if (device.FailureAttempts < 5)
                 {
@@ -163,7 +167,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             else
             {
                 // Latest Temperatures
-                ShellTemperatureRecord[] temps = recentTemps.Select(temp
+                ShellTemperatureRecord[] temps = dataReadings.Select(temp
                     => new ShellTemperatureRecord(temp.Id, temp.Temperature, temp.RecordedDateTime,
                         temp.Latitude, temp.Longitude, temp.Device)).ToArray();
 
@@ -195,10 +199,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 DateTime end = DateTime.Now;
 
                 WifiDevice wifiDevice = new WifiDevice(device.DeviceName, device.DeviceAddress, start);
-                bool inUse = WifiDeviceInUse(wifiDevice, start, end, out ShellTemp[] recentTemps);
-                if (inUse)
+                ShellTemp[] dataReadings = GetDeviceData(start, end, wifiDevice); 
+                if (dataReadings.Length > 0)
                 {
-                    SetWifiDeviceDataReadings(wifiDevice, recentTemps);
+                    SetWifiDeviceDataReadings(wifiDevice, dataReadings);
                     SetWifiDeviceDataPoints(wifiDevice);
                     wifiDevices.Add(wifiDevice);
                 }

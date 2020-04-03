@@ -11,15 +11,15 @@ namespace ShellTemperature.Repository
     {
         public ShellTemperatureCommentRepository(ShellDb context) : base(context) { }
 
-        public async Task<bool> Create(ShellTemperatureComment model)
+        public bool Create(ShellTemperatureComment model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The comment object was null");
 
             // get data from database
-            DeviceInfo device = await Context.DevicesInfo.FindAsync(model.ShellTemp.Device.Id);
-            ShellTemp temp = await Context.ShellTemperatures.FindAsync(model.ShellTemp.Id);
-            ReadingComment readingComment = await Context.ReadingComments.FindAsync(model.Comment.Id);
+            DeviceInfo device = Context.DevicesInfo.Find(model.ShellTemp.Device.Id);
+            ShellTemp temp = Context.ShellTemperatures.Find(model.ShellTemp.Id);
+            ReadingComment readingComment = Context.ReadingComments.Find(model.Comment.Id);
 
             if (temp == null || device == null || readingComment == null)
                 throw new NullReferenceException("The temperature, device or comment is null");
@@ -27,9 +27,9 @@ namespace ShellTemperature.Repository
             model.ShellTemp = temp;
             model.ShellTemp.Device = device;
             model.Comment = readingComment;
-            await Context.ShellTemperatureComments.AddAsync(model);
+            Context.ShellTemperatureComments.Add(model);
 
-            await Context.SaveChangesAsync();
+            Context.SaveChanges();
             return true;
         }
 

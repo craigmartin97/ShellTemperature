@@ -12,7 +12,7 @@ namespace ShellTemperature.Repository
     {
         public PositionsRepository(ShellDb context) : base(context) { }
 
-        public async Task<bool> Create(Positions model)
+        public bool Create(Positions model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model), "The position model supplied is null");
@@ -21,12 +21,12 @@ namespace ShellTemperature.Repository
             if (dbDevicePosition != null)
                 return false;
             
-            bool positionExists = await Context.Positions.AnyAsync(x => x.Position.Equals(model.Position));
+            bool positionExists = Context.Positions.Any(x => x.Position.Equals(model.Position));
             if (positionExists)
                 return false; // already exists
 
-            await Context.Positions.AddAsync(model);
-            await Context.SaveChangesAsync();
+            Context.Positions.Add(model);
+            Context.SaveChanges();
             return true;
         }
 

@@ -19,15 +19,15 @@ namespace ShellTemperature.Repository
         /// </summary>
         /// <param name="model">The device to create</param>
         /// <returns></returns>
-        public async Task<bool> Create(DeviceInfo model)
+        public bool Create(DeviceInfo model)
         {
-            DeviceInfo alreadyExists = await Context.DevicesInfo.FirstOrDefaultAsync(x => x.DeviceAddress.Equals(model.DeviceAddress));
+            DeviceInfo alreadyExists = Context.DevicesInfo.FirstOrDefault(x => x.DeviceAddress.Equals(model.DeviceAddress));
 
             if (alreadyExists != null)
                 throw new ArgumentException("The device " + model.DeviceAddress + " already exists in the data store");
 
-            await Context.AddAsync(model);
-            await Context.SaveChangesAsync();
+            Context.Add(model);
+            Context.SaveChanges();
             return true;
         }
 
