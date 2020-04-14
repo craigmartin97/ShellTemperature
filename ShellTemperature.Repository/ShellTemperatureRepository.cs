@@ -4,6 +4,7 @@ using ShellTemperature.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ShellTemperature.Repository
 {
@@ -16,8 +17,12 @@ namespace ShellTemperature.Repository
             if (model?.Device == null)
                 throw new ArgumentNullException(nameof(model), "The model supplied was invalid");
 
-            DeviceInfo dbDevice = Context.DevicesInfo.Find(model.Device.Id);
-            DeviceInfo device = dbDevice ?? model.Device;
+            // Try and find the device in the database
+            DeviceInfo dbDevice = Context.DevicesInfo.Find(model.Device.Id) ??
+                                  Context.DevicesInfo.FirstOrDefault(dev =>
+                                      dev.DeviceAddress.Equals(model.Device.DeviceAddress));
+
+            DeviceInfo device = dbDevice ?? model.Device; // Use the database device or add models device
             model.Device = device;
 
             Context.Add(model);
@@ -82,19 +87,6 @@ namespace ShellTemperature.Repository
         }
 
         /// <summary>
-        /// Get all the shell temperature data between a date range.
-        /// </summary>
-        /// <param name="start">The start of the range to search for</param>
-        /// <param name="end">The end of the range to search for</param>
-        /// <returns>Returns an enumerable of shell temperatures</returns>
-        public IEnumerable<ShellTemp> GetShellTemperatureData(DateTime start, DateTime end)
-        {
-            return Context.ShellTemperatures
-                .Include(dev => dev.Device)
-                .Where(dateTime => dateTime.RecordedDateTime >= start && dateTime.RecordedDateTime <= end);
-        }
-
-        /// <summary>
         /// Get the shell temperature data between two dates.
         /// Optional filter on the device name and device address can be provided
         /// </summary>
@@ -107,10 +99,10 @@ namespace ShellTemperature.Repository
         {
             return Context.ShellTemperatures
                 .Include(dev => dev.Device)
+                .Where(dateTime => dateTime.RecordedDateTime >= start && dateTime.RecordedDateTime <= end)
                 .Where(device =>
                     string.IsNullOrWhiteSpace(deviceName) || device.Device.DeviceName.Equals(deviceName) &&
-                    string.IsNullOrWhiteSpace(deviceAddress) || device.Device.DeviceAddress.Equals(deviceAddress) &&
-                    device.RecordedDateTime >= start && device.RecordedDateTime <= end);
+                    string.IsNullOrWhiteSpace(deviceAddress) || device.Device.DeviceAddress.Equals(deviceAddress));
         }
 
         /// <summary>

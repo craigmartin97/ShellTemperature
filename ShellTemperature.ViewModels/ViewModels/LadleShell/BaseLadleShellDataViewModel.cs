@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using ShellTemperature.Service;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {

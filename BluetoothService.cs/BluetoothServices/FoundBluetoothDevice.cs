@@ -1,14 +1,14 @@
 ﻿using BluetoothService.Models;
 using InTheHand.Net.Sockets;
 
-namespace BluetoothService.cs.BluetoothServices
+namespace BluetoothService.BluetoothServices
 {
     /// <summary>
     /// Bluetooth device allows connection to the bluetooth device
     /// with the devices information, the access client and the configuration information
     /// for the device
     /// </summary>
-    public class BluetoothDevice
+    public class FoundBluetoothDevice
     {
         public BluetoothDeviceInfo Device { get; set; }
 

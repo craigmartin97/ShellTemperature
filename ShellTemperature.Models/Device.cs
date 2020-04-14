@@ -1,12 +1,9 @@
 ﻿using BluetoothService;
-using BluetoothService.BluetoothServices;
-using BluetoothService.cs.BluetoothServices;
 using BluetoothService.Enums;
 using OxyPlot;
-using System.Collections.Generic;
+using ShellTemperature.Data;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
-using ShellTemperature.Data;
 
 namespace ShellTemperature.Models
 {
@@ -28,11 +25,6 @@ namespace ShellTemperature.Models
                 OnPropertyChanged(nameof(Temp));
             }
         }
-
-        /// <summary>
-        /// Stores all the temperature points regardless if they are outliers or not.
-        /// </summary>
-        public List<double> AllTemperatureReadings { get; set; }
 
         public ObservableCollection<DataPoint> DataPoints { get; set; }
 
@@ -60,10 +52,6 @@ namespace ShellTemperature.Models
             }
         }
 
-        public IReceiverBluetoothService BluetoothService { get; set; }
-
-        public BluetoothDevice BluetoothDevice { get; set; }
-
         private string _deviceName;
 
         public string DeviceName
@@ -75,6 +63,8 @@ namespace ShellTemperature.Models
                 OnPropertyChanged(nameof(DeviceName));
             }
         }
+
+        public string DeviceAddress { get; set; }
 
         /// <summary>
         /// The current device position related to the
@@ -89,16 +79,14 @@ namespace ShellTemperature.Models
 
         }
 
-        public Device(BluetoothDevice device, string deviceName)
+        public Device(string deviceName, string deviceAddress)
         {
             Timer = new DispatcherTimer();
             DataPoints = new ObservableCollection<DataPoint>();
             Temp = new ObservableCollection<ShellTemperatureRecord>();
-            BluetoothService = new ReceiverBluetoothService();
-            BluetoothDevice = device;
             IsTimerEnabled = false;
             DeviceName = deviceName;
-            AllTemperatureReadings = new List<double>();
+            DeviceAddress = deviceAddress;
             State = new ConnectionState()
             {
                 IsConnected = DeviceConnectionStatus.CONNECTING,

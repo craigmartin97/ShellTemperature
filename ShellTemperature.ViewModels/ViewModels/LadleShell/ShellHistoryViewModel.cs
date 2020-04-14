@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using ShellTemperature.Service;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
@@ -294,7 +295,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
         #region Constructors
         public ShellHistoryViewModel(
-             IShellTemperatureRepository<ShellTemp> shellTemperature,
+            IShellTemperatureRepository<ShellTemp> shellTemperature,
              IShellTemperatureRepository<SdCardShellTemp> sdCardShellTemperatureRepository,
              IDeviceRepository<DeviceInfo> deviceRepository,
              TemperatureSubject subject,

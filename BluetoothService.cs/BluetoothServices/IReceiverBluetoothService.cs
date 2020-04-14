@@ -1,14 +1,13 @@
-﻿using BluetoothService.cs.BluetoothServices;
-using BluetoothService.Models;
+﻿using BluetoothService.Models;
 
 namespace BluetoothService.BluetoothServices
 {
     public interface IReceiverBluetoothService
     {
-        DeviceReading ReadData(BluetoothDevice device);
+        DeviceReading ReadData(FoundBluetoothDevice device);
 
         void Stop();
 
-        DeviceReading ConnectToDevice(BluetoothDevice device);
+        DeviceReading ConnectToDevice(FoundBluetoothDevice device);
     }
 }

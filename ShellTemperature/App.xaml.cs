@@ -8,8 +8,10 @@ using NLog.Extensions.Logging;
 using ShellTemperature.Data;
 using ShellTemperature.Repository;
 using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.Service;
 using ShellTemperature.ViewModels;
 using ShellTemperature.ViewModels.ConnectionObserver;
+using ShellTemperature.ViewModels.DataManipulation;
 using ShellTemperature.ViewModels.Interfaces;
 using ShellTemperature.ViewModels.Outliers;
 using ShellTemperature.ViewModels.Statistics;
@@ -23,8 +25,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Windows;
-using ShellTemperature.ViewModels.DataManipulation;
+using ShellTemperature.Service.Development;
+using ShellTemperature.Service.Live;
+using Polly;
 
 namespace ShellTemperature
 {
@@ -40,6 +45,8 @@ namespace ShellTemperature
         private ClearList clearList = new ClearList();
 
         private IConfiguration _configuration;
+
+        private string _enviromentTag;
 
         /// <summary>
         /// Method initiates the startup of the application.
@@ -58,6 +65,7 @@ namespace ShellTemperature
             {
                 if (e.Args[i].Equals("-config"))
                 {
+                    _enviromentTag = e.Args[i + 1];
                     switch (e.Args[i + 1])
                     {
                         case "Development":
@@ -101,7 +109,9 @@ namespace ShellTemperature
             ConfigureServices(serviceCollection);
             ConfigureViews(serviceCollection);
             ConfigureViewModels(serviceCollection);
-            ConfigDatabase(serviceCollection);
+
+            
+            ConfigDatabase(serviceCollection); // Database
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -167,6 +177,26 @@ namespace ShellTemperature
                 return new BluetoothFinder(bluetoothConfigurations.ToArray());
             });
 
+            //if (_enviromentTag.Equals("Development"))
+            //{
+            //    services.AddScoped<IShellTemperatureService<ShellTemp>, ShellTemperatureDevelopmentService>();
+            //}
+            //else if (_enviromentTag.Equals("Live"))
+            //{
+                // Inject Http Client for MPI API
+                services.AddHttpClient<IShellTemperatureService<ShellTemp>, ShellTemperatureLiveService>
+                (service =>
+                {
+                    service.BaseAddress = new Uri(_configuration["APIAddress"]);
+                    service.DefaultRequestHeaders.Accept.Clear();
+                    service.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                })
+                    .AddTransientHttpErrorPolicy(p =>
+                        p.OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+                            .WaitAndRetryAsync(3, retry => TimeSpan.FromSeconds(Math.Pow(2, retry))))
+                    .AddTransientHttpErrorPolicy(p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30))); ;
+            //}
+
             services.AddScoped<IRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IShellTemperatureRepository<ShellTemp>, ShellTemperatureRepository>();
             services.AddScoped<IDeviceRepository<DeviceInfo>, DevicesRepository>();
@@ -209,7 +239,19 @@ namespace ShellTemperature
 
             services.AddSingleton<TopBarViewModel>();
             services.AddSingleton<MainWindowViewModel>();
-            services.AddSingleton<LiveShellDataViewModel>();
+
+            if (string.IsNullOrWhiteSpace(_enviromentTag))
+            {
+                services.AddSingleton<BaseLiveShellDataViewModel, LiveBluetoothOnlyShellDataViewModel>();
+            }
+            else
+            {
+                if (_enviromentTag.Equals("Development")) // Test mode, only access to test database so no way to check for wifi data
+                    services.AddSingleton<BaseLiveShellDataViewModel, LiveBluetoothOnlyShellDataViewModel>();
+                else if (_enviromentTag.Equals("Live")) // Live mode, also need to check for wifi data
+                    services.AddSingleton<BaseLiveShellDataViewModel, LiveWifiAndBluetoothShellDataViewModel>();
+            }
+
             services.AddScoped<ShellHistoryViewModel>();
             services.AddSingleton<ReportViewModel>();
             services.AddSingleton<ManagementViewModel>();

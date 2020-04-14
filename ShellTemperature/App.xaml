@@ -16,7 +16,7 @@
         <!-- Create merge dictionary for all style sheets -->
         <ResourceDictionary>
 
-            <DataTemplate DataType="{x:Type ladleVM:LiveShellDataViewModel}" >
+            <DataTemplate DataType="{x:Type ladleVM:BaseLiveShellDataViewModel}" >
                 <views:LiveShellDataUserControl DataContext="{Binding}"/>
             </DataTemplate>
 

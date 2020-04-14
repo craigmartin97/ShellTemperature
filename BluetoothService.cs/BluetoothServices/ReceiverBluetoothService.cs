@@ -1,5 +1,4 @@
-﻿using BluetoothService.cs.BluetoothServices;
-using BluetoothService.Models;
+﻿using BluetoothService.Models;
 using InTheHand.Net.Sockets;
 using System;
 using System.Diagnostics;
@@ -27,7 +26,7 @@ namespace BluetoothService.BluetoothServices
         /// The report Action.  
         /// </param>
         /// <param name="device"></param>  
-        public DeviceReading ReadData(BluetoothDevice device)
+        public DeviceReading ReadData(FoundBluetoothDevice device)
         {
             try
             {
@@ -76,7 +75,7 @@ namespace BluetoothService.BluetoothServices
             _client.Dispose();
         }
 
-        private DeviceReading Connect(BluetoothDevice device)
+        private DeviceReading Connect(FoundBluetoothDevice device)
         {
             // client is connected
             NetworkStream stream = device.Client.GetStream();
@@ -139,7 +138,7 @@ namespace BluetoothService.BluetoothServices
             return null;
         }
 
-        public DeviceReading ConnectToDevice(BluetoothDevice device)
+        public DeviceReading ConnectToDevice(FoundBluetoothDevice device)
         {
             device.Client.SetPin(device.Configuration.Pin); // Set the pin access for the device to auto connect
             device.Client.Connect(device.Device.DeviceAddress,

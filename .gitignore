@@ -340,3 +340,4 @@ ASALocalRun/
 healthchecksdb
 /ShellTemperature/appsettings.json
 ShellTemperature/appsettings.json
+Thermocouple/Thermocouple_Wifi/

@@ -1,5 +1,6 @@
 ﻿using ShellTemperature.Data;
 using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.Service;
 using ShellTemperature.ViewModels.Interfaces;
 using ShellTemperature.ViewModels.ViewModels.LadleShell;
 

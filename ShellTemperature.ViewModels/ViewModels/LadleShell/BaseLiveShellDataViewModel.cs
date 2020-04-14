@@ -1,6 +1,5 @@
 ﻿using BluetoothService;
 using BluetoothService.BluetoothServices;
-using BluetoothService.cs.BluetoothServices;
 using BluetoothService.Enums;
 using BluetoothService.Models;
 using CustomDialog.Dialogs;
@@ -14,6 +13,7 @@ using OxyPlot.Axes;
 using ShellTemperature.Data;
 using ShellTemperature.Models;
 using ShellTemperature.Repository.Interfaces;
+using ShellTemperature.Service;
 using ShellTemperature.ViewModels.Commands;
 using ShellTemperature.ViewModels.ConnectionObserver;
 using ShellTemperature.ViewModels.Outliers;
@@ -26,22 +26,19 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
 namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 {
-    /// <summary>
-    /// Live shell data view model is responsible for retrieving the live
-    /// temperature data and displaying the results to the user
-    /// </summary>
-    public class LiveShellDataViewModel : BaseLadleShellDataViewModel
+    public abstract class BaseLiveShellDataViewModel : BaseLadleShellDataViewModel
     {
         #region Private fields
         /// <summary>
         /// The device repository to interact with the data store
         /// </summary>
-        private readonly IDeviceRepository<DeviceInfo> _deviceRepository;
+        protected internal readonly IDeviceRepository<DeviceInfo> _deviceRepository;
 
         /// <summary>
         /// The subject observer pattern updater
@@ -77,7 +74,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// <summary>
         /// Logger to record system messages
         /// </summary>
-        private readonly ILogger<LiveShellDataViewModel> _logger;
+        private readonly ILogger<LiveBluetoothOnlyShellDataViewModel> _logger;
 
         /// <summary>
         /// Position repository is responsible for storing positions
@@ -256,7 +253,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// <summary>
         /// Start reading the bluetooth service
         /// </summary>
-        public RelayCommand StartCommand
+        public virtual RelayCommand StartCommand
         => new RelayCommand(delegate
         {
             if (SelectedDevice == null)
@@ -299,21 +296,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     // disable the search functionality
                     Application.Current.Dispatcher?.Invoke(() => IsSearchForDevicesEnabled = false);
 
-                    IList<BluetoothDevice> allDevicesFound = _bluetoothFinder.GetBluetoothDevices();
+                    FindDevices findDevices = SearchForNearbyDevices();
 
-                    for (int i = 0; i < allDevicesFound.Count; i++) // each foundDevices found
-                    {
-                        for (int j = 0; j < Devices.Count; j++) // each foundDevices already found
-                        {
-                            if (Devices[j].BluetoothDevice.Device.DeviceAddress
-                                .Equals(allDevicesFound[i].Device.DeviceAddress)) // the foundDevices already exists
-                            {
-                                allDevicesFound.Remove(allDevicesFound[i]);
-                            }
-                        }
-                    }
-
-                    if (allDevicesFound.Count == 0)
+                    if (findDevices.BluetoothDevices.Count == 0 && findDevices.WifiDevices.Count == 0)
                         return;
 
                     DialogResult result = DialogResult.Undefined;
@@ -322,8 +307,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     {
                         DialogService service = new DialogService();
                         ConfirmationDialogViewModel confirmation = new ConfirmationDialogViewModel
-                            ("Found New Devices",
-                            "Found " + allDevicesFound.Count + " device(s). Would you like to start recording data?");
+                        ("Found New Devices",
+                            "Found " + (findDevices.BluetoothDevices.Count + findDevices.WifiDevices.Count) + " device(s). Would you like to start recording data?");
                         result = service.OpenDialogService(confirmation);
                     });
 
@@ -331,23 +316,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     if (result == DialogResult.Undefined || result == DialogResult.No)
                         return;
 
-                    // user pressed yes so add devices
-                    foreach (BluetoothDevice device in allDevicesFound)
-                    {
-                        Device dev = new Device(device, GetValueFromDeviceNameDictionary(device));
-
-                        // add devices back on main thread
-                        Application.Current.Dispatcher?.Invoke(() =>
-                        {
-                            dev.Timer = new DispatcherTimer();
-                            dev.Timer.Tick += (sender, args) => Timer_Tick(dev);
-                            dev.Timer.Interval = new TimeSpan(0, 0, 1);
-                            dev.Timer.Start();
-
-                            CheckIfDeviceExistsAndCreate(dev);
-                            Devices.Add(dev);
-                        });
-                    }
+                    InstantiateSearchedForDevices(findDevices);
 
                     // set the datastore devices as new onces could have been added.
                     _datastoreDevices = _deviceRepository.GetAll();
@@ -365,6 +334,60 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         });
 
         /// <summary>
+        /// Search for nearby devices.
+        /// </summary>
+        /// <returns>Returns a collection of find devices made up of bluetooth and wifi devices</returns>
+        protected virtual FindDevices SearchForNearbyDevices()
+        {
+            // Get nearby bluetooth devices
+            IList<FoundBluetoothDevice> allDevicesFound = _bluetoothFinder.GetBluetoothDevices();
+
+            // Filter out existing devices
+            for (int i = 0; i < allDevicesFound.Count; i++) // each foundDevices found
+            {
+                for (int j = 0; j < Devices.Count; j++) // each foundDevices already found
+                {
+                    if (Devices[j].DeviceAddress
+                        .Equals(allDevicesFound[i].Device.DeviceAddress)) // the foundDevices already exists
+                    {
+                        allDevicesFound.Remove(allDevicesFound[i]);
+                    }
+                }
+            }
+
+            return new FindDevices
+            {
+                BluetoothDevices = allDevicesFound,
+                WifiDevices = new List<WifiDevice>() // just create a blank list. Children will override
+            };
+        }
+
+        /// <summary>
+        /// Instantiate new devices, set of there timers to start logging data regular
+        /// </summary>
+        /// <param name="findDevices"></param>
+        protected virtual void InstantiateSearchedForDevices(FindDevices findDevices)
+        {
+            // user pressed yes so add devices
+            foreach (FoundBluetoothDevice device in findDevices.BluetoothDevices)
+            {
+                BluetoothDevice dev = new BluetoothDevice(device, GetValueFromDeviceNameDictionary(device), device.Device.DeviceAddress.ToString());
+
+                // add devices back on main thread
+                Application.Current.Dispatcher?.Invoke(() =>
+                {
+                    dev.Timer = new DispatcherTimer();
+                    dev.Timer.Tick += (sender, args) => Timer_Tick(dev);
+                    dev.Timer.Interval = new TimeSpan(0, 0, 1);
+                    dev.Timer.Start();
+
+                    CheckIfDeviceExistsAndCreate(dev);
+                    Devices.Add(dev);
+                });
+            }
+        }
+
+        /// <summary>
         /// Command to remove the selected device from the display
         /// </summary>
         public RelayCommand RemoveSelectedDevice =>
@@ -373,7 +396,9 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             if (SelectedDevice == null || Devices.Count == 0) return;
 
             SelectedDevice.Timer.Stop();
-            SelectedDevice.BluetoothDevice.Client.Close();
+            if (SelectedDevice is BluetoothDevice dev)
+                dev.FoundBluetoothDevice.Client.Close();
+
             Devices.Remove(SelectedDevice);
 
             if (Devices == null || Devices.Count == 0) // nothing in the collection
@@ -437,14 +462,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         #endregion
 
         #region Constructors
-        public LiveShellDataViewModel(IBluetoothFinder bluetoothFinder,
+        public BaseLiveShellDataViewModel(IBluetoothFinder bluetoothFinder,
             IShellTemperatureRepository<ShellTemp> shellTemperatureRepository,
             IShellTemperatureRepository<SdCardShellTemp> sdCardShellTemperatureRepository,
             IDeviceRepository<DeviceInfo> deviceRepository,
             IConfiguration configuration,
             BluetoothConnectionSubject subject,
             TemperatureSubject temperatureSubject,
-            ILogger<LiveShellDataViewModel> logger,
+            ILogger<LiveBluetoothOnlyShellDataViewModel> logger,
             OutlierDetector outlierDetector,
             ClearList clear,
             IRepository<ShellTemperatureComment> commentRepository,
@@ -476,11 +501,11 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
             _deviceDictionary = configDevices.ToDictionary(
                dev => dev.Key, dev => dev.Value);
 
-            List<BluetoothDevice> bluetoothDevices = bluetoothFinder.GetBluetoothDevices();
+            List<FoundBluetoothDevice> bluetoothDevices = bluetoothFinder.GetBluetoothDevices();
 
-            foreach (BluetoothDevice device in bluetoothDevices)
+            foreach (FoundBluetoothDevice device in bluetoothDevices)
             {
-                Device dev = new Device(device, GetValueFromDeviceNameDictionary(device));
+                BluetoothDevice dev = new BluetoothDevice(device, GetValueFromDeviceNameDictionary(device), device.Device.DeviceAddress.ToString());
 
                 // set to connecting, in the constructor its being setup so its a connecting status
                 SetConnectionStatus(dev, DeviceConnectionStatus.CONNECTING);
@@ -516,7 +541,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// <summary>
         /// Timer_tick executes the start command and then retrieves the bluetooth data.
         /// </summary>
-        private void Timer_Tick(Device currentDevice)
+        private void Timer_Tick(BluetoothDevice currentDevice)
         {
             try
             {
@@ -532,7 +557,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                     currentDevice.Temp.Clear();
                 }
 
-                DeviceReading receivedData = currentDevice.BluetoothService.ReadData(currentDevice.BluetoothDevice);
+                DeviceReading receivedData = currentDevice.BluetoothService.ReadData(currentDevice.FoundBluetoothDevice);
 
                 if (receivedData?.LiveDeviceReading == null)
                     throw new NullReferenceException("The sensor returned a null response");
@@ -560,7 +585,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
 
                 // get the device from the datastore collection
                 DeviceInfo device = _datastoreDevices.FirstOrDefault(x =>
-                    x.DeviceAddress.Equals(currentDevice.BluetoothDevice.Device.DeviceAddress.ToString()));
+                    x.DeviceAddress.Equals(currentDevice.FoundBluetoothDevice.Device.DeviceAddress.ToString()));
 
                 // create new shell obj for database submission
                 ShellTemp shellTemp = new ShellTemp(temperature, (DateTime)receivedData.LiveDeviceReading.RecordedDateTime,
@@ -683,17 +708,17 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// Reset the connection object to be able to reconnect later.
         /// </summary>
         /// <param name="foundDevices">The devices connection to reset</param>
-        private void ResetBluetoothClient(Device foundDevices)
+        private void ResetBluetoothClient(BluetoothDevice foundDevices)
         {
             // reset foundDevices
-            foundDevices.BluetoothDevice.Client.Close();
-            foundDevices.BluetoothDevice.Client = new BluetoothClient();
+            foundDevices.FoundBluetoothDevice.Client.Close();
+            foundDevices.FoundBluetoothDevice.Client = new BluetoothClient();
         }
 
         /// <summary>
         /// Set connection status to none
         /// </summary>
-        private void SetConnectionStatus()
+        protected void SetConnectionStatus()
         {
             ConnectionState state = new ConnectionState
             {
@@ -709,7 +734,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// </summary>
         /// <param name="foundDevices">The devices connection status to change</param>
         /// <param name="status">The status to check and change to</param>
-        private void SetConnectionStatus(Device foundDevice, DeviceConnectionStatus status)
+        protected void SetConnectionStatus(Device foundDevice, DeviceConnectionStatus status)
         {
             if (!foundDevice.State.Equals(status) && SelectedDevice == foundDevice)
             {
@@ -731,7 +756,7 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// <param name="device">FoundDevices to get name from</param>
         /// <param name="deviceName">The foundDevices name to be returned</param>
         /// <returns></returns>
-        private string GetValueFromDeviceNameDictionary(BluetoothDevice device)
+        private string GetValueFromDeviceNameDictionary(FoundBluetoothDevice device)
         {
             bool isString = _deviceDictionary.TryGetValue(
                 device.Device.DeviceAddress.ToString(), out string tempDeviceName);
@@ -744,10 +769,10 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// If the device, doesn't exist then create the device
         /// </summary>
         /// <param name="device">The device to check if it exists</param>
-        private void CheckIfDeviceExistsAndCreate(Device device)
+        private void CheckIfDeviceExistsAndCreate(BluetoothDevice device)
         {
             // check if the device exists
-            string deviceAddress = device.BluetoothDevice.Device.DeviceAddress.ToString();
+            string deviceAddress = device.FoundBluetoothDevice.Device.DeviceAddress.ToString();
             DeviceInfo dataStoreDevice = _deviceRepository.GetDevice(deviceAddress);
 
             // the device doesn't exist
@@ -756,7 +781,8 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
                 _deviceRepository.Create(new DeviceInfo
                 {
                     DeviceName = device.DeviceName,
-                    DeviceAddress = deviceAddress
+                    DeviceAddress = deviceAddress,
+                    DeviceType = DeviceType.Bluetooth // Must be blt as searched for nearby blt devices
                 });
             }
         }
@@ -777,29 +803,6 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         }
 
         /// <summary>
-        /// If the received data is before the previous oe
-        /// or much greater than the previous one then it must be
-        /// an outlier and needs fixing.
-        /// Reset the value to the prev plus one second
-        /// </summary>
-        /// <param name="currentDevice"></param>
-        /// <param name="receivedData"></param>
-        //private void FormatDateTime(Device currentDevice, DeviceReading receivedData)
-        //{
-        //    // format the datetime if incorrect
-        //    // sometimes the datetime is to far in advance compared to the previous
-        //    ShellTemperatureRecord prev = currentDevice.Temp.LastOrDefault();
-        //    if (prev != null)
-        //    {
-        //        DateTime min = prev.RecordedDateTime;
-        //        if (receivedData.RecordedDateTime < min) // || receivedData.RecordedDateTime > max
-        //        {
-        //            receivedData.RecordedDateTime = prev.RecordedDateTime.AddSeconds(1);
-        //        }
-        //    }
-        //}
-
-        /// <summary>
         /// Order the devices in alphabetical order
         /// </summary>
         private void OrderDevices()
@@ -815,14 +818,14 @@ namespace ShellTemperature.ViewModels.ViewModels.LadleShell
         /// If the collection has items then they can be removed.
         /// Otherwise, they cannot.
         /// </summary>
-        private void SetCanRemoveDevices()
+        protected void SetCanRemoveDevices()
          => CanRemoveDevice = Devices.Count > 0;
 
         /// <summary>
         /// Set the selected device when it is null
         /// with the first item from the devices list.
         /// </summary>
-        private void SetSelectedDeviceWhenNull()
+        protected void SetSelectedDeviceWhenNull()
         {
             if (SelectedDevice == null && Devices.Count > 0)
                 SelectedDevice = Devices[0];
