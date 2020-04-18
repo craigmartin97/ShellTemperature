@@ -112,10 +112,8 @@ namespace ShellTemperature.Tests.Statistics
             };
 
             // Assert
-            Assert.Throws<InvalidOperationException>(delegate
-            {
-                _measureSpreadStats.Range(nullSet);
-            });
+            double res = _measureSpreadStats.Range(nullSet);
+            Assert.IsTrue(res == (double)0);
         }
 
         /// <summary>

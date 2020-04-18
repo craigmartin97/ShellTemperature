@@ -87,25 +87,22 @@ namespace ShellTemperature.ViewModels.Statistics
         {
             _sortingAlgorithm.BubbleSort(values);
 
-            double[] firstQuartile;
-            double[] thirdQuartile;
-
             int index;
-            int thirdQuantileStartIndex;
+            int thirdQuartileStartIndex;
             // is even
             if (values.Length % 2 == 0)
             {
                 index = values.Length / 2;
-                thirdQuantileStartIndex = index;
+                thirdQuartileStartIndex = index;
             }
             else // is odd
             {
                 index = (values.Length - 1) / 2;
-                thirdQuantileStartIndex = index + 1;
+                thirdQuartileStartIndex = index + 1;
             }
 
-            firstQuartile = new double[index];
-            thirdQuartile = new double[index];
+            var firstQuartile = new double[index];
+            var thirdQuartile = new double[index];
 
             for (int i = 0; i < index; i++)
             {
@@ -113,7 +110,7 @@ namespace ShellTemperature.ViewModels.Statistics
             }
 
             int indexCounter = 0;
-            for (int i = thirdQuantileStartIndex; i < values.Length; i++)
+            for (int i = thirdQuartileStartIndex; i < values.Length; i++)
             {
                 thirdQuartile[indexCounter] = values[i];
                 indexCounter++;
